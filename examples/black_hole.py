@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from __init__ import CONSTANTS, QuantumGravity  # We haven't created QuantumGravity class yet!
+from __init__ import QuantumGravity  # We haven't created QuantumGravity class yet!
 
 import numpy as np
 from typing import Dict, List, Tuple
@@ -171,6 +171,10 @@ class BlackHoleSimulation:
         self.entropy_history.append(entropy)
         self.temperature_history.append(temp.value)
         self.radiation_flux_history.append(flux.value)
+        
+        # Log current measurements
+        logging.info(f"Time t={t:.2f}: Mass={mass.value:.2f}, Temperature={temp.value:.2e}, " +
+                    f"Entropy={entropy:.2e}, Radiation Flux={flux.value:.2e}")
         
     def plot_results(self, save_path: str = None) -> None:
         """Plot simulation results."""

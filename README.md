@@ -13,10 +13,14 @@ A high-performance numerical framework for quantum gravity simulations, focusing
 
 ## Installation
 
+## Linux
+apt install python3-pip build-essential 
+
 ```bash
 git clone https://github.com/username/quantum_gravity.git
 cd quantum_gravity
 pip install -r requirements.txt
+```
 
 ## Architecture
 
@@ -27,7 +31,8 @@ examples/: Usage examples and demonstrations
 
 ## Usage
 ### Running a simulation
-from quantum_gravity import QuantumGravity
+#from quantum_gravity import QuantumGravity
+from __init__ import QuantumGravity
 from examples.black_hole import BlackHoleSimulation
 
 # Create simulation with 1000 Planck mass black hole

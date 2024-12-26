@@ -42,12 +42,17 @@ class Observable(ABC):
         return MeasurementResult(value, uncertainty)
     
     def _compute_value(self, state: 'QuantumState') -> float:
-        """Compute observable value."""
-        raise NotImplementedError
+        """Compute observable expectation value."""
+        operator = self.operator
+        return state.expectation_value(operator)
     
     def _compute_uncertainty(self, state: 'QuantumState', value: float) -> float:
         """Compute measurement uncertainty."""
-        raise NotImplementedError
+        operator_squared = self.operator @ self.operator
+        expectation_squared = state.expectation_value(operator_squared)
+        variance = expectation_squared - value**2
+        return np.sqrt(abs(variance))
+
 
 class GeometricObservable(Observable):
     """Base class for geometric observables."""

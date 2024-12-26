@@ -248,17 +248,27 @@ class QuantumGravity:
                 error_tracker=error_tracker,
                 conservation_tracker=conservation_tracker
             )
-            
-        # Rest of the simulation code remains the same
+        
+        # Add progress tracking
         current_t = 0.0
         step = 0
+        progress_interval = t_final / 100
+        next_report = progress_interval
+        
         while current_t < t_final:
             self.state = self.evolution.step(self.state)
             current_t += self.evolution.dt
+            
+            # Progress reporting
+            if current_t >= next_report:
+                progress = (current_t / t_final) * 100
+                logging.info(f"Simulation progress: {progress:.1f}% (t={current_t:.2f}/{t_final})")
+                next_report += progress_interval
+                
             if callback:
                 callback(self.state, current_t, step)
             step += 1
-            
+                
         logging.info(f"Simulation completed to time {t_final}")
 
 # class QuantumGravity:

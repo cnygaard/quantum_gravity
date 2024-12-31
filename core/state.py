@@ -3,6 +3,7 @@ from typing import Dict, Tuple, Optional
 from .grid import AdaptiveGrid
 import numpy as np
 from scipy.sparse import csr_matrix
+from constants import CONSTANTS
 
 class QuantumState:
     """Efficient representation of quantum gravitational states."""
@@ -14,6 +15,84 @@ class QuantumState:
         self._metric_array = np.zeros((4, 4, len(self.grid.points)))
         self.time = 0.0
         self.mass = 1000.0  # Initial mass in Planck units
+        self.initial_mass = self.mass
+        
+        # Quantum information metrics
+        self.entanglement = 0.0
+        self.information = 0.0
+        
+        # Thermodynamic properties
+        self._entropy = None
+        self._temperature = None
+        self._last_update = 0.0
+        
+        # Initialize evaporation timescale
+        self.evaporation_rate = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / (15360 * np.pi * CONSTANTS['G']**2)
+        self.evaporation_timescale = self.mass**3 / self.evaporation_rate
+
+    @property
+    def entropy(self) -> float:
+        """Get black hole entropy using Bekenstein-Hawking formula."""
+        if self._entropy is None or self.time > self._last_update:
+            self._update_thermodynamics()
+        return self._entropy
+
+    @property
+    def temperature(self) -> float:
+        """Get black hole temperature using Hawking formula."""
+        if self._temperature is None or self.time > self._last_update:
+            self._update_thermodynamics()
+        return self._temperature
+
+    def _update_thermodynamics(self) -> None:
+        """Update thermodynamic properties."""
+        # Calculate horizon properties
+        horizon_radius = 2 * CONSTANTS['G'] * self.mass
+        area = 4 * np.pi * horizon_radius**2
+        
+        # Bekenstein-Hawking entropy
+        self._entropy = area / (4 * CONSTANTS['l_p']**2)
+        
+        # Hawking temperature
+        self._temperature = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * self.mass)
+        
+        self._last_update = self.time
+
+    def evolve(self, dt: float) -> None:
+        """Evolve state by time step dt."""
+        self.time += dt
+        
+        # Update mass with Hawking radiation
+        self.mass = self.initial_mass * (1 - self.time/self.evaporation_timescale)**(1/3)
+        self.mass = max(self.mass, CONSTANTS['m_p'])  # Enforce Planck mass cutoff
+        
+        # Update quantum information metrics
+        self.compute_entanglement()
+        self.compute_information()
+        
+        # Clear cached thermodynamics
+        self._entropy = None
+        self._temperature = None
+
+    def compute_entanglement(self) -> float:
+        """Compute entanglement measure."""
+        entanglement = 0.0
+        for i, coeff_i in self.coefficients.items():
+            for j, coeff_j in self.coefficients.items():
+                if i != j:
+                    entanglement += abs(coeff_i * coeff_j.conjugate())
+        self.entanglement = entanglement
+        return entanglement
+
+    def compute_information(self) -> float:
+        """Compute von Neumann entropy as information measure."""
+        information = 0.0
+        for coeff in self.coefficients.values():
+            p = abs(coeff)**2
+            if p > self.eps_cut:
+                information -= p * np.log(p)
+        self.information = information
+        return information
 
     def set_metric_components_batch(self, indices_list, points, values):
         # Use numpy vectorized operations instead of extend
@@ -21,7 +100,6 @@ class QuantumState:
         points_array = np.array(points)
         values_array = np.array(values)
         self._metric_array[indices_array[:,0], indices_array[:,1], points_array] = values_array
-
 
     def add_basis_state(self, 
                        index: int, 
@@ -32,45 +110,9 @@ class QuantumState:
             self.coefficients[index] = coeff
             self.basis_states[index] = state_vector
 
-    def evolve(self, dt: float) -> None:
-        """Evolve state by time step dt."""
-        # Update time
-        self.time += dt
-        
-        # Calculate evaporation timescale
-        evaporation_rate = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2)
-        self.evaporation_timescale = self.initial_mass**3 / evaporation_rate
-        
-        # Update mass with proper Hawking radiation evolution
-        # M(t) = M₀(1 - t/τ)^(1/3)
-        self.mass = self.initial_mass * (1 - self.time/self.evaporation_timescale)**(1/3)
-        self.mass = max(self.mass, CONSTANTS['m_p'])
-        
-        # Update temperature (T ∝ 1/M)
-        self.temperature = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * self.mass)
-        
-        # Update entropy (S = A/4)
-        self.entropy = 4 * np.pi * (2 * CONSTANTS['G'] * self.mass)**2 / (4 * CONSTANTS['l_p']**2)
-        
-        # Update radiation flux (F ∝ 1/M^2)
-        self.radiation_flux = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2 * self.mass**2)
-
-
-
-
     def expectation_value(self, operator: csr_matrix) -> float:
-        """Compute expectation value of operator in current state.
-        
-        Args:
-            operator: Sparse matrix representing the observable operator
-            
-        Returns:
-            float: Expectation value <ψ|O|ψ>
-        """
-        # Convert state coefficients to vector form
+        """Compute expectation value of operator."""
         state_vector = np.zeros(len(self.grid.points), dtype=complex)
         for i, coeff in self.coefficients.items():
             state_vector[i] = coeff
-            
-        # Calculate <ψ|O|ψ>
         return np.real(state_vector.conjugate() @ operator @ state_vector)

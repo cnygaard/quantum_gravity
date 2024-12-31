@@ -163,21 +163,63 @@ class QuantumGravity:
             l_p=1.0
         )
         
-        # Set some initial points before creating state
-        initial_points = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Minimal initial point
+        # Set initial points before creating state
+        initial_points = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)
         self.grid.set_points(initial_points)
 
-        # Now initialize state with populated grid
+        # Initialize state with populated grid
         self.state = QuantumState(
             grid=self.grid,
             eps_cut=self.config.config['numerics']['eps_cut']
         )
+
+        # Initialize quantum operators
+        self.operators = {
+            'hamiltonian': self._create_hamiltonian(),
+            'momentum': self._create_momentum_operator(),
+            'angular_momentum': self._create_angular_momentum(),
+            'constraints': self._create_constraints()
+        }
 
         # Add physics namespace
         self.physics = self._init_physics()
 
         logging.info("Quantum gravity framework initialized")
 
+    def _create_hamiltonian(self):
+        """Create Hamiltonian operator for energy evolution."""
+        return QuantumOperator(
+            self.grid,
+            operator_type='hamiltonian',
+            coupling_constant=CONSTANTS['G']
+        )
+
+    def _create_momentum_operator(self):
+        """Create momentum operator for translations."""
+        return QuantumOperator(
+            self.grid, 
+            operator_type='momentum',
+            dimensions=3
+        )
+
+    def _create_angular_momentum(self):
+        """Create angular momentum operator for rotations."""
+        return QuantumOperator(
+            self.grid,
+            operator_type='angular_momentum',
+            dimensions=3
+        )
+
+    def _create_constraints(self):
+        """Create constraint operators for gauge invariance."""
+        return [
+            QuantumOperator(
+                self.grid,
+                operator_type='constraint',
+                constraint_index=i
+            )
+            for i in range(4)  # 4 constraints for diffeomorphism invariance
+        ]
     def _init_physics(self):
         """Initialize physics components."""
         class Physics:

@@ -306,3 +306,28 @@ const ErrorPlot = () => {{
 
 export default ErrorPlot
 '''
+
+    def plot_verification_metrics(results: List[Dict], save_path: str = None):
+        """Plot verification metrics evolution."""
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+        
+        times = [r['time'] for r in results]
+        
+        # Plot energy conservation
+        ax1.plot(times, [r['energy_conservation'] for r in results])
+        ax1.set_ylabel('Energy Conservation Violation')
+        
+        # Plot holographic principle
+        ax2.plot(times, [r['holographic_principle'] for r in results])
+        ax2.set_ylabel('Holographic Principle Deviation')
+        
+        # Plot spacetime relation
+        ax3.plot(times, [r['spacetime_relation'] for r in results])
+        ax3.set_ylabel('Spacetime-Entanglement Relation')
+        
+        # Plot quantum corrections
+        ax4.plot(times, [r['quantum_corrections'] for r in results])
+        ax4.set_ylabel('Quantum Corrections Magnitude')
+        
+        if save_path:
+            plt.savefig(save_path)

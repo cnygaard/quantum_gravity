@@ -24,6 +24,8 @@ matplotlib.use('TkAgg')  # Or 'Qt5Agg' if you prefer Qt
 import matplotlib.pyplot as plt
 from constants import CONSTANTS
 from core.state import QuantumState
+from physics.verification import UnifiedTheoryVerification
+
 #from core.constants import CONSTANTS
 
 
@@ -59,6 +61,11 @@ class BlackHoleSimulation:
         self.entropy_history = []  
         self.temperature_history = []
         self.radiation_flux_history = []
+
+        # Add verification
+        self.verifier = UnifiedTheoryVerification(self)
+        self.verification_results = []
+
     def _setup_grid(self):
         """Setup adaptive grid focused on horizon."""
         grid_config = self.qg.config.config['grid']
@@ -150,24 +157,34 @@ class BlackHoleSimulation:
         t = 0.0
         
         while t < t_final:
-            # Update quantum state
-            self.qg.state.mass -= (self.qg.state.mass**2 * dt) / (15360 * np.pi)  # Mass loss rate
+            # Add verification step
+            metrics = self.verifier.verify_unified_relations()
+            self.verification_results.append({
+                'time': t,
+                'mass': self.qg.state.mass,
+                **metrics
+            })
+            # Update quantum state with mass loss
+            self.qg.state.mass -= (self.qg.state.mass**2 * dt) / (15360 * np.pi)
             
-            # Update derived quantities
+            # Calculate derived quantities
             horizon_radius = 2 * CONSTANTS['G'] * self.qg.state.mass
             temperature = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * self.qg.state.mass)
             entropy = np.pi * horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
             flux = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2 * self.qg.state.mass**2)
             
-            # Record measurements
+            # Record measurements (preserving history)
             self.time_points.append(t)
             self.mass_history.append(self.qg.state.mass)
             self.entropy_history.append(entropy)
             self.temperature_history.append(temperature)
             self.radiation_flux_history.append(flux)
             
-            # Log progress
+            # Enhanced logging with both progress and parameters
             if int(t/t_final * 100) > int((t-dt)/t_final * 100):
+                logging.info(f"Time t={t:.2f}: Mass={self.qg.state.mass:.6e}, "
+                            f"Temperature={temperature:.6e}, Entropy={entropy:.6e}, "
+                            f"Radiation Flux={flux:.6e}")
                 logging.info(f"Simulation progress: {t/t_final*100:.1f}% (t={t:.2f}/{t_final})")
                 
             t += dt

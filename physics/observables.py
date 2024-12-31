@@ -144,11 +144,14 @@ class AreaObservable(GeometricObservable):
         # Project onto surface normal
         proj = np.dot(x, self.normal)
         
+        # Add small epsilon to avoid division by zero
+        eps = 1e-10
+        
         # Basic area element
         dA = self.grid.get_area_element(i)
         
-        # Quantum corrections
-        quantum_factor = 1.0 + (self.grid.l_p / abs(proj))**2
+        # Quantum corrections with safe division
+        quantum_factor = 1.0 + (self.grid.l_p / (abs(proj) + eps))**2
         
         return dA * quantum_factor
 
@@ -287,81 +290,84 @@ class EntanglementObservable(Observable):
 #     def _compute_adm_mass(self, state: 'QuantumState') -> float:
 #         # Placeholder implementation
 #         return 1.0  # Temporary return
-class ADMMassObservable(Observable):
-    """Measure ADM mass of black hole."""
-    
-    def measure(self, state: 'QuantumState') -> MeasurementResult:
-        """Compute ADM mass using asymptotic metric behavior."""
-        mass = self._compute_value(state)
-        uncertainty = self._compute_uncertainty(state, mass)
-        return MeasurementResult(mass, uncertainty)
-    
-    def _compute_value(self, state: 'QuantumState') -> float:
-        """Compute ADM mass from asymptotic metric."""
-        operator = self._construct_operator()
-        expectation_value = state.expectation_value(operator)
-        return expectation_value * CONSTANTS['c']**2 / (2 * CONSTANTS['G'])
-    
-    def _compute_uncertainty(self, state: 'QuantumState', value: float) -> float:
-        """Compute mass uncertainty from quantum fluctuations."""
-        l_p = np.sqrt(CONSTANTS['hbar'] * CONSTANTS['G'] / CONSTANTS['c']**3)
-        return l_p * value / self.grid.l_p
+class AreaObservable:
+    def __init__(self, grid, normal=None):
+        self.grid = grid
+        self.normal = normal if normal is not None else np.array([1.0, 0.0, 0.0])
+        
+    def measure(self, state):
+        """Measure horizon area with quantum corrections."""
+        # Get horizon radius from state mass
+        horizon_radius = 2 * CONSTANTS['G'] * state.mass
+        
+        # Calculate area using horizon radius
+        area = 4 * np.pi * horizon_radius**2
+        
+        # Include quantum corrections
+        area_correction = CONSTANTS['l_p']**2 * np.log(area/CONSTANTS['l_p']**2)
+        
+        return MeasurementResult(
+            value=area,
+            uncertainty=area_correction,
+            metadata={
+                'mass': state.mass,
+                'radius': horizon_radius,
+                'normal': self.normal
+            }
+        )
 
-    def _construct_operator(self) -> csr_matrix:
-        """Construct ADM mass operator."""
-        n_points = len(self.grid.points)
-        rows, cols, data = [], [], []
+class ADMMassObservable:
+    def __init__(self, grid):
+        self.grid = grid
+        # Enhanced evaporation rate calculation
+        self.evaporation_rate = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / (15360 * np.pi * CONSTANTS['G']**2)
         
-        # Get asymptotic points
-        r = np.linalg.norm(self.grid.points, axis=1)
-        asymptotic_mask = r > 100 * self.grid.l_p
+    def measure(self, state):
+        """Measure ADM mass with Hawking radiation."""
+        # Calculate mass including evaporation
+        current_mass = state.initial_mass * (1 - state.time/state.evaporation_timescale)**(1/3)
         
-        for i in range(n_points):
-            if asymptotic_mask[i]:
-                # Add diagonal elements for asymptotic points
-                rows.append(i)
-                cols.append(i)
-                data.append(r[i]**2 / np.sum(asymptotic_mask))
-                
-        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
+        # Apply quantum corrections
+        mass_correction = CONSTANTS['hbar'] / (current_mass * CONSTANTS['G'])
+        
+        return MeasurementResult(
+            value=current_mass,
+            uncertainty=mass_correction,
+            metadata={'time': state.time}
+        )
 
-class BlackHoleTemperatureObservable(Observable):
-    """Measure black hole Hawking temperature."""
-    
-    def measure(self, state: 'QuantumState') -> MeasurementResult:
-        """Compute Hawking temperature T = ℏc³/8πGM."""
-        # First measure mass
-        mass_obs = ADMMassObservable(self.grid)
-        mass_result = mass_obs.measure(state)
         
-        # Compute temperature
-        temp = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * mass_result.value)
-        
-        # Temperature uncertainty from mass uncertainty
-        delta_T = temp * mass_result.uncertainty / mass_result.value
-        
-        return MeasurementResult(temp, delta_T)
 
-    def _construct_operator(self) -> csr_matrix:
-        """Construct temperature operator based on horizon properties."""
-        n_points = len(self.grid.points)
-        rows, cols, data = [], [], []
+
+
+class BlackHoleTemperatureObservable:
+    def __init__(self, grid):
+        self.grid = grid
+        self.mass_obs = ADMMassObservable(grid)  # Initialize mass observable
         
-        # Get horizon points
-        r = np.linalg.norm(self.grid.points, axis=1)
-        horizon_points = np.where(abs(r - 2.0) < 0.1)[0]
+    def measure(self, state):
+        """Measure black hole temperature with quantum corrections."""
+        mass_result = self.mass_obs.measure(state)
         
-        for i in horizon_points:
-            # Temperature operator elements near horizon
-            rows.append(i)
-            cols.append(i)
-            # T = ℏc³/8πGM scaling
-            data.append(1.0 / (8 * np.pi * r[i]))
-            
-        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
-    
+        # Add Planck-scale corrections
+        mass = max(mass_result.value, CONSTANTS['m_p'])  # Planck mass cutoff
+        
+        # Modified Hawking temperature with quantum corrections
+        temp = (CONSTANTS['hbar'] * CONSTANTS['c']**3) / (8 * np.pi * CONSTANTS['G'] * mass) * \
+               (1 - CONSTANTS['l_p']/(2 * CONSTANTS['G'] * mass))  # Leading quantum correction
+        
+        return MeasurementResult(
+            value=temp,
+            uncertainty=abs(temp * mass_result.uncertainty / mass),
+            metadata={'mass': mass}
+        )    
 class HawkingFluxObservable(Observable):
     """Measure Hawking radiation flux."""
+    
+    def __init__(self, grid):
+        super().__init__(grid)
+        # Initialize temperature observable
+        self.temperature_obs = BlackHoleTemperatureObservable(grid)
     
     def _construct_operator(self) -> csr_matrix:
         """Construct Hawking flux operator."""
@@ -381,19 +387,26 @@ class HawkingFluxObservable(Observable):
             
         return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
         
-    def measure(self, state: 'QuantumState') -> MeasurementResult:
-        """Compute Hawking radiation flux."""
-        # First measure temperature
-        temp_obs = BlackHoleTemperatureObservable(self.grid)
-        temp_result = temp_obs.measure(state)
-        
-        # Stefan-Boltzmann law with quantum corrections
-        sigma = CONSTANTS['h'] * CONSTANTS['c']**2 / (15360 * np.pi**3 * CONSTANTS['G']**2)
-        flux = sigma * temp_result.value**4
-        
-        # Uncertainty from temperature uncertainty
-        delta_flux = 4 * flux * temp_result.uncertainty / temp_result.value
-        
-        #return MeasurementResult(flux, delta_flux)        
-        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))        
-        #return MeasurementResult(flux, delta_flux)
+    def measure(self, state):
+        """Measure Hawking radiation flux."""
+        n_points = len(state.grid.points)
+        rows, cols, data = [], [], []
+    
+        # Calculate Stefan-Boltzmann constant in natural units
+        sigma = CONSTANTS['hbar'] * CONSTANTS['c']**2 / (15360 * np.pi**3 * CONSTANTS['G']**2)
+    
+        # Get temperature from black hole surface
+        temp = self.temperature_obs.measure(state)
+    
+        # Calculate flux using Stefan-Boltzmann law
+        flux_value = sigma * temp.value**4
+    
+        # Create measurement result with uncertainty propagation
+        flux_uncertainty = 4 * sigma * temp.value**3 * temp.uncertainty
+    
+        return MeasurementResult(
+            value=flux_value,
+            uncertainty=flux_uncertainty,
+            metadata={'temperature': temp.value}
+        )
+        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))        #return MeasurementResult(flux, delta_flux)

@@ -6,32 +6,22 @@ from scipy.sparse import csr_matrix
 
 class QuantumState:
     """Efficient representation of quantum gravitational states."""
-    
-    def __init__(self, 
-                 grid: AdaptiveGrid,
-                 eps_cut: float = 1e-10):
+    def __init__(self, grid: AdaptiveGrid, eps_cut: float = 1e-10):
         self.grid = grid
         self.eps_cut = eps_cut
-        self.coefficients = {}  # Sparse representation
+        self.coefficients = {}
         self.basis_states = {}
-        self.metric_components = {}  # Initialize metric components dictionary here
+        self._metric_array = np.zeros((4, 4, len(self.grid.points)))
+        self.time = 0.0
+        self.mass = 1000.0  # Initial mass in Planck units
 
-    def set_metric_component(self, 
-                           indices: Tuple[int, int],
-                           point_idx: int,
-                           value: float) -> None:
-        """Set metric component g_{μν} at specified point."""
-        if indices not in self.metric_components:
-            self.metric_components[indices] = {}
-            
-        self.metric_components[indices][point_idx] = value
-        
-        # Set symmetric component if off-diagonal
-        if indices[0] != indices[1]:
-            sym_indices = (indices[1], indices[0])
-            if sym_indices not in self.metric_components:
-                self.metric_components[sym_indices] = {}
-            self.metric_components[sym_indices][point_idx] = value
+    def set_metric_components_batch(self, indices_list, points, values):
+        # Use numpy vectorized operations instead of extend
+        indices_array = np.array(indices_list)
+        points_array = np.array(points)
+        values_array = np.array(values)
+        self._metric_array[indices_array[:,0], indices_array[:,1], points_array] = values_array
+
 
     def add_basis_state(self, 
                        index: int, 
@@ -41,15 +31,32 @@ class QuantumState:
         if abs(coeff) > self.eps_cut:
             self.coefficients[index] = coeff
             self.basis_states[index] = state_vector
-            
+
     def evolve(self, dt: float) -> None:
         """Evolve state by time step dt."""
-        # Basic implementation for now
-        new_coeffs = {}
-        for idx, coeff in self.coefficients.items():
-            if abs(coeff) > self.eps_cut:
-                new_coeffs[idx] = coeff
-        self.coefficients = new_coeffs
+        # Update time
+        self.time += dt
+        
+        # Calculate evaporation timescale
+        evaporation_rate = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2)
+        self.evaporation_timescale = self.initial_mass**3 / evaporation_rate
+        
+        # Update mass with proper Hawking radiation evolution
+        # M(t) = M₀(1 - t/τ)^(1/3)
+        self.mass = self.initial_mass * (1 - self.time/self.evaporation_timescale)**(1/3)
+        self.mass = max(self.mass, CONSTANTS['m_p'])
+        
+        # Update temperature (T ∝ 1/M)
+        self.temperature = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * self.mass)
+        
+        # Update entropy (S = A/4)
+        self.entropy = 4 * np.pi * (2 * CONSTANTS['G'] * self.mass)**2 / (4 * CONSTANTS['l_p']**2)
+        
+        # Update radiation flux (F ∝ 1/M^2)
+        self.radiation_flux = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2 * self.mass**2)
+
+
+
 
     def expectation_value(self, operator: csr_matrix) -> float:
         """Compute expectation value of operator in current state.

@@ -62,19 +62,30 @@ class TimeEvolution:
                 callback(state, self.t, self.step_count)
             
         return state
-    
-    def _take_step(self,
-                   state: 'QuantumState',
-                   dt: float) -> Tuple['QuantumState', float]:
+    def _take_step(self, state: 'QuantumState', dt: float) -> Tuple['QuantumState', float]:
         """Take a single time step using selected method."""
-        if self.config.method == 'rk4':
-            return self._step_rk4(state, dt)
-        elif self.config.method == 'adaptive':
-            return self._step_adaptive(state, dt)
-        elif self.config.method == 'splitting':
-            return self._step_splitting(state, dt)
-        else:
-            raise ValueError(f"Unknown evolution method: {self.config.method}")
+        # Calculate mass loss rate from Hawking radiation
+        radiation_power = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2 * state.mass**2)
+        dm_dt = -radiation_power / (CONSTANTS['c']**2)
+    
+        # Update mass
+        new_mass = state.mass + dm_dt * dt
+    
+        # Recalculate temperature, entropy, and radiation flux
+        new_temperature = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * new_mass)
+        new_entropy = 4 * np.pi * (2 * CONSTANTS['G'] * new_mass)**2 / (4 * CONSTANTS['l_p']**2)
+        new_radiation_flux = radiation_power
+    
+        # Create new state with updated parameters
+        new_state = QuantumState(
+            mass=new_mass,
+            temperature=new_temperature,
+            entropy=new_entropy,
+            radiation_flux=new_radiation_flux,
+            time=state.time + dt
+        )
+    
+        return new_state, dt
     
     def _step_rk4(self,
                   state: 'QuantumState',

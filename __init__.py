@@ -155,19 +155,21 @@ class QuantumGravity:
     def __init__(self, config_path: str = None):
         """Initialize quantum gravity framework."""
         # Load default configuration
-        #self.config = self._load_config(config_path)
         self.config = QuantumGravityConfig(config_path)        
 
-        # Initialize components
+        # Initialize grid first
         self.grid = AdaptiveGrid(
-            rho_0=1.0,
-            #eps_threshold=self.config['grid']['adaptive_threshold']
-            eps_threshold=self.config.config['grid']['adaptive_threshold']
+            eps_threshold=self.config.config['grid']['adaptive_threshold'],
+            l_p=1.0
         )
         
+        # Set some initial points before creating state
+        initial_points = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Minimal initial point
+        self.grid.set_points(initial_points)
+
+        # Now initialize state with populated grid
         self.state = QuantumState(
             grid=self.grid,
-            #eps_cut=self.config['numerics']['eps_cut']
             eps_cut=self.config.config['numerics']['eps_cut']
         )
 
@@ -306,7 +308,7 @@ class QuantumGravity:
 #         from .utils.io import QuantumGravityIO
         
 #         # Make components available
-#         self.grid = None
+#         self.grid 
 #         self.state = None
 #         self.evolution = None
 #         self.parallel = None

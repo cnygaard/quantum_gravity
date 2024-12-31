@@ -19,97 +19,108 @@ import numpy as np
 from typing import Dict, List, Tuple
 import logging
 from pathlib import Path
+import matplotlib
+matplotlib.use('TkAgg')  # Or 'Qt5Agg' if you prefer Qt
 import matplotlib.pyplot as plt
 from constants import CONSTANTS
+from core.state import QuantumState
+#from core.constants import CONSTANTS
+
+
 #from quantum_gravity import QuantumGravity, CONSTANTS
 
 class BlackHoleSimulation:
     """Quantum black hole simulation."""
-    
-    def __init__(self, 
-                 mass: float,
-                 config_path: str = None):
-        """Initialize black hole simulation.
-        
-        Args:
-            mass: Initial black hole mass in Planck units
-            config_path: Optional path to configuration file
-        """
+    def __init__(self, mass: float, config_path: str = None):
+        """Initialize black hole simulation."""
         # Initialize framework
         self.qg = QuantumGravity(config_path)
         
-        # Black hole parameters
+        # Black hole parameters  
         self.initial_mass = mass
         self.horizon_radius = 2 * CONSTANTS['G'] * mass
         
-        # Setup simulation
+        # Setup grid with proper points first
         self._setup_grid()
+        
+        # Now initialize quantum state
+        self.qg.state = QuantumState(
+            self.qg.grid,
+            eps_cut=self.qg.config.config['numerics']['eps_cut']
+        )
+        
+        # Setup remaining components
         self._setup_initial_state()
         self._setup_observables()
-        
+
         # Results storage
         self.time_points = []
         self.mass_history = []
-        self.entropy_history = []
+        self.entropy_history = []  
         self.temperature_history = []
         self.radiation_flux_history = []
-        
-    def _setup_grid(self) -> None:
+    def _setup_grid(self):
         """Setup adaptive grid focused on horizon."""
-        # Configure grid with higher resolution near horizon
         grid_config = self.qg.config.config['grid']
-        grid_config['refinement_factor'] = 4.0  # Increased resolution
         
-        # Create grid points with exponential spacing
+        # Reduced grid parameters for memory efficiency
+        n_radial = 30
+        n_theta = 8
+        n_phi = 16
+        
+        # Generate grid points
         r_min = CONSTANTS['l_p']
-        r_max = 100 * self.horizon_radius
+        r_max = 20 * self.horizon_radius
         
-        # Generate radial points
-        r_points = np.geomspace(r_min, r_max, grid_config['points_max'])
+        r_points = np.geomspace(r_min, r_max, n_radial, dtype=np.float32)
+        theta = np.linspace(0, np.pi, n_theta, dtype=np.float32)
+        phi = np.linspace(0, 2*np.pi, n_phi, dtype=np.float32)
         
-        # Convert to 3D points with spherical symmetry
-        theta = np.linspace(0, np.pi, 20)
-        phi = np.linspace(0, 2*np.pi, 40)
-        
-        points = []
+        # Calculate points efficiently
+        points_list = []
         for r in r_points:
             for t in theta:
+                sin_t = np.sin(t)
+                cos_t = np.cos(t)
                 for p in phi:
-                    x = r * np.sin(t) * np.cos(p)
-                    y = r * np.sin(t) * np.sin(p)
-                    z = r * np.cos(t)
-                    points.append([x, y, z])
-        
-        self.qg.grid.set_points(np.array(points))
+                    points_list.append([
+                        r * sin_t * np.cos(p),
+                        r * sin_t * np.sin(p),
+                        r * cos_t
+                    ])
+                    
+        points = np.array(points_list, dtype=np.float32)
+        self.qg.grid.set_points(points)
         
     def _setup_initial_state(self) -> None:
-        """Setup initial quantum state for black hole."""
-        # Create initial state representing classical black hole
+        """Setup initial state with time-dependent mass evolution."""
         state = self.qg.state
+        points = self.qg.grid.points
+        r = np.linalg.norm(points, axis=1)
         
-        # Set up metric coefficients
-        r = np.sqrt(np.sum(self.qg.grid.points**2, axis=1))
+        # Store initial mass for evolution
+        state.initial_mass = self.initial_mass
+        state.time = 0.0
         
-        for i, ri in enumerate(r):
-            # Schwarzschild metric components
-            if ri > self.horizon_radius:
-                g_tt = -(1 - 2*CONSTANTS['G']*self.initial_mass/ri)
-                g_rr = 1/(1 - 2*CONSTANTS['G']*self.initial_mass/ri)
-            else:
-                # Inside horizon regularity conditions
-                g_tt = -1e-10  # Small negative value
-                g_rr = 1e10    # Large positive value
-                
-            # Add quantum corrections
-            quantum_factor = 1 + (CONSTANTS['l_p']/ri)**2
-            g_tt *= quantum_factor
-            g_rr *= quantum_factor
-            
-            # Set metric components in state
-            state.set_metric_component((0, 0), i, g_tt)
-            state.set_metric_component((1, 1), i, g_rr)
-            state.set_metric_component((2, 2), i, ri**2)
-            state.set_metric_component((3, 3), i, ri**2 * np.sin(np.arccos(self.qg.grid.points[i,2]/ri))**2)
+        # Calculate evaporation timescale
+        evaporation_rate = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2)
+        state.evaporation_timescale = state.initial_mass**3 / evaporation_rate
+        
+        # Set metric with mass evolution
+        def mass_at_time(t):
+            return state.initial_mass * (1 - t/state.evaporation_timescale)**(1/3)
+        
+        # Update metric components with time dependence
+        g_tt = -(1 - 2*CONSTANTS['G']*mass_at_time(state.time)/r)
+        g_rr = 1/(1 - 2*CONSTANTS['G']*mass_at_time(state.time)/r)
+        
+        # Set components efficiently
+        state.set_metric_components_batch(
+            [(0,0)]*len(r) + [(1,1)]*len(r),
+            list(range(len(r)))*2,
+            np.concatenate([g_tt, g_rr])
+        )
+     
             
     def _setup_observables(self) -> None:
         """Setup observables for black hole measurements."""
@@ -133,48 +144,52 @@ class BlackHoleSimulation:
         self.flux_obs = self.qg.physics.HawkingFluxObservable(
             self.qg.grid
         )
+    def run_simulation(self, t_final: float) -> None:
+        """Run black hole evolution simulation."""
+        dt = 0.01  # Initial timestep
+        t = 0.0
         
-    def run_simulation(self, 
-                      t_final: float,
-                      dt_save: float = None) -> None:
-        """Run black hole evolution simulation.
-        
-        Args:
-            t_final: Final time in Planck units
-            dt_save: Time interval for saving results
-        """
-        if dt_save is None:
-            dt_save = t_final / 100
+        while t < t_final:
+            # Update quantum state
+            self.qg.state.mass -= (self.qg.state.mass**2 * dt) / (15360 * np.pi)  # Mass loss rate
             
-        def callback(state, t, step):
-            """Callback function for measurements."""
-            if step % int(dt_save / self.qg.evolution.dt) == 0:
-                self._record_measurements(t)
+            # Update derived quantities
+            horizon_radius = 2 * CONSTANTS['G'] * self.qg.state.mass
+            temperature = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * self.qg.state.mass)
+            entropy = np.pi * horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
+            flux = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2 * self.qg.state.mass**2)
+            
+            # Record measurements
+            self.time_points.append(t)
+            self.mass_history.append(self.qg.state.mass)
+            self.entropy_history.append(entropy)
+            self.temperature_history.append(temperature)
+            self.radiation_flux_history.append(flux)
+            
+            # Log progress
+            if int(t/t_final * 100) > int((t-dt)/t_final * 100):
+                logging.info(f"Simulation progress: {t/t_final*100:.1f}% (t={t:.2f}/{t_final})")
                 
-        # Run evolution
-        self.qg.run_simulation(t_final, callback)
-        
+            t += dt
     def _record_measurements(self, t: float) -> None:
         """Record measurements at current time."""
-        # Measure observables
         mass = self.mass_obs.measure(self.qg.state)
         area = self.area_obs.measure(self.qg.state)
         temp = self.temp_obs.measure(self.qg.state)
         flux = self.flux_obs.measure(self.qg.state)
-        
-        # Compute entropy
+    
         entropy = area.value / (4 * CONSTANTS['l_p']**2)
-        
-        # Store results
+    
+        # Store results with full precision
         self.time_points.append(t)
         self.mass_history.append(mass.value)
         self.entropy_history.append(entropy)
         self.temperature_history.append(temp.value)
         self.radiation_flux_history.append(flux.value)
-        
-        # Log current measurements
-        logging.info(f"Time t={t:.2f}: Mass={mass.value:.2f}, Temperature={temp.value:.2e}, " +
-                    f"Entropy={entropy:.2e}, Radiation Flux={flux.value:.2e}")
+    
+        # Log with increased precision
+        logging.info(f"Time t={t:.2f}: Mass={mass.value:.6e}, Temperature={temp.value:.6e}, " +
+                    f"Entropy={entropy:.6e}, Radiation Flux={flux.value:.6e}")
         
     def plot_results(self, save_path: str = None) -> None:
         """Plot simulation results."""

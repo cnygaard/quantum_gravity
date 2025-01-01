@@ -164,6 +164,15 @@ class BlackHoleSimulation:
                 'mass': self.qg.state.mass,
                 **metrics
             })
+            # Verify unified theory
+            trinity_metrics = self.verifier.verify_spacetime_trinity()
+
+            # Log verification results
+            if int(t/t_final * 100) > int((t-dt)/t_final * 100):
+                logging.info(f"Trinity verification at t={t:.2f}:")
+                for key, value in trinity_metrics.items():
+                    logging.info(f"  {key}: {value:.6e}")
+    
             # Update quantum state with mass loss
             self.qg.state.mass -= (self.qg.state.mass**2 * dt) / (15360 * np.pi)
             

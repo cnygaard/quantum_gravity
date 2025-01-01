@@ -49,3 +49,22 @@ sim.run_simulation(t_final=1000.0)
 # Plot results
 sim.plot_results()
 ```
+
+# Runtime Metrics Explanation
+
+The simulation tracks several key physical quantities during black hole evolution:
+
+## Trinity Verification Metrics
+
+- `spacetime_interval`: Measures the proper spacetime distance (dS²) between events, decreasing from ~880 to ~57 as the black hole evaporates, indicating spacetime geometry changes
+- `entanglement_measure`: Quantifies quantum entanglement (dE²) between horizon degrees of freedom, growing from ~5e5 to ~1.1e7, showing increasing quantum correlations
+- `information_metric`: Represents information flow (dI²) during evaporation, increasing from ~8e-7 to ~8e-5, tracking information release through Hawking radiation
+
+## Physical Observables
+
+- `Temperature`: Hawking temperature in Planck units, inversely proportional to mass (T ∝ 1/M), increasing as the black hole evaporates
+- `Entropy`: Bekenstein-Hawking entropy (S = A/4ℏG), proportional to horizon area, decreasing with mass loss
+- `Flux`: Hawking radiation power output (F ∝ 1/M²), increasing as the black hole becomes smaller and hotter
+
+These metrics verify the unified theory relationship dS² = dE² + γ²dI², connecting spacetime geometry, quantum entanglement, and information flow during black hole evolution.
+

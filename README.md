@@ -33,8 +33,26 @@ numerics/: Numerical methods and parallel computing
 examples/: Usage examples and demonstrations
 ```
 
+## Running Demo simulation
+
+You can run the demo simulation using the following command:
+
+The following code will create a simulation with a black hole of 1000 Planck masses and run it for 100 time units: 
+
+You can change the BlackHoleSimulation mass=1000 black hole mass and run_simulation t_final=100.0 number of simulations steps to change the simulation parameters.
+### Create simulation with 1000 Planck mass black hole
+sim = BlackHoleSimulation(mass=1000.0)
+
+### Run evolution
+sim.run_simulation(t_final=100.0)
+
+```bash
+ipython demo_blackhole.py
+```
+
+
 ## Usage
-### Running a simulation
+### Running a simulation step by step 
 ```python
 #from quantum_gravity import QuantumGravity
 from __init__ import QuantumGravity

@@ -95,13 +95,15 @@ podman build -t quantum-gravity -f Containerfile .
 
 To run the container with Docker:
 ```bash
-docker run --name quantum-sim quantum-gravity
+docker run -v $(pwd)/results:/app/results --name quantum-sim quantum-gravity
 ```
 
 To run the container with Podman:
 ```bash
-podman run --replace --name quantum-sim quantum-gravity
+podman run -v $(pwd)/results:/app/results --replace --name quantum-sim quantum-gravity
 ```
+
+This bind mounts the local results directory to the container's /app/results directory, making simulation outputs directly accessible on the host system. The visualization plots and measurement data will be available immediately after the simulation completes.
 
 View simulation output logs:
 ```bash

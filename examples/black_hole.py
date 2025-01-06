@@ -19,12 +19,15 @@ import numpy as np
 from typing import Dict, List, Tuple
 import logging
 from pathlib import Path
+from datetime import datetime
 import matplotlib
-matplotlib.use('TkAgg')  # Or 'Qt5Agg' if you prefer Qt
+matplotlib.use('Agg')  # Or 'Qt5Agg' if you prefer Qt
 import matplotlib.pyplot as plt
 from constants import CONSTANTS
 from core.state import QuantumState
 from physics.verification import UnifiedTheoryVerification
+from utils.io import QuantumGravityIO, MeasurementResult
+
 
 #from core.constants import CONSTANTS
 
@@ -276,14 +279,21 @@ def main():
     
     sim.plot_results(str(output_dir / "evolution.png"))
     
-    # Save data
-    sim.qg.io.save_measurements({
-        'time': sim.time_points,
-        'mass': sim.mass_history,
-        'entropy': sim.entropy_history,
-        'temperature': sim.temperature_history,
-        'radiation_flux': sim.radiation_flux_history
-    }, str(output_dir / "measurements.json"))
+    # Create measurement results using the MeasurementResult dataclass
+    measurements = [
+        MeasurementResult(
+            value=values,
+            uncertainty=None,
+            metadata={'timestamp': datetime.now().isoformat()}
+        )
+        for values in zip(sim.time_points, sim.mass_history, 
+                         sim.entropy_history, sim.temperature_history,
+                         sim.radiation_flux_history)
+    ]
+    
+    # Use the IO utility class to save measurements
+    io = QuantumGravityIO(str(output_dir))
+    io.save_measurements(measurements, "measurements")
     
 if __name__ == "__main__":
     main()

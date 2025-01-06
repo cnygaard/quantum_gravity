@@ -15,7 +15,7 @@ A high-performance numerical framework for quantum gravity simulations, focusing
 
 ## Linux Install Debian/Ubuntu tools
 ```bash
-apt install python3-pip build-essential openmpi-devel
+apt install python3-pip pyton3-tk build-essential openmpi-devel
 ```
 
 ```bash
@@ -50,18 +50,57 @@ sim.run_simulation(t_final=100.0)
 ipython demo_blackhole.py
 ```
 
+## Simulation Outputs
+
+The black hole simulation generates the following output files in the `results/black_hole/` directory:
+
+### Visualization
+- `evolution.png`: Plot grid showing:
+  - Black hole mass evolution over time
+  - Entropy changes
+  - Temperature progression
+  - Hawking radiation flux
+
+### Data Files
+- `measurements.json`: Contains time series data of:
+  - Mass history
+  - Temperature measurements
+  - Entropy calculations
+  - Radiation flux values
+  - Measurement timestamps
+
+### Logging
+- Detailed progress updates
+- Trinity verification metrics
+- Physical parameter tracking
+- Conservation law validation
+
+The output files provide both visual and numerical data for analysis of the black hole evolution, quantum effects, and thermodynamic properties.
+
+
 ## Running in Container
 
 You can run the black hole simulation in a container:
 
-To build the container:
+To build the container with Docker:
 ```bash
 docker build -t quantum-gravity -f Containerfile .
 ```
 
-To run the container:
+To build the container with Podman:
+```bash
+podman build -t quantum-gravity -f Containerfile .
+```
+
+
+To run the container with Docker:
 ```bash
 docker run --name quantum-sim quantum-gravity
+```
+
+To run the container with Podman:
+```bash
+podman run --replace --name quantum-sim quantum-gravity
 ```
 
 View simulation output logs:

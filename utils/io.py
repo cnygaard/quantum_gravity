@@ -320,3 +320,10 @@ class QuantumGravityIO:
         elif isinstance(obj, dict) and 'real' in obj and 'imag' in obj:
             return complex(obj['real'], obj['imag'])
         return obj
+
+@dataclass
+class MeasurementResult:
+    """Data structure for measurement results."""
+    value: Any
+    uncertainty: Optional[float]
+    metadata: Dict[str, Any]

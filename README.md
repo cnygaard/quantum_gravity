@@ -50,6 +50,25 @@ sim.run_simulation(t_final=100.0)
 ipython demo_blackhole.py
 ```
 
+## Running in Container
+
+You can run the black hole simulation in a container:
+
+To build the container:
+```bash
+docker build -t quantum-gravity -f Containerfile .
+```
+
+To run the container:
+```bash
+docker run --name quantum-sim quantum-gravity
+```
+
+View simulation output logs:
+```bash
+docker logs -f quantum-sim
+```
+
 
 ## Usage
 ### Running a simulation step by step 
@@ -86,3 +105,20 @@ The simulation tracks several key physical quantities during black hole evolutio
 
 These metrics verify the unified theory relationship dS² = dE² + γ²dI², connecting spacetime geometry, quantum entanglement, and information flow during black hole evolution.
 
+## Testing
+
+The framework includes comprehensive unit tests covering black hole simulation functionality:
+
+### Test Coverage
+
+- Simulation initialization and parameters
+- Mass evolution and conservation
+- Temperature and entropy tracking 
+- Radiation flux measurements
+- Trinity verification metrics
+
+### Running Tests
+
+Run the full test suite:
+```bash
+python test_black_hole_simulation.py

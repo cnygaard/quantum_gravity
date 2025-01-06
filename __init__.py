@@ -24,7 +24,7 @@ from physics.observables import (
 from core.grid import AdaptiveGrid
 from core.state import QuantumState
 from core.operators import QuantumOperator
-from core.evolution import TimeEvolution
+#from core.evolution import TimeEvolution
 
 from numerics.errors import ErrorTracker
 from physics.conservation import ConservationLawTracker
@@ -397,5 +397,4 @@ __all__ = [
     'AdaptiveGrid',
     'QuantumState',
     'QuantumOperator',
-    'TimeEvolution'
 ]

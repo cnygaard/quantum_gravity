@@ -181,12 +181,15 @@ class UnifiedTheoryVerification:
         # Get metric and its derivatives
         g = state._metric_array
         r = np.linalg.norm(self.sim.qg.grid.points, axis=1)
+        
+        # Add Planck length regularization
+        r = np.maximum(r, CONSTANTS['l_p'])
         n_points = len(r)
         
         # Initialize 4D tensor with proper shape
         G = np.zeros((4, 4, n_points))
         
-        # Compute Ricci tensor components for Schwarzschild metric
+        # Compute Ricci tensor components with regularized radius
         R_tt = CONSTANTS['G'] * state.mass / (r**3)
         R_rr = -CONSTANTS['G'] * state.mass / (r**3)
         
@@ -194,7 +197,6 @@ class UnifiedTheoryVerification:
         G[0,0,:] = R_tt - g[0,0,:] * R_tt/2
         G[1,1,:] = R_rr - g[1,1,:] * R_rr/2
         
-        # Average over points for final result
         return np.mean(G, axis=2)
 
     def _compute_quantum_tensor(self, state) -> np.ndarray:

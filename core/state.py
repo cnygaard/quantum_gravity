@@ -116,3 +116,11 @@ class QuantumState:
         for i, coeff in self.coefficients.items():
             state_vector[i] = coeff
         return np.real(state_vector.conjugate() @ operator @ state_vector)
+
+    def get_metric_component(self, indices: Tuple[int, int], point_idx: int) -> float:
+        """Get metric component value at specified indices and point."""
+        return self._metric_array[indices[0], indices[1], point_idx]
+
+    def set_metric_component(self, indices: Tuple[int, int], point_idx: int, value: float) -> None:
+        """Set metric component value at specified indices and point."""
+        self._metric_array[indices[0], indices[1], point_idx] = value

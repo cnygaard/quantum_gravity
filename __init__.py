@@ -17,13 +17,18 @@ from physics.observables import (
     AreaObservable,
     ADMMassObservable,
     BlackHoleTemperatureObservable,
-    HawkingFluxObservable
+    HawkingFluxObservable,
+    ScaleFactorObservable,
+    EnergyDensityObservable,
+    QuantumCorrectionsObservable,
+    PerturbationSpectrumObservable
 )
 
 # Make key components available at package level
 from core.grid import AdaptiveGrid
 from core.state import QuantumState
 from core.operators import QuantumOperator
+from core.evolution import TimeEvolution
 #from core.evolution import TimeEvolution
 
 from numerics.errors import ErrorTracker
@@ -234,6 +239,10 @@ class QuantumGravity:
         physics.ADMMassObservable = ADMMassObservable
         physics.BlackHoleTemperatureObservable = BlackHoleTemperatureObservable
         physics.HawkingFluxObservable = HawkingFluxObservable
+        physics.ScaleFactorObservable = ScaleFactorObservable
+        physics.EnergyDensityObservable = EnergyDensityObservable
+        physics.QuantumCorrectionsObservable = QuantumCorrectionsObservable
+        physics.PerturbationSpectrumObservable = PerturbationSpectrumObservable
 
         return physics
 
@@ -397,4 +406,5 @@ __all__ = [
     'AdaptiveGrid',
     'QuantumState',
     'QuantumOperator',
+    'TimeEvolution'
 ]

@@ -10,12 +10,18 @@ scenarios, including universe expansion, inflation, and structure
 formation with quantum corrections.
 """
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
 import numpy as np
 from typing import Dict, List, Tuple
 import logging
 from pathlib import Path
 import matplotlib.pyplot as plt
-from quantum_gravity import QuantumGravity, CONSTANTS
+# from quantum_gravity import QuantumGravity, CONSTANTS
+from __init__ import QuantumGravity
+from constants import CONSTANTS
+from core.evolution import TimeEvolution
 
 class CosmologySimulation:
     """Quantum cosmology simulation."""
@@ -71,27 +77,30 @@ class CosmologySimulation:
         
         self.qg.grid.set_points(points)
         self.box_size = L
-        
+
     def _setup_initial_state(self) -> None:
         """Setup initial quantum state for cosmology."""
         state = self.qg.state
         
         # Set up FLRW metric with quantum corrections
-        for i, point in enumerate(self.qg.grid.points):
-            # Classical FLRW metric components
-            a = self.initial_scale
+        n_points = len(self.qg.grid.points)
+        
+        # Initialize metric array with correct dimensions (4x4xn_points)
+        state._metric_array = np.zeros((4, 4, n_points))
+        
+        # Set time component directly
+        state._metric_array[0, 0, :] = -1  # Proper time components
+        
+        # Set spatial components with scale factor
+        a = self.initial_scale
+        quantum_factor = 1 + (CONSTANTS['l_p']/a)**2
+        
+        for i in range(1, 4):
+            state._metric_array[i, i, :] = a**2 * quantum_factor
             
-            # Spatial metric components with quantum corrections
-            quantum_factor = 1 + (CONSTANTS['l_p']/a)**2
-            
-            # Set metric components
-            state.set_metric_component((0, 0), i, -1)  # Proper time
-            for j in range(3):
-                state.set_metric_component((j+1, j+1), i, a**2 * quantum_factor)
-                
         # Add initial perturbations
         self._add_quantum_fluctuations(state)
-        
+
     def _add_quantum_fluctuations(self, state: 'QuantumState') -> None:
         """Add quantum fluctuations to initial state."""
         # Generate spectrum of fluctuations
@@ -198,16 +207,16 @@ class CosmologySimulation:
         ax3.set_ylabel('Quantum Correction')
         ax3.set_title('Quantum Corrections Magnitude')
         ax3.grid(True)
-        
         # Latest perturbation spectrum
         if self.perturbation_spectrum_history:
             k, Pk = self.perturbation_spectrum_history[-1]
-            ax4.loglog(k, Pk)
+            # Average over spatial components to get scalar power spectrum
+            Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
+            ax4.loglog(k, Pk_scalar)
             ax4.set_xlabel('Wavenumber k [1/l_P]')
             ax4.set_ylabel('Power Spectrum P(k)')
             ax4.set_title('Matter Power Spectrum')
             ax4.grid(True)
-        
         plt.tight_layout()
         
         if save_path:

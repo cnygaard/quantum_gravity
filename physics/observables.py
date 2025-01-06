@@ -399,3 +399,130 @@ class HawkingFluxObservable(Observable):
         # return csr_matrix((data, (rows, cols)),
         # shape=(n_points, n_points))
         # return MeasurementResult(flux, delta_flux)
+
+
+class ScaleFactorObservable(Observable):
+    """Observable for measuring cosmic scale factor."""
+    
+    def _construct_operator(self) -> csr_matrix:
+        """Construct scale factor operator."""
+        n_points = len(self.grid.points)
+        rows, cols, data = [], [], []
+        
+        for i in range(n_points):
+            # Scale factor from spatial metric components
+            rows.append(i)
+            cols.append(i)
+            data.append(1.0)
+            
+        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
+        
+    def measure(self, state: 'QuantumState') -> MeasurementResult:
+        """Measure cosmic scale factor."""
+        # Extract scale factor from spatial metric components
+        a = np.mean(np.sqrt(np.abs(state._metric_array[1:, 1:, :])))
+        
+        # Quantum corrections
+        quantum_correction = CONSTANTS['l_p']**2 / a
+        
+        return MeasurementResult(
+            value=a,
+            uncertainty=quantum_correction,
+            metadata={'time': state.time}
+        )
+
+class EnergyDensityObservable(Observable):
+    """Observable for measuring cosmic energy density."""
+    
+    def _construct_operator(self) -> csr_matrix:
+        """Construct energy density operator."""
+        n_points = len(self.grid.points)
+        rows, cols, data = [], [], []
+        
+        for i in range(n_points):
+            rows.append(i)
+            cols.append(i)
+            data.append(1.0)
+            
+        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
+        
+    def measure(self, state: 'QuantumState') -> MeasurementResult:
+        """Measure energy density with quantum corrections."""
+        # Extract metric components
+        g = state._metric_array
+        
+        # Calculate classical energy density
+        rho = (3 * CONSTANTS['G'] * state.mass) / (8 * np.pi * g[0,0,0]**2)
+        
+        # Add quantum corrections
+        quantum_correction = CONSTANTS['hbar'] / (g[0,0,0]**3)
+        
+        return MeasurementResult(
+            value=rho,
+            uncertainty=quantum_correction,
+            metadata={'time': state.time}
+        )
+
+class QuantumCorrectionsObservable(Observable):
+    """Observable for measuring quantum corrections to classical geometry."""
+    
+    def _construct_operator(self) -> csr_matrix:
+        """Construct quantum corrections operator."""
+        n_points = len(self.grid.points)
+        rows, cols, data = [], [], []
+        
+        for i in range(n_points):
+            rows.append(i)
+            cols.append(i)
+            data.append(1.0)
+            
+        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
+        
+    def measure(self, state: 'QuantumState') -> MeasurementResult:
+        """Measure quantum corrections to geometry."""
+        # Calculate local quantum terms
+        Q_local = CONSTANTS['hbar']**2 * np.sum(
+            state._metric_array[1:, 1:, :]**2
+        )
+        
+        # Add non-local corrections
+        quantum_uncertainty = CONSTANTS['l_p'] / np.sqrt(len(self.grid.points))
+        
+        return MeasurementResult(
+            value=Q_local,
+            uncertainty=quantum_uncertainty,
+            metadata={'time': state.time}
+        )
+
+class PerturbationSpectrumObservable(Observable):
+    """Observable for measuring cosmological perturbation spectrum."""
+    
+    def _construct_operator(self) -> csr_matrix:
+        """Construct perturbation spectrum operator."""
+        n_points = len(self.grid.points)
+        rows, cols, data = [], [], []
+        
+        for i in range(n_points):
+            rows.append(i)
+            cols.append(i)
+            data.append(1.0)
+            
+        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
+        
+    def measure(self, state: 'QuantumState') -> MeasurementResult:
+        """Measure perturbation power spectrum."""
+        # Get metric perturbations
+        delta_g = state._metric_array[1:, 1:, :] - np.mean(state._metric_array[1:, 1:, :])
+        
+        # Compute power spectrum via FFT
+        k_values = 2 * np.pi * np.fft.fftfreq(len(self.grid.points))
+        power = np.abs(np.fft.fftn(delta_g))**2
+        
+        # Include quantum effects
+        quantum_correction = CONSTANTS['hbar'] * k_values**2
+        
+        return MeasurementResult(
+            value=(k_values, power),
+            uncertainty=quantum_correction,
+            metadata={'time': state.time}
+        )

@@ -38,6 +38,8 @@ class BlackHoleSimulation:
     """Quantum black hole simulation."""
     def __init__(self, mass: float, config_path: str = None):
         """Initialize black hole simulation."""
+        if mass <= 0:
+            raise ValueError("Black hole mass must be positive")
         # Initialize framework
         self.qg = QuantumGravity(config_path)
         
@@ -68,62 +70,46 @@ class BlackHoleSimulation:
         # Add verification
         self.verifier = UnifiedTheoryVerification(self)
         self.verification_results = []
-
-    def _setup_grid(self):
-        """Setup adaptive grid focused on horizon."""
+    def _setup_grid(self) -> None:
+        """Setup grid for cosmological simulation."""
+        # Configure grid for large-scale structure
         grid_config = self.qg.config.config['grid']
         
-        # Reduced grid parameters for memory efficiency
-        n_radial = 30
-        n_theta = 8
-        n_phi = 16
+        # Create spatial grid with proper dimensionality
+        L = 100.0  # Box size in Planck lengths
+        N = grid_config['points_max']
         
-        # Generate grid points
-        r_min = CONSTANTS['l_p']
-        r_max = 20 * self.horizon_radius
+        # Generate 3D grid points
+        x = np.linspace(-L/2, L/2, int(np.cbrt(N)))
+        points = np.array([[x_i, 0.0, 0.0] for x_i in x], dtype=np.float32)
         
-        r_points = np.geomspace(r_min, r_max, n_radial, dtype=np.float32)
-        theta = np.linspace(0, np.pi, n_theta, dtype=np.float32)
-        phi = np.linspace(0, 2*np.pi, n_phi, dtype=np.float32)
-        
-        # Calculate points efficiently
-        points_list = []
-        for r in r_points:
-            for t in theta:
-                sin_t = np.sin(t)
-                cos_t = np.cos(t)
-                for p in phi:
-                    points_list.append([
-                        r * sin_t * np.cos(p),
-                        r * sin_t * np.sin(p),
-                        r * cos_t
-                    ])
-                    
-        points = np.array(points_list, dtype=np.float32)
         self.qg.grid.set_points(points)
-        
+        self.box_size = L
     def _setup_initial_state(self) -> None:
         """Setup initial state with time-dependent mass evolution."""
         state = self.qg.state
         points = self.qg.grid.points
         r = np.linalg.norm(points, axis=1)
-        
+    
+        # Add small offset to prevent division by zero
+        r = np.maximum(r, CONSTANTS['l_p'])  # Use Planck length as minimum
+    
         # Store initial mass for evolution
         state.initial_mass = self.initial_mass
         state.time = 0.0
-        
+    
         # Calculate evaporation timescale
         evaporation_rate = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2)
         state.evaporation_timescale = state.initial_mass**3 / evaporation_rate
-        
-        # Set metric with mass evolution
+    
+        # Calculate mass evolution
         def mass_at_time(t):
             return state.initial_mass * (1 - t/state.evaporation_timescale)**(1/3)
-        
-        # Update metric components with time dependence
+    
+        # Update metric components with regularized radial coordinate
         g_tt = -(1 - 2*CONSTANTS['G']*mass_at_time(state.time)/r)
         g_rr = 1/(1 - 2*CONSTANTS['G']*mass_at_time(state.time)/r)
-        
+    
         # Set components efficiently
         state.set_metric_components_batch(
             [(0,0)]*len(r) + [(1,1)]*len(r),

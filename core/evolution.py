@@ -238,7 +238,19 @@ class TimeEvolution:
                 )
         
         return new_state
-    
+
+    def _evolve_state(self, dt: float):
+        """Single evolution step."""
+        # Scale factor evolution
+        self.qg.state.scale_factor *= (1 + self.hubble_parameter * dt)
+        
+        # Energy density should dilute with expansion
+        # ρ ∝ a^(-3(1+w)) where w is equation of state
+        w = self.qg.state.equation_of_state
+        dilution_factor = (1 + self.hubble_parameter * dt)**(-3*(1+w))
+        self.qg.state.energy_density *= dilution_factor
+
+
     def _estimate_splitting_error(self,
                                 old_state: 'QuantumState',
                                 new_state: 'QuantumState') -> float:

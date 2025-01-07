@@ -33,7 +33,7 @@ from core.evolution import TimeEvolution
 
 from numerics.errors import ErrorTracker
 from physics.conservation import ConservationLawTracker
-
+from utils.io import QuantumGravityIO
 
 # Package metadata
 __version__ = '0.1.0'
@@ -103,6 +103,7 @@ class QuantumGravityConfig:
                 'checkpoint_interval': 100
             }
         }
+        self.io = QuantumGravityIO(self.config['io']['output_dir'])
 
         if config_path:
             self.load_config(config_path)
@@ -164,7 +165,14 @@ class QuantumGravity:
         """Initialize quantum gravity framework."""
         # Load default configuration
         self.config = QuantumGravityConfig(config_path)
-
+        
+        # Override output directory to use results/
+        self.config.config['io']['output_dir'] = ''
+        
+        # Initialize IO handler with correct path
+        from utils.io import QuantumGravityIO
+        self.io = QuantumGravityIO(self.config.config['io']['output_dir'])
+        
         # Initialize grid first
         self.grid = AdaptiveGrid(
             eps_threshold=self.config.config['grid']['adaptive_threshold'],
@@ -406,5 +414,6 @@ __all__ = [
     'AdaptiveGrid',
     'QuantumState',
     'QuantumOperator',
-    'TimeEvolution'
+    'TimeEvolution',
+    'QuantumGravityIO'
 ]

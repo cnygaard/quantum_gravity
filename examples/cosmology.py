@@ -22,6 +22,8 @@ import matplotlib.pyplot as plt
 from __init__ import QuantumGravity
 from constants import CONSTANTS
 from core.evolution import TimeEvolution
+from utils.io import MeasurementResult
+
 
 class CosmologySimulation:
     """Quantum cosmology simulation."""
@@ -227,12 +229,13 @@ class CosmologySimulation:
         """Compute derived cosmological quantities."""
         # Hubble parameter
         H = np.gradient(self.scale_factor_history, self.time_points)
-        H /= self.scale_factor_history
-        
-        # Deceleration parameter
+        H = H / np.maximum(self.scale_factor_history, CONSTANTS['l_p'])
+    
+        # Deceleration parameter with regularization
         a = np.array(self.scale_factor_history)
-        q = -a * np.gradient(np.gradient(a, self.time_points), self.time_points) / \
-            np.gradient(a, self.time_points)**2
+        a_dot = np.gradient(a, self.time_points)
+        a_dot = np.maximum(a_dot, CONSTANTS['l_p'])
+        q = -a * np.gradient(a_dot, self.time_points) / a_dot**2
             
         return {
             'hubble_parameter': H,
@@ -243,6 +246,10 @@ def main():
     """Run cosmology simulation example."""
     # Setup logging
     logging.basicConfig(level=logging.INFO)
+    
+    # Create output directories with correct path
+    output_dir = Path("results/cosmology")
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Initial cosmological parameters
     initial_scale = 1000.0  # in Planck lengths
@@ -256,23 +263,47 @@ def main():
     sim.run_simulation(t_final)
     
     # Plot and save results
-    output_dir = Path("results/cosmology")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
     sim.plot_results(str(output_dir / "evolution.png"))
     
     # Compute and save derived quantities
     derived = sim.compute_derived_quantities()
     
-    # Save all data
-    sim.qg.io.save_measurements({
-        'time': sim.time_points,
-        'scale_factor': sim.scale_factor_history,
-        'energy_density': sim.energy_density_history,
-        'quantum_corrections': sim.quantum_corrections_history,
-        'hubble_parameter': derived['hubble_parameter'].tolist(),
-        'deceleration_parameter': derived['deceleration_parameter'].tolist()
-    }, str(output_dir / "measurements.json"))
+    # Create proper MeasurementResult objects
+    measurements = [
+        MeasurementResult(
+            value=sim.time_points,
+            uncertainty=None,
+            metadata={'type': 'time'}
+        ),
+        MeasurementResult(
+            value=sim.scale_factor_history,
+            uncertainty=None,
+            metadata={'type': 'scale_factor'}
+        ),
+        MeasurementResult(
+            value=sim.energy_density_history,
+            uncertainty=None,
+            metadata={'type': 'energy_density'}
+        ),
+        MeasurementResult(
+            value=sim.quantum_corrections_history,
+            uncertainty=None,
+            metadata={'type': 'quantum_corrections'}
+        ),
+        MeasurementResult(
+            value=derived['hubble_parameter'].tolist(),
+            uncertainty=None,
+            metadata={'type': 'hubble_parameter'}
+        ),
+        MeasurementResult(
+            value=derived['deceleration_parameter'].tolist(),
+            uncertainty=None,
+            metadata={'type': 'deceleration_parameter'}
+        )
+    ]
+
+    sim.qg.io.save_measurements(measurements, str(output_dir / "measurements"))
     
 if __name__ == "__main__":
     main()
+

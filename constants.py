@@ -9,5 +9,6 @@ CONSTANTS = {
     'l_p': 1.0,                     # Planck length
     't_p': 1.0,                     # Planck time
     'm_p': 1.0,                     # Planck mass
-    'lambda': 1e-52                 # Cosmological constant
+    'lambda': 1e-52,                 # Cosmological constant
+    'rho_planck': 1.0               # Planck density (c⁵/ℏG²)
 }

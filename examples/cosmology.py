@@ -172,6 +172,18 @@ class CosmologySimulation:
         
         return bounce_condition
 
+    def _handle_bounce(self, state):
+        """Handle quantum bounce transition."""
+        # Calculate critical density
+        rho_crit = 0.41 * CONSTANTS['rho_planck']
+        
+        # Implement bounce dynamics when ρ > ρ_crit
+        if state.energy_density >= rho_crit:
+            # Reverse contraction to expansion
+            self.hubble_parameter = abs(self.hubble_parameter)
+            # Add quantum corrections
+            quantum_factor = 1 - state.energy_density/rho_crit
+            state.scale_factor *= quantum_factor
     def run_simulation(self, t_final: float, dt_save: float = None) -> None:
         """Run cosmological evolution with quantum bounce detection."""
         dt = 0.01
@@ -188,16 +200,14 @@ class CosmologySimulation:
         
             # Check for bounce conditions
             if self._check_quantum_bounce(self.qg.state):
-                # Reverse Hubble parameter at bounce
-                self.hubble_parameter = -self.hubble_parameter
+                self._handle_bounce(self.qg.state)
                 logging.info(f"Quantum bounce detected at t={t:.2f}, a={self.qg.state.scale_factor:.6e}")
         
             # Evolution with quantum corrections
             old_scale = self.qg.state.scale_factor
             self.qg.state.scale_factor *= (1 + self.hubble_parameter * dt)
             self.qg.state.energy_density *= (1 - 3 * self.hubble_parameter * 
-                                       (1 + self.qg.state.equation_of_state) * dt)
-        
+                                        (1 + self.qg.state.equation_of_state) * dt)
             # Verify update occurred
             if abs(old_scale - self.qg.state.scale_factor) < 1e-10:
                 logging.warning(f"Scale factor not updating at t={t}")
@@ -309,7 +319,7 @@ def main():
     sim = CosmologySimulation(initial_scale, hubble_parameter)
     
     # Run until significant expansion
-    t_final = 10.0  # in Planck times
+    t_final = 10000.0  # in Planck times
     sim.run_simulation(t_final)
     
     # Plot and save results

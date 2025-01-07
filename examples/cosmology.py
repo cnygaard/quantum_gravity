@@ -153,19 +153,39 @@ class CosmologySimulation:
     def run_simulation(self,
                       t_final: float,
                       dt_save: float = None) -> None:
-        """Run cosmological evolution simulation.
-        
-        Args:
-            t_final: Final time in Planck units
-            dt_save: Time interval for saving results
-        """
+        """Run cosmological evolution simulation."""
         if dt_save is None:
             dt_save = t_final / 100
             
         def callback(state, t, step):
-            """Callback function for measurements."""
+            """Callback function for measurements and progress logging."""
             if step % int(dt_save / self.qg.evolution.dt) == 0:
+                # Record measurements
                 self._record_measurements(t)
+                
+                # Calculate and log progress percentage
+                progress = (t/t_final) * 100
+                
+                # Get current values for key parameters
+                scale = self.scale_obs.measure(self.qg.state)
+                density = self.density_obs.measure(self.qg.state)
+                quantum = self.quantum_obs.measure(self.qg.state)
+                spectrum = self.spectrum_obs.measure(self.qg.state)
+                
+                # Calculate power spectrum statistics
+                k, Pk = spectrum.value
+                Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
+                peak_k = k[np.argmax(Pk_scalar)]
+                peak_power = np.max(Pk_scalar)
+                
+                # Log detailed progress with all parameters
+                logging.info(
+                    f"Time t={t:.2f}: Scale Factor={scale.value:.6e}, "
+                    f"Energy Density={density.value:.6e}, "
+                    f"Quantum Corrections={quantum.value:.6e}\n"
+                    f"Power Spectrum - Peak k={peak_k:.6e}, Peak P(k)={peak_power:.6e}"
+                )
+                logging.info(f"Simulation progress: {progress:.1f}% (t={t:.2f}/{t_final})")
                 
         # Run evolution
         self.qg.run_simulation(t_final, callback)

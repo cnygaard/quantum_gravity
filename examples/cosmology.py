@@ -147,9 +147,34 @@ class CosmologySimulation:
         self.spectrum_obs = self.qg.physics.PerturbationSpectrumObservable(
             self.qg.grid
         )
+    def _check_quantum_bounce(self, state: 'QuantumState') -> bool:
+        """Detect quantum bounce conditions."""
+        # Planck density threshold with proper scaling
+        rho_planck = CONSTANTS['c']**5 / (CONSTANTS['hbar'] * CONSTANTS['G']**2)
+    
+        # Enhanced quantum correction terms
+        quantum_factor = (CONSTANTS['l_p'] / state.scale_factor)**2
+        bounce_threshold = rho_planck * quantum_factor
+    
+        # Add hysteresis to prevent rapid oscillations
+        if not hasattr(self, '_last_bounce_time'):
+            self._last_bounce_time = -float('inf')
+        
+        # Minimum time between bounces (in Planck times)
+        bounce_cooldown = 1.0
+    
+        # Check bounce conditions with proper timing
+        bounce_condition = (state.energy_density >= bounce_threshold and 
+                       state.time - self._last_bounce_time > bounce_cooldown)
+    
+        if bounce_condition:
+            self._last_bounce_time = state.time
+        
+        return bounce_condition
+
     def run_simulation(self, t_final: float, dt_save: float = None) -> None:
-        """Run cosmological evolution simulation."""
-        dt = 0.01  # Initial timestep
+        """Run cosmological evolution with quantum bounce detection."""
+        dt = 0.01
         t = 0.0
     
         # Add initialization logging
@@ -161,11 +186,17 @@ class CosmologySimulation:
             if step_count % 100 == 0:
                 logging.info(f"Step {step_count}: t={t:.2f}, a={self.qg.state.scale_factor:.6e}")
         
-            # Update scale factor and energy density
+            # Check for bounce conditions
+            if self._check_quantum_bounce(self.qg.state):
+                # Reverse Hubble parameter at bounce
+                self.hubble_parameter = -self.hubble_parameter
+                logging.info(f"Quantum bounce detected at t={t:.2f}, a={self.qg.state.scale_factor:.6e}")
+        
+            # Evolution with quantum corrections
             old_scale = self.qg.state.scale_factor
             self.qg.state.scale_factor *= (1 + self.hubble_parameter * dt)
             self.qg.state.energy_density *= (1 - 3 * self.hubble_parameter * 
-                                     (1 + self.qg.state.equation_of_state) * dt)
+                                       (1 + self.qg.state.equation_of_state) * dt)
         
             # Verify update occurred
             if abs(old_scale - self.qg.state.scale_factor) < 1e-10:
@@ -184,10 +215,10 @@ class CosmologySimulation:
             # Record measurements periodically
             if dt_save is None or t % dt_save < dt:
                 self._record_measurements(t)
-            
+        
             t += dt
             step_count += 1
-        
+    
         logging.info(f"Simulation completed: {step_count} steps")
     def _record_measurements(self, t: float) -> None:
         """Record measurements at current time."""

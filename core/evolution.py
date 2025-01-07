@@ -141,27 +141,19 @@ class TimeEvolution:
         dt_next = self._adjust_timestep(dt, error)
         
         return new_state, dt_next
-    
-    def _compute_derivative(self,
-                          state: 'QuantumState') -> 'QuantumState':
+    def _compute_derivative(self, state: 'QuantumState') -> 'QuantumState':
         """Compute time derivative of state."""
-        derivative = QuantumState(self.grid, state.eps_cut)
+        # Friedmann equations
+        H = self.hubble_parameter
+        a = state.scale_factor
         
-        for idx, coeff in state.coefficients.items():
-            # Apply Hamiltonian
-            evolved = state.operators['hamiltonian'].apply(
-                state.basis_states[idx]
-            )
-            
-            # Store result if above cutoff
-            if abs(evolved['coefficient']) > state.eps_cut:
-                derivative.add_basis_state(
-                    idx,
-                    -1j * evolved['coefficient'] / ℏ,
-                    evolved['state']
-                )
+        # Scale factor evolution
+        da_dt = H * a
         
-        return derivative
+        # Energy density evolution from continuity equation
+        drho_dt = -3 * H * (state.energy_density + state.pressure)
+        
+        return da_dt, drho_dt
     
     def _estimate_error(self,
                        old_state: 'QuantumState',

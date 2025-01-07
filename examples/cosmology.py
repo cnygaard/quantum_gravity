@@ -79,30 +79,28 @@ class CosmologySimulation:
         
         self.qg.grid.set_points(points)
         self.box_size = L
-
     def _setup_initial_state(self) -> None:
         """Setup initial quantum state for cosmology."""
         state = self.qg.state
         
+        # Initialize cosmological parameters
+        state.scale_factor = self.initial_scale
+        state.energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
+        
         # Set up FLRW metric with quantum corrections
         n_points = len(self.qg.grid.points)
-        
-        # Initialize metric array with correct dimensions (4x4xn_points)
         state._metric_array = np.zeros((4, 4, n_points))
         
-        # Set time component directly
+        # Set metric components
         state._metric_array[0, 0, :] = -1  # Proper time components
-        
-        # Set spatial components with scale factor
-        a = self.initial_scale
-        quantum_factor = 1 + (CONSTANTS['l_p']/a)**2
+        quantum_factor = 1 + (CONSTANTS['l_p']/state.scale_factor)**2
         
         for i in range(1, 4):
-            state._metric_array[i, i, :] = a**2 * quantum_factor
+            state._metric_array[i, i, :] = state.scale_factor**2 * quantum_factor
             
         # Add initial perturbations
         self._add_quantum_fluctuations(state)
-
+        
     def _add_quantum_fluctuations(self, state: 'QuantumState') -> None:
         """Add quantum fluctuations to initial state."""
         # Generate spectrum of fluctuations
@@ -149,47 +147,48 @@ class CosmologySimulation:
         self.spectrum_obs = self.qg.physics.PerturbationSpectrumObservable(
             self.qg.grid
         )
-        
-    def run_simulation(self,
-                      t_final: float,
-                      dt_save: float = None) -> None:
+    def run_simulation(self, t_final: float, dt_save: float = None) -> None:
         """Run cosmological evolution simulation."""
-        if dt_save is None:
-            dt_save = t_final / 100
-            
-        def callback(state, t, step):
-            """Callback function for measurements and progress logging."""
-            if step % int(dt_save / self.qg.evolution.dt) == 0:
-                # Record measurements
-                self._record_measurements(t)
-                
-                # Calculate and log progress percentage
-                progress = (t/t_final) * 100
-                
-                # Get current values for key parameters
-                scale = self.scale_obs.measure(self.qg.state)
-                density = self.density_obs.measure(self.qg.state)
-                quantum = self.quantum_obs.measure(self.qg.state)
-                spectrum = self.spectrum_obs.measure(self.qg.state)
-                
-                # Calculate power spectrum statistics
-                k, Pk = spectrum.value
-                Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
-                peak_k = k[np.argmax(Pk_scalar)]
-                peak_power = np.max(Pk_scalar)
-                
-                # Log detailed progress with all parameters
-                logging.info(
-                    f"Time t={t:.2f}: Scale Factor={scale.value:.6e}, "
-                    f"Energy Density={density.value:.6e}, "
-                    f"Quantum Corrections={quantum.value:.6e}\n"
-                    f"Power Spectrum - Peak k={peak_k:.6e}, Peak P(k)={peak_power:.6e}"
-                )
-                logging.info(f"Simulation progress: {progress:.1f}% (t={t:.2f}/{t_final})")
-                
-        # Run evolution
-        self.qg.run_simulation(t_final, callback)
+        dt = 0.01  # Initial timestep
+        t = 0.0
+    
+        # Add initialization logging
+        logging.info(f"Starting simulation with initial scale factor: {self.qg.state.scale_factor}")
+    
+        step_count = 0
+        while t < t_final:
+            # Log progress every 100 steps
+            if step_count % 100 == 0:
+                logging.info(f"Step {step_count}: t={t:.2f}, a={self.qg.state.scale_factor:.6e}")
         
+            # Update scale factor and energy density
+            old_scale = self.qg.state.scale_factor
+            self.qg.state.scale_factor *= (1 + self.hubble_parameter * dt)
+            self.qg.state.energy_density *= (1 - 3 * self.hubble_parameter * 
+                                     (1 + self.qg.state.equation_of_state) * dt)
+        
+            # Verify update occurred
+            if abs(old_scale - self.qg.state.scale_factor) < 1e-10:
+                logging.warning(f"Scale factor not updating at t={t}")
+        
+            # Calculate quantum corrections
+            quantum_factor = 1 + (CONSTANTS['l_p']/self.qg.state.scale_factor)**2
+        
+            # Update metric with quantum corrections
+            for i in range(len(self.qg.grid.points)):
+                for mu in range(1, 4):
+                    current = self.qg.state.get_metric_component((mu, mu), i)
+                    self.qg.state.set_metric_component((mu, mu), i, 
+                        current * quantum_factor)
+        
+            # Record measurements periodically
+            if dt_save is None or t % dt_save < dt:
+                self._record_measurements(t)
+            
+            t += dt
+            step_count += 1
+        
+        logging.info(f"Simulation completed: {step_count} steps")
     def _record_measurements(self, t: float) -> None:
         """Record measurements at current time."""
         # Measure observables
@@ -279,7 +278,7 @@ def main():
     sim = CosmologySimulation(initial_scale, hubble_parameter)
     
     # Run until significant expansion
-    t_final = 1000.0  # in Planck times
+    t_final = 10.0  # in Planck times
     sim.run_simulation(t_final)
     
     # Plot and save results

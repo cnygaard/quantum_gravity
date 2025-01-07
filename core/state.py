@@ -8,28 +8,34 @@ from constants import CONSTANTS
 class QuantumState:
     """Efficient representation of quantum gravitational states."""
     def __init__(self, grid: AdaptiveGrid, eps_cut: float = 1e-10):
+        # Core quantum state properties
         self.grid = grid
         self.eps_cut = eps_cut
         self.coefficients = {}
         self.basis_states = {}
         self._metric_array = np.zeros((4, 4, len(self.grid.points)))
         self.time = 0.0
+
+        # Black hole properties
         self.mass = 1000.0  # Initial mass in Planck units
         self.initial_mass = self.mass
-        
+        self.evaporation_rate = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / (15360 * np.pi * CONSTANTS['G']**2)
+        self.evaporation_timescale = self.mass**3 / self.evaporation_rate
+
         # Quantum information metrics
         self.entanglement = 0.0
         self.information = 0.0
-        
+
         # Thermodynamic properties
         self._entropy = None
         self._temperature = None
         self._last_update = 0.0
-        
-        # Initialize evaporation timescale
-        self.evaporation_rate = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / (15360 * np.pi * CONSTANTS['G']**2)
-        self.evaporation_timescale = self.mass**3 / self.evaporation_rate
 
+        # Cosmological properties
+        self.scale_factor = 1.0
+        self.energy_density = 0.0
+        self.equation_of_state = -1.0
+        self.hubble_parameter = 0.0
     @property
     def entropy(self) -> float:
         """Get black hole entropy using Bekenstein-Hawking formula."""

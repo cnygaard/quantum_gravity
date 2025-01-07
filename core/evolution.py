@@ -3,6 +3,7 @@ import numpy as np
 from typing import Dict, List, Tuple, Optional, Callable
 from scipy.sparse import csr_matrix, linalg as sparse_linalg
 from dataclasses import dataclass
+from constants import CONSTANTS
 
 @dataclass
 class EvolutionConfig:
@@ -143,18 +144,35 @@ class TimeEvolution:
         return new_state, dt_next
     def _compute_derivative(self, state: 'QuantumState') -> 'QuantumState':
         """Compute time derivative of state."""
-        # Friedmann equations
-        H = self.hubble_parameter
+        # Get current values
+        H = state.hubble_parameter  # Use state's hubble parameter
         a = state.scale_factor
-        
-        # Scale factor evolution
-        da_dt = H * a
-        
-        # Energy density evolution from continuity equation
-        drho_dt = -3 * H * (state.energy_density + state.pressure)
-        
-        return da_dt, drho_dt
+        rho = state.energy_density
     
+        # Scale factor evolution with quantum corrections
+        quantum_factor = 1 + (CONSTANTS['l_p']/a)**2
+        da_dt = H * a * quantum_factor
+    
+        # Modified energy density evolution including quantum effects
+        w = state.equation_of_state  # Get from state
+        quantum_pressure = CONSTANTS['hbar'] * H**2 / (2 * a**3)
+        drho_dt = -3 * H * (rho + w*rho + quantum_pressure)
+    
+        # Update metric components with proper time evolution
+        for i in range(len(self.grid.points)):
+            for mu in range(1, 4):
+                current = state.get_metric_component((mu, mu), i)
+                # Include both classical and quantum terms
+                new_value = current * (1 + da_dt * self.dt) + \
+                       quantum_factor * CONSTANTS['l_p']**2 / a**3
+                state.set_metric_component((mu, mu), i, new_value)
+    
+        # Compute power spectrum evolution
+        k_modes = 2 * np.pi * np.fft.fftfreq(len(self.grid.points))
+        delta_k = np.fft.fftn(state._metric_array[1:, 1:, :] - 
+                         np.mean(state._metric_array[1:, 1:, :]))
+    
+        return da_dt, drho_dt, (k_modes, np.abs(delta_k)**2)
     def _estimate_error(self,
                        old_state: 'QuantumState',
                        new_state: 'QuantumState') -> float:

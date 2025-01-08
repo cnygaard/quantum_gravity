@@ -23,7 +23,8 @@ from __init__ import QuantumGravity
 from constants import CONSTANTS
 from core.evolution import TimeEvolution
 from utils.io import MeasurementResult
-
+from numerics.errors import ErrorTracker
+from physics.conservation import ConservationLawTracker
 
 class CosmologySimulation:
     """Quantum cosmology simulation."""
@@ -46,7 +47,12 @@ class CosmologySimulation:
         self.initial_scale = initial_scale
         self.hubble_parameter = hubble_parameter
         self.lambda_cosm = CONSTANTS['lambda']  # Cosmological constant
-        
+
+        # Add trackers
+        base_tolerances = {'truncation': 1e-10, 'constraint': 1e-8, 'conservation': 1e-8}
+        self.error_tracker = ErrorTracker(self.qg.grid, base_tolerances)
+        self.conservation_tracker = ConservationLawTracker(self.qg.grid)
+
         # Setup simulation
         self._setup_grid()
         self._setup_initial_state()
@@ -171,56 +177,64 @@ class CosmologySimulation:
             self._last_bounce_time = state.time
         
         return bounce_condition
-
     def _handle_bounce(self, state):
-        """Handle quantum bounce transition."""
-        # Calculate critical density
+        """Handle quantum bounce transition with proper dynamics."""
         rho_crit = 0.41 * CONSTANTS['rho_planck']
         
-        # Implement bounce dynamics when ρ > ρ_crit
         if state.energy_density >= rho_crit:
             # Reverse contraction to expansion
             self.hubble_parameter = abs(self.hubble_parameter)
-            # Add quantum corrections
+            # Update state parameters
             quantum_factor = 1 - state.energy_density/rho_crit
             state.scale_factor *= quantum_factor
-
+            # Update hubble parameter in state
+            state.hubble_parameter = self.hubble_parameter
     def run_simulation(self, t_final: float, dt_save: float = None) -> None:
-        """Run cosmological evolution with quantum bounce detection."""
         dt = 0.01
         t = 0.0
-    
-        # Add initialization logging
+
         logging.info(f"Starting simulation with initial scale factor: {self.qg.state.scale_factor}")
-    
+
         step_count = 0
         while t < t_final:
             if step_count % 100 == 0:
                 scale = self.scale_obs.measure(self.qg.state)
                 density = self.density_obs.measure(self.qg.state)
                 quantum = self.quantum_obs.measure(self.qg.state)
-                #measurements = self._get_measurements()
+                spectrum = self.spectrum_obs.measure(self.qg.state)
+        
+                # Calculate power spectrum metrics
+                k, Pk = spectrum.value
+                Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
+
                 logging.info(
                     f"Time t={t:.2f}, a={self.qg.state.scale_factor:.6e}: "
                     f"Energy Density={density.value:.6e}, "
                     f"Quantum Corrections={quantum.value:.6e}"
+                    f"\nScale Factor = {scale.value:.6e}"
+                    f"\nPower Spectrum k_max = {np.max(k):.6e}"
+                    f"\nPower Spectrum P(k) mean = {np.mean(Pk_scalar):.6e}"      
                 )
+
+                # Create config dict with required parameters
+                evolution_config = self.qg.config.config.copy()
+                evolution_config['dt'] = dt
+                evolution_config['error_tolerance'] = 1e-6
+
                 logging.info(f"Simulation progress: {t/t_final*100:.1f}% (t={t:.2f}/{t_final})")
+
+            # Store quantum state on grid
+            self.qg.grid.quantum_state = self.qg.state
+
+            # Initialize evolution with correct number of arguments
+            evolution = TimeEvolution(self.qg.grid, evolution_config,
+                                        self.error_tracker, self.conservation_tracker)
+            evolution._evolve_state(dt)
 
             # Check for bounce conditions
             if self._check_quantum_bounce(self.qg.state):
                 self._handle_bounce(self.qg.state)
                 logging.info(f"Quantum bounce detected at t={t:.2f}, a={self.qg.state.scale_factor:.6e}")
-
-            # Evolution with quantum corrections
-            old_scale = self.qg.state.scale_factor
-            self.qg.state.scale_factor *= (1 + self.hubble_parameter * dt)
-            self.qg.state.energy_density *= (1 - 3 * self.hubble_parameter * 
-                                       (1 + self.qg.state.equation_of_state) * dt)
-
-            # Verify update occurred
-            if abs(old_scale - self.qg.state.scale_factor) < 1e-10:
-                logging.warning(f"Scale factor not updating at t={t}")
 
             # Calculate quantum corrections
             quantum_factor = 1 + (CONSTANTS['l_p']/self.qg.state.scale_factor)**2
@@ -235,11 +249,12 @@ class CosmologySimulation:
             # Record measurements periodically
             if dt_save is None or t % dt_save < dt:
                 self._record_measurements(t)
-            
+
             t += dt
             step_count += 1
-    
-        logging.info(f"Simulation completed: {step_count} steps")
+
+        logging.info(f"Simulation completed: {step_count} steps")    
+
     def _record_measurements(self, t: float) -> None:
         """Record measurements at current time."""
         # Measure observables

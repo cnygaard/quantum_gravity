@@ -21,6 +21,8 @@ class TimeEvolution:
         self.error_tolerance = config['error_tolerance']
         self.error_tracker = error_tracker
         self.conservation_tracker = conservation_tracker
+        self.state = grid.quantum_state
+        self.hubble_parameter = self.state.hubble_parameter  # Get from state
 
     def step(self, state):
         """Evolve quantum state forward by one timestep."""
@@ -238,19 +240,28 @@ class TimeEvolution:
                 )
         
         return new_state
-
     def _evolve_state(self, dt: float):
-        """Single evolution step."""
-        # Scale factor evolution
-        self.qg.state.scale_factor *= (1 + self.hubble_parameter * dt)
+        """Single evolution step with full cosmological dynamics."""
+        # Store initial values
+        a_old = self.state.scale_factor
+        H = self.state.hubble_parameter
         
-        # Energy density should dilute with expansion
-        # ρ ∝ a^(-3(1+w)) where w is equation of state
-        w = self.qg.state.equation_of_state
-        dilution_factor = (1 + self.hubble_parameter * dt)**(-3*(1+w))
-        self.qg.state.energy_density *= dilution_factor
-
-
+        # Scale factor evolution
+        self.state.scale_factor *= (1 + H * dt)
+        
+        # Energy density evolution with proper dilution
+        w = self.state.equation_of_state
+        scale_ratio = self.state.scale_factor / a_old
+        
+        # Include both classical dilution and quantum effects
+        classical_dilution = scale_ratio**(-3*(1+w))
+        quantum_factor = 1 + (CONSTANTS['l_p']/self.state.scale_factor)**2
+        
+        self.state.energy_density *= classical_dilution * quantum_factor
+        
+        # Update Hubble parameter based on Friedmann equation
+        G = CONSTANTS['G']
+        self.state.hubble_parameter = np.sqrt(8*np.pi*G*self.state.energy_density/3)
     def _estimate_splitting_error(self,
                                 old_state: 'QuantumState',
                                 new_state: 'QuantumState') -> float:

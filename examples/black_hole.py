@@ -140,109 +140,129 @@ class BlackHoleSimulation:
         self.flux_obs = self.qg.physics.HawkingFluxObservable(
             self.qg.grid
         )
+
     def run_simulation(self, t_final: float) -> None:
-        """Run black hole evolution simulation."""
+        """Run black hole evolution simulation with geometric-entanglement verification."""
         dt = 0.01  # Initial timestep
         t = 0.0
+        
+        # Track equation verification
+        error_history = []
+        lhs_history = []
+        rhs_history = []
         
         while t < t_final:
             # Add verification step
             metrics = self.verifier.verify_unified_relations()
+            
+            # Store verification results
             self.verification_results.append({
                 'time': t,
                 'mass': self.qg.state.mass,
                 **metrics
             })
-            # Verify unified theory
-            trinity_metrics = self.verifier.verify_spacetime_trinity()
-
-            # Log verification results
-            if int(t/t_final * 100) > int((t-dt)/t_final * 100):
-                logging.info(f"Trinity verification at t={t:.2f}:")
-                for key, value in trinity_metrics.items():
-                    logging.info(f"  {key}: {value:.6e}")
-    
+            
+            # Extract equation verification results
+            lhs = metrics['geometric_entanglement_lhs']
+            rhs = metrics['geometric_entanglement_rhs']
+            error = metrics['geometric_entanglement_error']
+            
+            # Store for history
+            error_history.append(error)
+            lhs_history.append(lhs)
+            rhs_history.append(rhs)
+            
             # Update quantum state with mass loss
             self.qg.state.mass -= (self.qg.state.mass**2 * dt) / (15360 * np.pi)
             
             # Calculate derived quantities
             horizon_radius = 2 * CONSTANTS['G'] * self.qg.state.mass
-            temperature = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * self.qg.state.mass)
             entropy = np.pi * horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
-            flux = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2 * self.qg.state.mass**2)
             
-            # Record measurements (preserving history)
+            # Record measurements
             self.time_points.append(t)
             self.mass_history.append(self.qg.state.mass)
             self.entropy_history.append(entropy)
-            self.temperature_history.append(temperature)
-            self.radiation_flux_history.append(flux)
             
-            # Enhanced logging with both progress and parameters
-            if int(t/t_final * 100) > int((t-dt)/t_final * 100):
-                logging.info(f"Time t={t:.2f}: Mass={self.qg.state.mass:.6e}, "
-                            f"Temperature={temperature:.6e}, Entropy={entropy:.6e}, "
-                            f"Radiation Flux={flux:.6e}")
-                logging.info(f"Simulation progress: {t/t_final*100:.1f}% (t={t:.2f}/{t_final})")
+            # Log equation verification at intervals
+            if int(t/t_final * 10) > int((t-dt)/t_final * 10):
+                logging.info(f"\nGeometric-Entanglement Equation at t={t:.2f}:")
+                logging.info(f"LHS (dS²)     = {lhs:.6e}")
+                logging.info(f"RHS (integral) = {rhs:.6e}")
+                logging.info(f"Relative Error = {error:.6e}")
+                logging.info(f"Mass = {self.qg.state.mass:.3e}, Entropy = {entropy:.3e}")
                 
+                # Calculate running statistics
+                mean_error = np.mean(error_history[-100:] if len(error_history) > 100 else error_history)
+                max_error = np.max(error_history[-100:] if len(error_history) > 100 else error_history)
+                logging.info(f"Recent Mean Error = {mean_error:.6e}, Max Error = {max_error:.6e}\n")
+            
             t += dt
-    def _record_measurements(self, t: float) -> None:
-        """Record measurements at current time."""
-        mass = self.mass_obs.measure(self.qg.state)
-        area = self.area_obs.measure(self.qg.state)
-        temp = self.temp_obs.measure(self.qg.state)
-        flux = self.flux_obs.measure(self.qg.state)
+        
+        # Final summary focused on equation verification
+        logging.info("\nFinal Equation Verification Summary:")
+        logging.info("dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩")
+        logging.info(f"Final LHS = {lhs_history[-1]:.6e}")
+        logging.info(f"Final RHS = {rhs_history[-1]:.6e}")
+        logging.info(f"Final Error = {error_history[-1]:.6e}")
+        logging.info(f"Overall Mean Error = {np.mean(error_history):.6e}")
+        logging.info(f"Overall Max Error = {np.max(error_history):.6e}")
+        
+        # Store error history for later analysis
+        self.equation_verification = {
+            'errors': error_history,
+            'lhs_values': lhs_history,
+            'rhs_values': rhs_history,
+            'times': self.time_points
+        }
+
+def plot_results(self, save_path: str = None) -> None:
+    """Plot simulation results including geometric-entanglement verification."""
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
     
-        entropy = area.value / (4 * CONSTANTS['l_p']**2)
+    # Mass evolution
+    ax1.plot(self.time_points, self.mass_history)
+    ax1.set_xlabel('Time [t_P]')
+    ax1.set_ylabel('Mass [m_P]')
+    ax1.set_title('Black Hole Mass Evolution')
+    ax1.grid(True)
     
-        # Store results with full precision
-        self.time_points.append(t)
-        self.mass_history.append(mass.value)
-        self.entropy_history.append(entropy)
-        self.temperature_history.append(temp.value)
-        self.radiation_flux_history.append(flux.value)
+    # Entropy evolution
+    ax2.plot(self.time_points, self.entropy_history)
+    ax2.set_xlabel('Time [t_P]')
+    ax2.set_ylabel('Entropy [k_B]')
+    ax2.set_title('Black Hole Entropy Evolution')
+    ax2.grid(True)
     
-        # Log with increased precision
-        logging.info(f"Time t={t:.2f}: Mass={mass.value:.6e}, Temperature={temp.value:.6e}, " +
-                    f"Entropy={entropy:.6e}, Radiation Flux={flux.value:.6e}")
-        
-    def plot_results(self, save_path: str = None) -> None:
-        """Plot simulation results."""
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
-        
-        # Mass evolution
-        ax1.plot(self.time_points, self.mass_history)
-        ax1.set_xlabel('Time [t_P]')
-        ax1.set_ylabel('Mass [m_P]')
-        ax1.set_title('Black Hole Mass Evolution')
-        ax1.grid(True)
-        
-        # Entropy evolution
-        ax2.plot(self.time_points, self.entropy_history)
-        ax2.set_xlabel('Time [t_P]')
-        ax2.set_ylabel('Entropy [k_B]')
-        ax2.set_title('Black Hole Entropy Evolution')
-        ax2.grid(True)
-        
-        # Temperature evolution
-        ax3.plot(self.time_points, self.temperature_history)
+    # Geometric-Entanglement Equation Verification
+    if hasattr(self, 'equation_verification'):
+        ax3.plot(self.equation_verification['times'], 
+                np.abs(self.equation_verification['lhs_values']), 
+                label='|LHS|')
+        ax3.plot(self.equation_verification['times'], 
+                np.abs(self.equation_verification['rhs_values']), 
+                label='|RHS|')
         ax3.set_xlabel('Time [t_P]')
-        ax3.set_ylabel('Temperature [T_P]')
-        ax3.set_title('Black Hole Temperature Evolution')
+        ax3.set_ylabel('|dS²| and |Integral|')
+        ax3.set_title('Geometric-Entanglement Terms')
+        ax3.set_yscale('log')
+        ax3.legend()
         ax3.grid(True)
         
-        # Radiation flux
-        ax4.plot(self.time_points, self.radiation_flux_history)
+        # Error evolution
+        ax4.plot(self.equation_verification['times'], 
+                self.equation_verification['errors'])
         ax4.set_xlabel('Time [t_P]')
-        ax4.set_ylabel('Radiation Flux [P_P]')
-        ax4.set_title('Hawking Radiation Flux')
+        ax4.set_ylabel('Relative Error')
+        ax4.set_title('Geometric-Entanglement Error')
+        ax4.set_yscale('log')
         ax4.grid(True)
-        
-        plt.tight_layout()
-        
-        if save_path:
-            plt.savefig(save_path)
-        plt.show()
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path)
+    plt.close()            
         
 def main():
     """Run black hole simulation example."""

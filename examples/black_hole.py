@@ -98,13 +98,14 @@ class BlackHoleSimulation:
         plt.close()
 
 
-    def __init__(self, mass: float, config_path: str = None):
+    def __init__(self, mass: float, quantum_gravity: 'QuantumGravity' = None, config_path: str = None):
         """Initialize black hole simulation."""
         if mass <= 0:
             raise ValueError("Black hole mass must be positive")
         # Initialize framework
-        self.qg = QuantumGravity(config_path)
-        
+        #self.qg = QuantumGravity(config_path)
+        self.qg = quantum_gravity if quantum_gravity else QuantumGravity(config_path) 
+
         # Black hole parameters  
         self.initial_mass = mass
         self.horizon_radius = 2 * CONSTANTS['G'] * mass
@@ -320,43 +321,54 @@ class BlackHoleSimulation:
             'rhs_values': rhs_history,
             'times': self.time_points
         }
-        
+
 def main():
     """Run black hole simulation example."""
-    # Setup logging
     logging.basicConfig(level=logging.INFO)
     
-    # Initial black hole parameters
-    initial_mass = 1000.0  # in Planck masses
+    # Initialize framework once
+    config_path = None  # Use default config
+    qg = QuantumGravity()
+    #qg = QuantumGravity()
+    test_masses = [100, 500, 1000, 2000, 5000]
     
-    # Create and run simulation
-    sim = BlackHoleSimulation(initial_mass)
-    
-    # Run until significant mass loss
-    t_final = 1000.0  # in Planck times
-    sim.run_simulation(t_final)
-    
-    # Plot and save results
-    output_dir = Path("results/black_hole")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    sim.plot_results(str(output_dir / "evolution.png"))
-    
-    # Create measurement results using the MeasurementResult dataclass
-    measurements = [
-        MeasurementResult(
-            value=values,
-            uncertainty=None,
-            metadata={'timestamp': datetime.now().isoformat()}
-        )
-        for values in zip(sim.time_points, sim.mass_history, 
-                         sim.entropy_history, sim.temperature_history,
-                         sim.radiation_flux_history)
-    ]
-    
-    # Use the IO utility class to save measurements
-    io = QuantumGravityIO(str(output_dir))
-    io.save_measurements(measurements, "measurements")
+    for initial_mass in test_masses:
+        logging.info(f"\nRunning simulation for mass {initial_mass:.1f} Planck masses")
+        
+        # Pass existing QG instance to simulation
+        sim = BlackHoleSimulation(initial_mass, quantum_gravity=qg)
+        t_final = 1000.0
+        sim.run_simulation(t_final)
+        
+        # Rest of the code remains the same
+        
+        output_dir = Path("results/black_hole")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        sim.plot_results(str(output_dir / f"evolution_M{initial_mass:.0f}.png"))
+        
+        # Create measurement results for this mass
+        measurements = [
+            MeasurementResult(
+                value=values,
+                uncertainty=None,
+                metadata={
+                    'timestamp': datetime.now().isoformat(),
+                    'initial_mass': initial_mass
+                }
+            )
+            for values in zip(sim.time_points, sim.mass_history,
+                            sim.entropy_history, sim.temperature_history,
+                            sim.radiation_flux_history)
+        ]
+        
+        # Save measurements for this mass configuration
+        io = QuantumGravityIO(str(output_dir))
+        io.save_measurements(measurements, f"measurements_M{initial_mass:.0f}")
+
+if __name__ == "__main__":
+    main()
+
     
 if __name__ == "__main__":
     main()

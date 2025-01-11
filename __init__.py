@@ -157,12 +157,28 @@ class QuantumGravityConfig:
         console.setLevel(logging.INFO)
         logging.getLogger('').addHandler(console)
 
+def configure_logging():
+    """Configure unified logging for quantum gravity framework."""
+    # Clear any existing handlers
+    root = logging.getLogger()
+    if root.handlers:
+        for handler in root.handlers:
+            root.removeHandler(handler)
+            
+    # Set up single logging configuration
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+
 
 class QuantumGravity:
     """Main interface for quantum gravity framework."""
 
     def __init__(self, config_path: str = None):
         """Initialize quantum gravity framework."""
+        #configure_logging()  # Set up logging first
         # Load default configuration
         self.config = QuantumGravityConfig(config_path)
         

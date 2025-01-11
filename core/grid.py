@@ -1,5 +1,5 @@
 # core/grid.py
-import tracemalloc
+#import tracemalloc
 import linecache
 from typing import List, Tuple, Optional
 import numpy as np
@@ -23,8 +23,8 @@ class AdaptiveGrid:
                  eps_threshold: float,
                  l_p: float = 1.0):  # Planck length
         """Initialize adaptive grid."""
-        tracemalloc.start()
-        self.snapshot1 = tracemalloc.take_snapshot()
+        #tracemalloc.start()
+        #self.snapshot1 = tracemalloc.take_snapshot()
         
         self.eps_threshold = eps_threshold
         self.l_p = l_p
@@ -37,9 +37,9 @@ class AdaptiveGrid:
         if len(points) > self.max_points:
             raise ValueError(f"Too many points ({len(points)}). Maximum allowed: {self.max_points}")
             
-        snapshot2 = tracemalloc.take_snapshot()
-        stats = snapshot2.compare_to(self.snapshot1, 'lineno')
-        display_top(stats)
+        #snapshot2 = tracemalloc.take_snapshot()
+        #stats = snapshot2.compare_to(self.snapshot1, 'lineno')
+        #display_top(stats)
 
         # Store points efficiently
         self.points = points.astype(np.float32)  # Use float32 instead of float64
@@ -47,9 +47,9 @@ class AdaptiveGrid:
         # Build tree with memory-efficient parameters
         tree = cKDTree(self.points, leafsize=32, compact_nodes=True)
         
-        snapshot3 = tracemalloc.take_snapshot()
-        stats = snapshot3.compare_to(snapshot2, 'lineno')
-        display_top(stats)
+        #snapshot3 = tracemalloc.take_snapshot()
+        #stats = snapshot3.compare_to(snapshot2, 'lineno')
+        #display_top(stats)
         
         # Compute neighbors in chunks to reduce memory usage
         chunk_size = 10000
@@ -66,9 +66,9 @@ class AdaptiveGrid:
             import gc
             gc.collect()
         
-        snapshot4 = tracemalloc.take_snapshot()
-        stats = snapshot4.compare_to(snapshot3, 'lineno')
-        display_top(stats)
+        #snapshot4 = tracemalloc.take_snapshot()
+        #stats = snapshot4.compare_to(snapshot3, 'lineno')
+        #display_top(stats)
 
     def compute_density(self, x: np.ndarray, R: float) -> float:
         """Compute grid density based on local curvature."""

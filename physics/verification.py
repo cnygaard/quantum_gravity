@@ -5,6 +5,7 @@ import numpy as np
 from scipy.special import lambertw
 from constants import CONSTANTS
 import logging
+from __init__ import configure_logging
 
 if TYPE_CHECKING:
     from examples.black_hole import BlackHoleSimulation

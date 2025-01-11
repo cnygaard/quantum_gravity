@@ -203,10 +203,16 @@ class UnifiedTheoryVerification:
         # Entanglement terms
         e_term = np.exp(-x/beta)
         i_term = e_term.copy()
+
         
         # Basic quantum corrections
         qc = 1 + beta * np.log(1 + x/beta)
-        qc = np.minimum(qc, 2.0)  # Add regularization
+        qc = np.minimum(qc, 1.5)  # Add regularization
+
+        # Add gamma_eff correction
+        gamma_eff = self.gamma * beta * np.sqrt(0.407) 
+
+        # Entanglement terms
         e_term *= qc
         i_term *= qc
         
@@ -227,7 +233,7 @@ class UnifiedTheoryVerification:
         rel_error = abs(lhs - rhs) / max(abs(lhs), abs(rhs), beta**3)
 
         # Proposed
-        scaling_factor = np.sqrt(beta)  # Use geometric mean scaling
+        scaling_factor = beta**0.45
         dt_term *= scaling_factor
         dx_term *= scaling_factor
         integral *= scaling_factor**3

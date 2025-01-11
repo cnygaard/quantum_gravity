@@ -215,6 +215,12 @@ class BlackHoleSimulation:
 
     def run_simulation(self, t_final: float) -> None:
         """Run black hole evolution simulation with geometric-entanglement verification."""
+        # Add initial parameter logging
+        logging.info(f"\nStarting Black Hole Simulation:")
+        logging.info(f"Initial Mass: {self.initial_mass:.2e} Planck masses")
+        logging.info(f"Simulation Time: {t_final:.2e} Planck times")
+        logging.info(f"Initial Horizon Radius: {self.horizon_radius:.2e} Planck lengths\n")
+    
         dt = 0.01  # Initial timestep
         t = 0.0
         

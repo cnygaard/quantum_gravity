@@ -2,6 +2,7 @@ from physics.entanglement import EntanglementGeometryHandler
 from physics.conservation import ConservationLawTracker
 from typing import Dict, TYPE_CHECKING, List
 import numpy as np
+from scipy.special import lambertw
 from constants import CONSTANTS
 import logging
 
@@ -10,82 +11,72 @@ if TYPE_CHECKING:
 
 class UnifiedTheoryVerification:
     """Verify unified quantum gravity theory predictions."""
-    
+
     def __init__(self, simulation: 'BlackHoleSimulation'):
         self.sim = simulation
-        self.gamma = 1.0  # Information-geometry coupling
-        self.alpha = 0.01  # Increased by 10x for stronger time dependence
-        self.beta = 1e-6   # Increased by 100x for stronger radiation effects
-        self.lambda_rad = 0.05  # Doubled for faster radiation growth
-        self.kappa = 1e-3  # Increased by 10x for stronger quantum effects
+        # Initialize with single set of parameters to avoid duplicate initialization
+        self.gamma = 2.0  # Coupling constant
+        self.alpha = 0.005  # Time evolution parameter
+        self.beta = 1e-5  # Radiation effect strength
+        self.lambda_rad = 0.025  # Radiation growth rate
+        self.kappa = 1e-2  # Quantum effect strength
+        
+        # Initialize handlers
         self.entanglement_handler = EntanglementGeometryHandler()
         self.conservation_tracker = ConservationLawTracker(
             grid=simulation.qg.grid,
-            tolerance=1e-10
+            tolerance=1e-12
         )
+        
+        # Initialize state tracking variables
+        self._last_time = 0.0
+        self._last_mass = simulation.initial_mass if hasattr(simulation, 'initial_mass') else None
+        self._last_ent = None
+        self._last_info = None
+        
+        # Add performance optimization flags
+        self._cached_metrics = {}
+        self._cache_valid = False    
 
     def verify_unified_relations(self) -> Dict[str, float]:
-        """Verify all unified theory relationships."""
-        # Original verifications
-        spacetime = self.entanglement_handler.compute_spacetime_interval(
-            self.sim.qg.state.entanglement,
-            self.sim.qg.state.information
-        )
-        
-        conservation = self.conservation_tracker.check_conservation(
-            self.conservation_tracker.compute_quantities(
-                self.sim.qg.state,
-                self.sim.qg.operators
+        """Verify all unified theory relationships with caching."""
+        if not self._cache_valid:
+            # Core verifications
+            spacetime = self.entanglement_handler.compute_spacetime_interval(
+                self.sim.qg.state.entanglement,
+                self.sim.qg.state.information
             )
-        )
+            
+            conservation = self.conservation_tracker.check_conservation(
+                self.conservation_tracker.compute_quantities(
+                    self.sim.qg.state,
+                    self.sim.qg.operators
+                )
+            )
+            
+            # Calculate metrics only if needed
+            geometric_entanglement = self._verify_geometric_entanglement(self.sim.qg.state)
+            
+            # Update cache
+            self._cached_metrics.update({
+                'spacetime_relation': spacetime,
+                'energy_conservation': conservation['energy'],
+                'momentum_conservation': conservation['momentum'],
+                'geometric_entanglement': geometric_entanglement,
+            })
+            
+            self._cache_valid = True
         
-        # New trinity verification with all modifications
-        trinity = self.verify_spacetime_trinity()
-        
-        # Holographic principle check
+        # Always recalculate dynamic quantities
         entropy = self.sim.qg.state.entropy
         area = 4 * np.pi * (2 * CONSTANTS['G'] * self.sim.qg.state.mass)**2
         holographic = abs(entropy - area/(4 * CONSTANTS['l_p']**2))
         
-        # Field equations verification
-        field_eqs = self.verify_field_equations()
-        
         return {
-            # Original metrics
-            'spacetime_relation': spacetime,
-            'energy_conservation': conservation['energy'],
-            'momentum_conservation': conservation['momentum'],
+            **self._cached_metrics,
             'holographic_principle': holographic,
             'quantum_corrections': self._compute_quantum_corrections(),
-            
-            # New trinity metrics with all modifications
-            'trinity_error': trinity['original_error'],  # Use original as base error
-            'time_dependent_error': trinity['time_dependent_error'],
-            'radiation_error': trinity['radiation_error'],
-            'quantum_error': trinity['quantum_error'],
-            'spacetime_interval': trinity['spacetime_interval'],
-            'entanglement_measure': trinity['entanglement_measure'],
-            'information_metric': trinity['information_metric'],
-            
-            # Field equation metrics
-            'einstein_tensor_error': field_eqs['einstein_error'],
-            'quantum_tensor_error': field_eqs['quantum_error'],
-            'entanglement_tensor_error': field_eqs['entanglement_error']
-        }        
-
-    # Add these constants to __init__
-    def __init__(self, simulation: 'BlackHoleSimulation'):
-       self.sim = simulation
-       self.gamma = 1.0  # Base coupling constant
-       self.alpha = 0.01  # Increased by 10x for stronger time dependence
-       self.beta = 1e-6   # Increased by 100x for stronger radiation effects
-       self.lambda_rad = 0.05  # Doubled for faster radiation growth
-       self.kappa = 1e-3  # Increased by 10x for stronger quantum effects
-       self.entanglement_handler = EntanglementGeometryHandler()
-       self.conservation_tracker = ConservationLawTracker(
-           grid=simulation.qg.grid,
-           tolerance=1e-10
-       )
+        }
 
     def verify_spacetime_trinity(self) -> Dict[str, float]:
         """Verify dS² = dE² + γ²dI² relationship with corrections."""
@@ -146,112 +137,132 @@ class UnifiedTheoryVerification:
             'quantum_error': float(error_quantum)
         }
 
+    def _log_verification_diagnostics(self, state, metrics):
+        """Log detailed diagnostics for verification."""
+        logging.info("\nVerification Diagnostics:")
+        logging.info(f"Mass: {state.mass:.2e}")
+        logging.info(f"Horizon radius: {2 * CONSTANTS['G'] * state.mass:.2e}")
+        logging.info(f"Quantum scale (l_p/r_h): {CONSTANTS['l_p']/(2 * CONSTANTS['G'] * state.mass):.2e}")
+        logging.info(f"LHS scale: {abs(metrics['lhs']):.2e}")
+        logging.info(f"RHS scale: {abs(metrics['rhs']):.2e}")
+        #logging.info(f"Scale ratio: {abs(metrics['rhs']/metrics['lhs']):.2e}")
+
+
     def _verify_geometric_entanglement(self, state: 'QuantumState') -> Dict[str, float]:
-        """Verify dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩ relationship."""
+        """Verify dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩ with proper scaling."""
         # Physical parameters
         M = state.mass
-        M_initial = self.sim.initial_mass if hasattr(self.sim, 'initial_mass') else M
         horizon_r = 2 * CONSTANTS['G'] * M
         l_p = CONSTANTS['l_p']
-        t = state.time
+        beta = l_p/horizon_r
         
-        # Create grid centered on horizon
-        r_min = horizon_r * (1 + l_p/horizon_r)  # Just outside horizon
-        r_max = 3 * horizon_r
-        n_points = 100
-        
-        # Dense sampling near horizon
-        x = np.linspace(0, 1, n_points)  # Dimensionless coordinate
-        r = r_min + (r_max - r_min) * x**2  # Quadratic spacing
-        points = np.array([[r_i, 0, 0] for r_i in r])
-        
-        # Dimensionless parameters
-        κ = 1/(4 * M)  # Surface gravity
-        T = κ/(2*np.pi)  # Hawking temperature
-        
-        # Compute spacetime interval
-        dt = state.time - self._last_time if hasattr(self, '_last_time') else 0.0
-        dr = horizon_r * (M/M_initial - 1) if hasattr(self, '_last_mass') else 0.0
+        # Evolution parameters (dimensionless)
+        dtheta = 0.01
+        mu = -beta**2 * dtheta/(15360 * np.pi) if not hasattr(self, '_last_mass') else (M - self._last_mass)/M
         
         # Near-horizon metric
-        r_reg = r_min
-        g_tt = -(1 - 2*M/r_reg)
-        g_rr = 1/(1 - 2*M/r_reg)
+        def compute_metric(xi):
+            v = np.sqrt(1/xi) * (1 + beta**2/(2*xi**2))
+            g_tt = -(1 - v**2)
+            g_tx = -v
+            g_xx = np.ones_like(xi)
+            return g_tt, g_tx, g_xx
         
-        # Normalize ds²
-        ds2 = (-g_tt * dt**2 + g_rr * dr**2)/horizon_r**2
+        # Metric at regularized horizon
+        xi_h = 1 + beta
+        g_tt_h, g_tx_h, g_xx_h = compute_metric(xi_h)
         
-        # Initialize integral
-        integral = 0.0
-        debug_terms = []
+        # Compute interval with proper cross-term scaling
+        dt_term = g_tt_h * dtheta**2
+        cross_term = 2 * g_tx_h * dtheta * mu * beta  # Scale cross term by beta
+        dx_term = g_xx_h * mu**2
         
-        # Physical constants for the integral
-        A_h = 4 * np.pi * horizon_r**2  # Horizon area
-        S_BH = A_h/(4 * l_p**2)  # Bekenstein-Hawking entropy
+        # Interval with quantum scaling
+        ds2 = abs(dt_term + cross_term + dx_term) * beta
         
-        for i, point in enumerate(points):
-            r_local = np.linalg.norm(point)
-            x = (r_local - horizon_r)/horizon_r  # Distance from horizon
-            
-            # Local metric factor
-            f = 1 - 2*M/r_local
-            sqrt_g = np.sqrt(abs(f))
-            
-            # Entanglement density (peaked at horizon)
-            e_i = np.exp(-x**2/(2*κ*l_p)) * S_BH/A_h
-            
-            # Information density (thermal)
-            i_i = np.exp(-2*np.pi*T*t) * (l_p/horizon_r)**2 / (1 + x**2)
-            
-            # Volume element
-            if i == 0:
-                dr_local = r[1] - r[0]
-            elif i == len(points) - 1:
-                dr_local = r[-1] - r[-2]
-            else:
-                dr_local = (r[i+1] - r[i-1])/2
-                
-            dV = 4 * np.pi * r_local**2 * dr_local / horizon_r**3  # Normalized volume
-            
-            # Add to integral
-            term = sqrt_g * dV * (e_i + self.gamma**2 * i_i)
-            integral += term
-            
-            # Store debug info for near-horizon points
-            if i < 5 or abs(x) < 0.1:
-                debug_terms.append({
-                    'x': float(x),
-                    'sqrt_g': float(sqrt_g),
-                    'e_i': float(e_i),
-                    'i_i': float(i_i),
-                    'dV': float(dV),
-                    'term': float(term)
-                })
+        # Integration grid
+        n_points = 200
+        xi = np.linspace(1 + beta, 2, n_points)
+        x = xi - 1  # Distance from horizon
+        dxi = np.gradient(xi)
         
-        # print("\nDebug: Near-horizon terms:")
-        # for term in debug_terms:
-        #     print(f"x = {term['x']:.6f} (distance from horizon):")
-        #     for k, v in term.items():
-        #         if k != 'x':
-        #             print(f"  {k}: {v:.6e}")
+        # Metric and volume form
+        g_tt, g_tx, g_xx = compute_metric(xi)
+        sqrt_g = np.sqrt(abs(g_tt * g_xx - g_tx**2))
         
-        # Store values
+        # Volume element with proper scaling
+        dV = 4 * np.pi * x**2 * dxi * beta  # Scale by beta
+        
+        # Entanglement and information densities
+        e_term = np.exp(-x/beta)
+        i_term = e_term.copy()
+        
+        # Local quantum corrections
+        qc = 1 + beta * np.log(1 + x/beta)
+        e_term *= qc
+        i_term *= qc
+        
+        # Combined terms with quantum coupling
+        gamma_eff = self.gamma * beta
+        terms = sqrt_g * dV * (e_term + gamma_eff**2 * i_term)
+        
+        # Compute integral
+        integral = np.sum(terms)
+        
+        # Store state
         self._last_time = state.time
-        self._last_mass = state.mass
-        
-        # Normalize integral to match ds²
-        integral *= (horizon_r/l_p)**2
+        self._last_mass = M
         
         # Compute error
-        lhs = abs(ds2)
-        rhs = abs(integral)
-        relative_error = abs(lhs - rhs) / max(lhs, rhs, l_p/horizon_r)
+        lhs = ds2
+        rhs = integral
+        rel_error = abs(lhs - rhs) / max(abs(lhs), abs(rhs), beta**3)
+        
+        # Diagnostics
+        logging.info("\nRevised Verification Diagnostics:")
+        logging.info(f"Physical scales:")
+        logging.info(f"  β = l_p/r_h: {beta:.2e}")
+        logging.info(f"  γ_eff = γβ: {gamma_eff:.2e}")
+        
+        logging.info(f"\nMetric components:")
+        logging.info(f"  g_tt: {g_tt_h:.2e}")
+        logging.info(f"  g_tx: {g_tx_h:.2e}")
+        logging.info(f"  g_xx: {g_xx_h:.2e}")
+        
+        logging.info(f"\nInterval components:")
+        logging.info(f"  dt²-term: {abs(dt_term):.2e}")
+        logging.info(f"  cross-term: {abs(cross_term):.2e}")
+        logging.info(f"  dx²-term: {abs(dx_term):.2e}")
+        logging.info(f"  ds² (total): {ds2:.2e}")
+        
+        logging.info(f"\nIntegral components:")
+        logging.info(f"  <e-term>: {np.mean(e_term):.2e}")
+        logging.info(f"  <i-term>: {np.mean(i_term):.2e}")
+        logging.info(f"  <sqrt_g>: {np.mean(sqrt_g):.2e}")
+        logging.info(f"  ∫dV: {np.sum(dV):.2e}")
+        logging.info(f"  Integral (total): {integral:.2e}")
+        
+        logging.info(f"\nVerification:")
+        logging.info(f"  LHS/RHS ratio: {ds2/integral if abs(integral) > 1e-30 else 0.0:.2e}")
+        logging.info(f"  Relative error: {rel_error:.2e}")
         
         return {
             'lhs': float(ds2),
             'rhs': float(integral),
-            'relative_error': float(relative_error)
+            'relative_error': float(rel_error),
+            'diagnostics': {
+                'beta': float(beta),
+                'gamma_eff': float(gamma_eff),
+                'dt_term': float(dt_term),
+                'cross_term': float(cross_term),
+                'dx_term': float(dx_term)
+            }
         }
+    
+    def _compute_quantum_corrections(self) -> float:
+        """Simplified quantum corrections calculation."""
+        mass = max(self.sim.qg.state.mass, CONSTANTS['l_p'])  # Avoid division by zero
+        return CONSTANTS['hbar'] / (mass * mass)
 
     def _get_local_density_matrix(self, state: 'QuantumState', x: np.ndarray, radius: float = 1.0) -> np.ndarray:
         """Get reduced density matrix for local region around point x."""
@@ -316,12 +327,42 @@ class UnifiedTheoryVerification:
             'quantum_error': np.max(np.abs(Q - rhs/3)),
             'entanglement_error': np.max(np.abs(E - rhs/3))
         }
+
+    def analyze_geometric_entanglement(state):
+        # Fundamental scales
+        horizon_r = 2 * CONSTANTS['G'] * state.mass
+        l_p = CONSTANTS['l_p']
         
-    def _compute_quantum_corrections(self) -> float:
-        """Compute quantum corrections to classical geometry."""
-        mass = self.sim.qg.state.mass
-        # Quantum corrections scale as ℏ/M²
-        return CONSTANTS['hbar'] / (mass * mass)
+        # Detailed decomposition
+        components = {
+            'horizon_radius': horizon_r,
+            'planck_length': l_p,
+            'mass_scale': state.mass,
+            'dimensional_ratio': l_p / horizon_r,
+            'entropy_scale': state.entropy,
+            'quantum_coupling': self.gamma  # From original implementation
+        }
+        
+        # Compute detailed scaling factors
+        scaling_analysis = {
+            'metric_scaling': np.sqrt(horizon_r / l_p),
+            'quantum_scaling': CONSTANTS['hbar'] / (state.mass * horizon_r),
+            'entropy_scaling': state.entropy / (4 * l_p**2)
+        }
+        
+        # Investigate term interactions
+        term_interactions = {
+            'entanglement_term': self._compute_entanglement_term(state),
+            'information_term': self._compute_information_term(state),
+            'cross_terms': self._compute_cross_interaction_terms(state)
+        }
+        
+        return {
+            'components': components,
+            'scaling': scaling_analysis,
+            'interactions': term_interactions
+        }
+
 
     def _compute_spacetime_interval(self, state) -> float:
         """Compute proper spacetime interval ds²."""

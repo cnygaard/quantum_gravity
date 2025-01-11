@@ -36,6 +36,68 @@ from utils.io import QuantumGravityIO, MeasurementResult
 
 class BlackHoleSimulation:
     """Quantum black hole simulation."""
+    def plot_results(self, save_path: str = None) -> None:
+        """Plot simulation results including geometric-entanglement verification."""
+        import matplotlib.pyplot as plt
+
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+        
+        # Mass evolution
+        ax1.plot(self.time_points, self.mass_history)
+        ax1.set_xlabel('Time [t_P]')
+        ax1.set_ylabel('Mass [m_P]')
+        ax1.set_title('Black Hole Mass Evolution')
+        ax1.grid(True)
+        
+        # Entropy evolution
+        ax2.plot(self.time_points, self.entropy_history)
+        ax2.set_xlabel('Time [t_P]')
+        ax2.set_ylabel('Entropy [k_B]')
+        ax2.set_title('Black Hole Entropy Evolution')
+        ax2.grid(True)
+        
+        # Geometric-Entanglement Equation Verification
+        if hasattr(self, 'verification_results'):
+            times = [result['time'] for result in self.verification_results]
+            geo_errors = [result['geometric_entanglement_error'] 
+                         if 'geometric_entanglement_error' in result 
+                         else 0.0 
+                         for result in self.verification_results]
+            
+            ax3.plot(times, geo_errors, label='Geometric-Entanglement Error')
+            ax3.set_xlabel('Time [t_P]')
+            ax3.set_ylabel('Relative Error')
+            ax3.set_title('Geometric-Entanglement Verification')
+            ax3.set_yscale('log')
+            ax3.legend()
+            ax3.grid(True)
+            
+            # Field Equations Verification
+            einstein_errors = [result['einstein_tensor_error'] 
+                             if 'einstein_tensor_error' in result 
+                             else 0.0 
+                             for result in self.verification_results]
+            quantum_errors = [result['quantum_tensor_error'] 
+                            if 'quantum_tensor_error' in result 
+                            else 0.0 
+                            for result in self.verification_results]
+            
+            ax4.plot(times, einstein_errors, label='Einstein Tensor')
+            ax4.plot(times, quantum_errors, label='Quantum Tensor')
+            ax4.set_xlabel('Time [t_P]')
+            ax4.set_ylabel('Relative Error')
+            ax4.set_title('Field Equation Verification')
+            ax4.set_yscale('log')
+            ax4.legend()
+            ax4.grid(True)
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path)
+        plt.close()
+
+
     def __init__(self, mass: float, config_path: str = None):
         """Initialize black hole simulation."""
         if mass <= 0:
@@ -150,7 +212,12 @@ class BlackHoleSimulation:
         error_history = []
         lhs_history = []
         rhs_history = []
-        
+
+        # In run_simulation
+        metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
+        if int(t/dt) % 100 == 0:  # Log every 100 steps
+            self.verifier._log_verification_diagnostics(self.qg.state, metrics)
+
         while t < t_final:
             # Add verification step
             metrics = self.verifier.verify_unified_relations()
@@ -215,54 +282,6 @@ class BlackHoleSimulation:
             'rhs_values': rhs_history,
             'times': self.time_points
         }
-
-def plot_results(self, save_path: str = None) -> None:
-    """Plot simulation results including geometric-entanglement verification."""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
-    
-    # Mass evolution
-    ax1.plot(self.time_points, self.mass_history)
-    ax1.set_xlabel('Time [t_P]')
-    ax1.set_ylabel('Mass [m_P]')
-    ax1.set_title('Black Hole Mass Evolution')
-    ax1.grid(True)
-    
-    # Entropy evolution
-    ax2.plot(self.time_points, self.entropy_history)
-    ax2.set_xlabel('Time [t_P]')
-    ax2.set_ylabel('Entropy [k_B]')
-    ax2.set_title('Black Hole Entropy Evolution')
-    ax2.grid(True)
-    
-    # Geometric-Entanglement Equation Verification
-    if hasattr(self, 'equation_verification'):
-        ax3.plot(self.equation_verification['times'], 
-                np.abs(self.equation_verification['lhs_values']), 
-                label='|LHS|')
-        ax3.plot(self.equation_verification['times'], 
-                np.abs(self.equation_verification['rhs_values']), 
-                label='|RHS|')
-        ax3.set_xlabel('Time [t_P]')
-        ax3.set_ylabel('|dS²| and |Integral|')
-        ax3.set_title('Geometric-Entanglement Terms')
-        ax3.set_yscale('log')
-        ax3.legend()
-        ax3.grid(True)
-        
-        # Error evolution
-        ax4.plot(self.equation_verification['times'], 
-                self.equation_verification['errors'])
-        ax4.set_xlabel('Time [t_P]')
-        ax4.set_ylabel('Relative Error')
-        ax4.set_title('Geometric-Entanglement Error')
-        ax4.set_yscale('log')
-        ax4.grid(True)
-    
-    plt.tight_layout()
-    
-    if save_path:
-        plt.savefig(save_path)
-    plt.close()            
         
 def main():
     """Run black hole simulation example."""

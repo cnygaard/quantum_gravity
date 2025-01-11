@@ -139,13 +139,29 @@ class BlackHoleSimulation:
         )
         
         quantum_density = quantum_density / np.max(quantum_density)
-        
-        # 3D scatter plot
-        scatter = ax.scatter(points[:,0], points[:,1], points[:,2],
-                            c=quantum_density,
-                            cmap='plasma',
-                            alpha=0.6,
-                            s=8)
+
+        # Create two separate scatter plots - one for near horizon, one for outer region
+        near_horizon_mask = radial_distances < (r * 1.2)  # Points very close to horizon
+        outer_region_mask = ~near_horizon_mask
+
+        # Plot outer (blue) points with more transparency
+        scatter_outer = ax.scatter(points[outer_region_mask,0], 
+                                points[outer_region_mask,1], 
+                                points[outer_region_mask,2],
+                                c=quantum_density[outer_region_mask],
+                                cmap='plasma',
+                                alpha=0.3,  # More transparent
+                                s=6)        # Slightly smaller
+
+        # Plot near-horizon (yellow) points with less transparency
+        scatter_inner = ax.scatter(points[near_horizon_mask,0], 
+                                points[near_horizon_mask,1], 
+                                points[near_horizon_mask,2],
+                                c=quantum_density[near_horizon_mask],
+                                cmap='plasma',
+                                alpha=0.8,  # Less transparent
+                                s=10)       # Slightly
+
         
         # Horizon surface
         phi_surf = np.linspace(0, 2*np.pi, 100)
@@ -173,7 +189,8 @@ class BlackHoleSimulation:
                 fontsize=10,
                 bbox=dict(facecolor='white', alpha=0.9, edgecolor='none'))
         
-        cbar = plt.colorbar(scatter, label='Quantum Effects Intensity')
+        #cbar = plt.colorbar(scatter, label='Quantum Effects Intensity')
+        cbar = plt.colorbar(scatter_outer, label='Quantum Effects Intensity')
         cbar.set_label('Normalized Quantum Effects Intensity', size=10)
         
         ax.set_xlabel('x [l_p]')

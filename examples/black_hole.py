@@ -526,8 +526,8 @@ def main():
     # Initialize framework once
     config_path = None  # Use default config
     quantum_gravity = QuantumGravity()
-    #test_masses = [100, 500, 1000, 2000, 5000]
-    test_masses = [1000]
+    test_masses = [100, 500, 1000, 2000, 5000]
+    #test_masses = [1000]
 
     for initial_mass in test_masses:
         logging.info(f"\nRunning simulation for mass {initial_mass:.1f} Planck masses")

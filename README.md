@@ -27,10 +27,11 @@ pip install -r requirements.txt
 ## Architecture
 
 ```
-core/: Core quantum gravity implementation
-physics/: Physical observables and measurements
-numerics/: Numerical methods and parallel computing
-examples/: Usage examples and demonstrations
+core/      Core quantum gravity implementation
+physics/   Physical observables and measurements
+numerics/  Numerical methods and parallel computing
+examples/  Usage examples and demonstrations
+results/   Simulation results folder
 ```
 
 ## Running the Simulation
@@ -53,7 +54,7 @@ The black hole simulation generates the following output files in the `results/b
   - Hawking radiation flux
 
 ### Data Files
-- `measurements.json`: Contains time series data of:
+- `measurements_M.json`: Contains time series data of:
   - Mass history
   - Temperature measurements
   - Entropy calculations

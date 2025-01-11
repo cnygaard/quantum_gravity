@@ -377,10 +377,7 @@ class HawkingFluxObservable(Observable):
         # rows, cols, data = [], [], []
 
         # Calculate Stefan-Boltzmann constant in natural units
-        sigma = (
-            CONSTANTS['hbar'] * CONSTANTS['c']**2 /
-            (15360 * np.pi**3 * CONSTANTS['G']**2)
-        )
+        sigma = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / (15360 * np.pi**3 * CONSTANTS['G']**2)
 
         # Get temperature from black hole surface
         temp = self.temperature_obs.measure(state)

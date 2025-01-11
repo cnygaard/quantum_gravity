@@ -269,13 +269,13 @@ class CosmologySimulation:
         self.energy_density_history.append(density.value)
         self.quantum_corrections_history.append(quantum.value)
         self.perturbation_spectrum_history.append(spectrum.value)
-        
     def plot_results(self, save_path: str = None) -> None:
-        """Plot simulation results."""
+        """Plot simulation results with enhanced matter power spectrum tracking."""
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
         
         # Scale factor evolution
         ax1.plot(self.time_points, self.scale_factor_history)
+        ax1.set_yscale('log')  # Log scale for better visualization
         ax1.set_xlabel('Time [t_P]')
         ax1.set_ylabel('Scale Factor [l_P]')
         ax1.set_title('Universe Scale Factor Evolution')
@@ -283,6 +283,7 @@ class CosmologySimulation:
         
         # Energy density evolution
         ax2.plot(self.time_points, self.energy_density_history)
+        ax2.set_yscale('log')
         ax2.set_xlabel('Time [t_P]')
         ax2.set_ylabel('Energy Density [ρ_P]')
         ax2.set_title('Energy Density Evolution')
@@ -294,16 +295,22 @@ class CosmologySimulation:
         ax3.set_ylabel('Quantum Correction')
         ax3.set_title('Quantum Corrections Magnitude')
         ax3.grid(True)
-        # Latest perturbation spectrum
+        
+        # Matter power spectrum evolution
         if self.perturbation_spectrum_history:
-            k, Pk = self.perturbation_spectrum_history[-1]
-            # Average over spatial components to get scalar power spectrum
-            Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
-            ax4.loglog(k, Pk_scalar)
+            # Plot multiple spectra to show evolution
+            times = [0, len(self.time_points)//2, -1]  # Start, middle, end
+            for t_idx in times:
+                k, Pk = self.perturbation_spectrum_history[t_idx]
+                Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
+                ax4.loglog(k, Pk_scalar, 
+                        label=f't={self.time_points[t_idx]:.1f}')
             ax4.set_xlabel('Wavenumber k [1/l_P]')
             ax4.set_ylabel('Power Spectrum P(k)')
-            ax4.set_title('Matter Power Spectrum')
+            ax4.set_title('Matter Power Spectrum Evolution')
+            ax4.legend()
             ax4.grid(True)
+        
         plt.tight_layout()
         
         if save_path:

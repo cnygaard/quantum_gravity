@@ -115,6 +115,7 @@ class BlackHoleSimulation:
         # Now initialize quantum state
         self.qg.state = QuantumState(
             self.qg.grid,
+            initial_mass=mass,  # Pass initial mass here
             eps_cut=self.qg.config.config['numerics']['eps_cut']
         )
         
@@ -150,6 +151,11 @@ class BlackHoleSimulation:
     def _setup_initial_state(self) -> None:
         """Setup initial state with time-dependent mass evolution."""
         state = self.qg.state
+
+            # Add this line to initialize state mass
+        state.mass = self.initial_mass  # Missing initialization
+        state.initial_mass = self.initial_mass
+        state.time = 0.0
         points = self.qg.grid.points
         r = np.linalg.norm(points, axis=1)
     
@@ -162,10 +168,14 @@ class BlackHoleSimulation:
     
         # Calculate evaporation timescale
         evaporation_rate = CONSTANTS['hbar'] * CONSTANTS['c']**6 / (15360 * np.pi * CONSTANTS['G']**2)
-        state.evaporation_timescale = state.initial_mass**3 / evaporation_rate
+        state.evaporation_timescale = (5120 * np.pi * CONSTANTS['G']**2 * state.initial_mass**3) / \
+                                    (CONSTANTS['hbar'] * CONSTANTS['c']**4)
     
         # Calculate mass evolution
         def mass_at_time(t):
+            """Calculate mass at time t using proper Hawking evaporation."""
+            if t >= state.evaporation_timescale:
+                return CONSTANTS['m_p']  # Return Planck mass as minimum
             return state.initial_mass * (1 - t/state.evaporation_timescale)**(1/3)
     
         # Update metric components with regularized radial coordinate
@@ -240,8 +250,30 @@ class BlackHoleSimulation:
             rhs_history.append(rhs)
             
             # Update quantum state with mass loss
-            self.qg.state.mass -= (self.qg.state.mass**2 * dt) / (15360 * np.pi)
+            #dm_dt = -(CONSTANTS['hbar'] * CONSTANTS['c']**6) / \
+            #        (15360 * np.pi * CONSTANTS['G']**2 * self.qg.state.mass**2)
+            #self.qg.state.mass += dm_dt * dt
+            evaporation_rate = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / \
+                            (15360 * np.pi * CONSTANTS['G']**2 * self.qg.state.mass**2)
             
+            # Compute mass loss
+            #dm = evaporation_rate * dt * 1000.0
+            original_dm = (self.qg.state.mass**2 * dt) / (15360 * np.pi)
+
+            # Physical constants correction
+            dm = original_dm * (CONSTANTS['c']**6 / CONSTANTS['G']**2)
+            
+            # logging.info(f"Time: {t}")
+            # logging.info(f"Current Mass: {self.qg.state.mass}")
+            # logging.info(f"Evaporation Rate: {evaporation_rate}")
+            # logging.info(f"Mass Loss (dm): {dm:.16e}")
+
+            # Update mass
+            self.qg.state.mass = max(
+                CONSTANTS['m_p'],  # Minimum mass is Planck mass
+                self.qg.state.mass - dm
+            )
+
             # Calculate derived quantities
             horizon_radius = 2 * CONSTANTS['G'] * self.qg.state.mass
             entropy = np.pi * horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
@@ -257,7 +289,7 @@ class BlackHoleSimulation:
                 logging.info(f"LHS (dS²)     = {lhs:.6e}")
                 logging.info(f"RHS (integral) = {rhs:.6e}")
                 logging.info(f"Relative Error = {error:.6e}")
-                logging.info(f"Mass = {self.qg.state.mass:.3e}, Entropy = {entropy:.3e}")
+                logging.info(f"Mass = {self.qg.state.mass:.9e}, Entropy = {entropy:.3e}")
                 
                 # Calculate running statistics
                 mean_error = np.mean(error_history[-100:] if len(error_history) > 100 else error_history)

@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 class UnifiedTheoryVerification:
     """Verify unified quantum gravity theory predictions."""
 
+    DEBUG_VERIFICATION = False  # Debug flag for detailed verification
+
     def __init__(self, simulation: 'BlackHoleSimulation'):
         self.sim = simulation
         # Initialize with single set of parameters to avoid duplicate initialization
@@ -85,7 +87,8 @@ class UnifiedTheoryVerification:
         
         # Calculate differentials using physical quantities
         dt = 1.0  # Fixed timestep
-        dm = state.mass**2 * dt / (15360 * np.pi)  # Mass loss rate
+        dm = (state.mass**2 * dt * CONSTANTS['hbar'] * CONSTANTS['c']**6) / \
+            (15360 * np.pi * CONSTANTS['G']**2)
         
         # Compute spacetime interval with horizon regularization
         r = 2 * CONSTANTS['G'] * state.mass  # Horizon radius
@@ -137,16 +140,75 @@ class UnifiedTheoryVerification:
             'quantum_error': float(error_quantum)
         }
 
-    def _log_verification_diagnostics(self, state, metrics):
+    def _log_verification_diagnostics(self, *args, **kwargs):
         """Log detailed diagnostics for verification."""
-        logging.info("\nVerification Diagnostics:")
-        logging.info(f"Mass: {state.mass:.2e}")
-        logging.info(f"Horizon radius: {2 * CONSTANTS['G'] * state.mass:.2e}")
-        logging.info(f"Quantum scale (l_p/r_h): {CONSTANTS['l_p']/(2 * CONSTANTS['G'] * state.mass):.2e}")
-        logging.info(f"LHS scale: {abs(metrics['lhs']):.2e}")
-        logging.info(f"RHS scale: {abs(metrics['rhs']):.2e}")
-        #logging.info(f"Scale ratio: {abs(metrics['rhs']/metrics['lhs']):.2e}")
+        # Determine the state and metrics based on input
+        state = None
+        metrics = None
+        
+        # Check if the first argument is a state-like object
+        if len(args) > 0:
+            if hasattr(args[0], 'mass'):
+                state = args[0]
+                metrics = kwargs.get('metrics', {}) if len(args) == 1 else args[1]
+            else:
+                # If first argument is not a state, use kwargs
+                state = kwargs.get('state', self.sim.qg.state)
+                metrics = kwargs.get('metrics', {})
+        else:
+            # Use state from simulation if not provided
+            state = kwargs.get('state', self.sim.qg.state)
+            metrics = kwargs.get('metrics', {})
 
+        # Fallback mass value
+        mass = getattr(state, 'mass', kwargs.get('mass', 1000.0))
+
+        logging.info("\nVerification Diagnostics:")
+        logging.info(f"Mass: {mass:.2e}")
+        logging.info(f"Horizon radius: {2 * CONSTANTS['G'] * mass:.2e}")
+        logging.info(f"Quantum scale (l_p/r_h): {CONSTANTS['l_p']/(2 * CONSTANTS['G'] * mass):.2e}")
+
+        logging.info("\nds² Components:")
+        logging.info(f"  dt_term: {kwargs.get('dt_term', 0):.4e}")
+        logging.info(f"  cross_term: {kwargs.get('cross_term', 0):.4e}")
+        logging.info(f"  dx_term: {kwargs.get('dx_term', 0):.4e}")
+        logging.info(f"  Total ds²: {kwargs.get('ds2', 0):.4e}")
+        logging.info(f"  β (beta): {kwargs.get('beta', 0):.4e}")
+        logging.info(f"  μ (mu): {kwargs.get('mu', 0):.4e}")
+
+        if metrics:
+            logging.info(f"LHS scale: {abs(metrics.get('lhs', 0)):.2e}")
+            logging.info(f"RHS scale: {abs(metrics.get('rhs', 0)):.2e}")
+        
+        # Detailed logging for debug parameters
+        logging.info("\nDetailed Verification Parameters:")
+        logging.info(f"  β = l_p/r_h: {kwargs.get('beta', 0):.2e}")
+        logging.info(f"  γ_eff = γβ: {kwargs.get('gamma_eff', 0):.2e}")
+        logging.info(f"  μ = dM/M: {kwargs.get('mu', 0):.2e}")
+        
+        logging.info("\nMetric Components:")
+        logging.info(f"  g_tt: {kwargs.get('g_tt_h', 0):.2e}")
+        logging.info(f"  g_tx: {kwargs.get('g_tx_h', 0):.2e}")
+        logging.info(f"  g_xx: {kwargs.get('g_xx_h', 0):.2e}")
+        
+        logging.info("\nInterval Components:")
+        logging.info(f"  dt²-term: {kwargs.get('dt_term', 0):.2e}")
+        logging.info(f"  cross-term: {kwargs.get('cross_term', 0):.2e}")
+        logging.info(f"  dx²-term: {kwargs.get('dx_term', 0):.2e}")
+        logging.info(f"  ds² (total): {kwargs.get('ds2', 0):.2e}")
+        
+        # Optional additional logging for terms
+        if 'e_term' in kwargs and 'i_term' in kwargs:
+            logging.info("\nTerm Analysis:")
+            logging.info(f"  <e-term>: {np.mean(kwargs.get('e_term', [0])):.2e}")
+            logging.info(f"  <i-term>: {np.mean(kwargs.get('i_term', [0])):.2e}")
+            logging.info(f"  <√g>: {np.mean(kwargs.get('sqrt_g', [0])):.2e}")
+            logging.info(f"  ∫dV: {np.sum(kwargs.get('dV', [0])):.2e}")
+            logging.info(f"  Integral (total): {kwargs.get('integral', 0):.2e}")
+
+    def set_debug(self, enabled: bool = True):
+        """Toggle detailed verification logging."""
+        self.DEBUG_VERIFICATION = enabled
 
     def _verify_geometric_entanglement(self, state: 'QuantumState') -> Dict[str, float]:
         """Verify dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩ with fixed cross-term scaling."""
@@ -158,7 +220,8 @@ class UnifiedTheoryVerification:
         
         # Evolution parameters with corrected scaling
         dtheta = 0.01
-        mu = -beta**2 * dtheta/(15360 * np.pi) if not hasattr(self, '_last_mass') else (M - self._last_mass)/M
+        mu = (-beta**2 * dtheta * CONSTANTS['hbar'] * CONSTANTS['c']**6) / \
+            (15360 * np.pi * CONSTANTS['G']**2) if not hasattr(self, '_last_mass') else (M - self._last_mass)/M
         
         # Near-horizon metric
         def compute_metric(xi):
@@ -237,36 +300,38 @@ class UnifiedTheoryVerification:
         dt_term *= scaling_factor
         dx_term *= scaling_factor
         integral *= scaling_factor**3
-        
-        # Log detailed analysis
-        logging.info("\nCross-Term Fixed Verification:")
-        logging.info(f"Parameters:")
-        logging.info(f"  β = l_p/r_h: {beta:.2e}")
-        logging.info(f"  γ_eff = γβ: {gamma_eff:.2e}")
-        logging.info(f"  μ = dM/M: {mu:.2e}")
-        
-        logging.info(f"\nMetric components (with β-scaling):")
-        logging.info(f"  g_tt: {g_tt_h:.2e}")
-        logging.info(f"  g_tx: {g_tx_h:.2e}")
-        logging.info(f"  g_xx: {g_xx_h:.2e}")
-        
-        logging.info(f"\nInterval components:")
-        logging.info(f"  dt²-term: {dt_term:.2e}")
-        logging.info(f"  cross-term: {cross_term:.2e}")
-        logging.info(f"  dx²-term: {dx_term:.2e}")
-        logging.info(f"  ds² (total): {ds2:.2e}")
-        
-        logging.info(f"\nIntegral analysis:")
-        logging.info(f"  <e-term>: {np.mean(e_term):.2e}")
-        logging.info(f"  <i-term>: {np.mean(i_term):.2e}")
-        logging.info(f"  <√g>: {np.mean(sqrt_g):.2e}")
-        logging.info(f"  ∫dV: {np.sum(dV):.2e}")
-        logging.info(f"  Volume factor: {4 * np.pi * beta:.2e}")
-        logging.info(f"  Integral (total): {integral:.2e}")
-        
-        logging.info(f"\nVerification:")
-        logging.info(f"  LHS/RHS ratio: {ds2/integral if abs(integral) > 1e-30 else 0.0:.2e}")
-        logging.info(f"  Relative error: {rel_error:.2e}")
+
+        if self.DEBUG_VERIFICATION:
+            self._log_verification_diagnostics(
+                state,
+                beta=beta, 
+                gamma_eff=gamma_eff, 
+                mu=mu, 
+                g_tt_h=g_tt_h, 
+                g_tx_h=g_tx_h, 
+                g_xx_h=g_xx_h,
+                dt_term=dt_term, 
+                cross_term=cross_term, 
+                dx_term=dx_term, 
+                ds2=ds2,
+                e_term=e_term, 
+                i_term=i_term, 
+                sqrt_g=sqrt_g, 
+                dV=dV, 
+                integral=integral,
+                time=state.time,  # Pass current time
+                metrics={
+                    'lhs': float(ds2),
+                    'rhs': float(integral),
+                    'relative_error': float(rel_error)
+                }
+            )
+
+        # Single, concise verification logging
+        if not hasattr(self, '_last_logging_time') or \
+        state.time - self._last_logging_time >= 1.0:  # Only log every 1.0 time units
+            logging.info(f"Verification: LHS/RHS = {ds2/integral:.2e}, Error = {rel_error:.2e}")
+            self._last_logging_time = state.time
         
         return {
             'lhs': float(ds2),

@@ -184,10 +184,10 @@ class QuantumGravity:
         self.grid.set_points(initial_points)
 
         # Initialize state with populated grid
-        self.state = QuantumState(
-            grid=self.grid,
-            eps_cut=self.config.config['numerics']['eps_cut']
-        )
+        #self.state = QuantumState(
+        #    grid=self.grid,
+        #    eps_cut=self.config.config['numerics']['eps_cut']
+        #)
 
         # Initialize quantum operators
         self.operators = {

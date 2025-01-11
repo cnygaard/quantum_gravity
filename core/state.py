@@ -7,7 +7,7 @@ from constants import CONSTANTS
 
 class QuantumState:
     """Efficient representation of quantum gravitational states."""
-    def __init__(self, grid: AdaptiveGrid, eps_cut: float = 1e-10):
+    def __init__(self, grid: AdaptiveGrid, initial_mass: float, eps_cut: float = 1e-10):
         # Core quantum state properties
         self.grid = grid
         self.eps_cut = eps_cut
@@ -17,8 +17,11 @@ class QuantumState:
         self.time = 0.0
 
         # Black hole properties
-        self.mass = 1000.0  # Initial mass in Planck units
-        self.initial_mass = self.mass
+        if initial_mass <= 0:
+            raise ValueError("Initial mass must be positive")
+        self.mass = initial_mass
+        self.initial_mass = initial_mass
+
         self.evaporation_rate = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / (15360 * np.pi * CONSTANTS['G']**2)
         self.evaporation_timescale = self.mass**3 / self.evaporation_rate
 

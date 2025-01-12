@@ -177,24 +177,6 @@ View simulation output logs:
 docker logs -f quantum-sim
 ```
 
-
-## Usage
-### Running a simulation step by step 
-```python
-#from quantum_gravity import QuantumGravity
-from __init__ import QuantumGravity
-from examples.black_hole import BlackHoleSimulation
-
-# Create simulation with 1000 Planck mass black hole
-sim = BlackHoleSimulation(mass=1000.0)
-
-# Run evolution
-sim.run_simulation(t_final=1000.0)
-
-# Plot results
-sim.plot_results()
-```
-
 # Runtime Metrics Explanation
 
 The simulation tracks several key physical quantities during black hole evolution:

@@ -216,32 +216,29 @@ class UnifiedTheoryVerification:
         horizon_radius = 2 * CONSTANTS['G'] * state.mass
         beta = CONSTANTS['l_p'] / horizon_radius
         
-        # Slower time evolution factor
-        time_factor = np.exp(-self.lambda_rad * t/6)  # Changed from t/4
-        
-        # Temperature with modified evolution rate
+        time_factor = np.exp(-self.lambda_rad * t/4)
+
+        # Temperature evolution
         temp = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * state.mass)
-        temp_factor = (temp/CONSTANTS['t_p'])**0.35  # Reduced power from 0.5
+        temp_factor = (temp/CONSTANTS['t_p'])**0.35
         
         points = state.grid.points
         r = np.linalg.norm(points, axis=1)
-        dV = (4/3) * np.pi * horizon_radius**3 / (len(points) * 2.5)
         x = (r - horizon_radius)/horizon_radius
         
-        # Slower decreasing entanglement
-        ent_profile = np.exp(-x*x/2.5) * temp_factor * time_factor
+        # Volume scaling with temperature dependence
+        dV = (4/3) * np.pi * horizon_radius**3 / (len(points) * 2.25)
+        
+        # Enhanced entanglement evolution
+        ent_profile = np.exp(-x*x/2.5) * temp_factor
         ent = np.sum(ent_profile) / len(points)
         
-        # Adjusted information evolution
-        info_profile = np.exp(-x*x) * temp_factor**2 * time_factor
-        info = np.sum(info_profile) / len(points)
-            
-        # Dynamic information profile
-        info_profile = np.exp(-x*x) * (temp/CONSTANTS['t_p'])**1.5
+        # Information scaling with temperature
+        info_profile = np.exp(-x*x) * temp_factor**2
         info = np.sum(info_profile) / len(points)
         
-        # Enhanced coupling
-        gamma_eff = self.gamma * np.exp(-self.lambda_rad * t/4) * beta * np.sqrt(0.385)
+        # Coupling with temperature correction
+        gamma_eff = self.gamma * beta * np.sqrt(0.385) * temp_factor
         coupling = gamma_eff**2 * beta**2
         
         # Rest remains the same

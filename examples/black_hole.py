@@ -560,7 +560,7 @@ def main():
     #test_masses = [1000]
 
     for initial_mass in test_masses:
-        configure_logging(initial_mass)
+        configure_logging(initial_mass, simulation_type='black_hole')
         logging.info(f"\nRunning simulation for mass {initial_mass:.1f} Planck masses")
         
         # Pass existing QG instance to simulation

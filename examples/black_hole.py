@@ -576,7 +576,7 @@ def main():
         sim.plot_results(str(output_dir / f"evolution_M{initial_mass:.0f}.png"))
 
         # Plot black hole geometry
-        #sim.plot_black_hole_geometry(str(output_dir / f"black_hole_geometry_M{initial_mass:.0f}.png"))
+        sim.plot_black_hole_geometry(str(output_dir / f"black_hole_geometry_M{initial_mass:.0f}.png"))
 
 
         # Create measurement results for this mass

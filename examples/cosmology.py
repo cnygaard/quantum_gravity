@@ -19,12 +19,15 @@ import logging
 from pathlib import Path
 import matplotlib.pyplot as plt
 # from quantum_gravity import QuantumGravity, CONSTANTS
-from __init__ import QuantumGravity
+from __init__ import QuantumGravity, configure_logging
 from constants import CONSTANTS
 from core.evolution import TimeEvolution
 from utils.io import MeasurementResult
 from numerics.errors import ErrorTracker
 from physics.conservation import ConservationLawTracker
+from physics.verification import CosmologicalVerification
+from core.state import QuantumState, CosmologicalState
+from core.grid import AdaptiveGrid
 
 class CosmologySimulation:
     """Quantum cosmology simulation."""
@@ -42,11 +45,19 @@ class CosmologySimulation:
         """
         # Initialize framework
         self.qg = QuantumGravity(config_path)
+
+
         
         # Cosmological parameters
         self.initial_scale = initial_scale
         self.hubble_parameter = hubble_parameter
         self.lambda_cosm = CONSTANTS['lambda']  # Cosmological constant
+
+        self.qg.state = CosmologicalState(
+            grid=self.qg.grid,
+            initial_scale=initial_scale,
+            hubble_parameter=hubble_parameter
+        )
 
         # Add trackers
         base_tolerances = {'truncation': 1e-10, 'constraint': 1e-8, 'conservation': 1e-8}
@@ -189,15 +200,45 @@ class CosmologySimulation:
             state.scale_factor *= quantum_factor
             # Update hubble parameter in state
             state.hubble_parameter = self.hubble_parameter
+
     def run_simulation(self, t_final: float, dt_save: float = None) -> None:
         dt = 0.01
         t = 0.0
 
         logging.info(f"Starting simulation with initial scale factor: {self.qg.state.scale_factor}")
 
+        # Initialize verification
+        self.verifier = CosmologicalVerification(self)
+        self.verification_results = []
+
         step_count = 0
         while t < t_final:
             if step_count % 100 == 0:
+                # Add verification step
+                metrics = self.verifier.verify_geometric_entanglement(self.qg.state)
+                self.verification_results.append({
+                    'time': t,
+                    'scale_factor': self.qg.state.scale_factor,
+                    **metrics
+                })
+
+                logging.info(
+                    f"\nGeometric-Entanglement Formula at t={t:.2f}:"
+                    f"\nLHS = {metrics['lhs']:.6e}"
+                    f"\nRHS = {metrics['rhs']:.6e}"
+                    f"\nRelative Error = {metrics['relative_error']:.6e}"
+                )
+
+                # Add Friedmann equation verification
+                friedmann_metrics = self.verifier.verify_friedmann_equations(self.qg.state)
+                
+                logging.info(
+                    f"\nQuantum-Corrected Friedmann Equations at t={t:.2f}:"
+                    f"\nH² (LHS) = {friedmann_metrics['lhs']:.6e}"
+                    f"\nH² (RHS) = {friedmann_metrics['rhs']:.6e}"
+                    f"\nQuantum Correction = {friedmann_metrics['quantum_correction']:.6e}"
+                )
+
                 scale = self.scale_obs.measure(self.qg.state)
                 density = self.density_obs.measure(self.qg.state)
                 quantum = self.quantum_obs.measure(self.qg.state)
@@ -337,7 +378,8 @@ class CosmologySimulation:
 def main():
     """Run cosmology simulation example."""
     # Setup logging
-    logging.basicConfig(level=logging.INFO)
+    #logging.basicConfig(level=logging.INFO)
+    configure_logging(simulation_type='cosmology')
     
     # Create output directories with correct path
     output_dir = Path("results/cosmology")
@@ -351,7 +393,7 @@ def main():
     sim = CosmologySimulation(initial_scale, hubble_parameter)
     
     # Run until significant expansion
-    t_final = 4.0  # in Planck times
+    t_final = 10.0  # in Planck times
     sim.run_simulation(t_final)
     
     # Plot and save results

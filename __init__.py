@@ -157,26 +157,38 @@ class QuantumGravityConfig:
         console.setLevel(logging.INFO)
         logging.getLogger('').addHandler(console)
 
-def configure_logging(mass: float):
-    """Configure unified logging for quantum gravity framework."""
-    # Clear any existing handlers
+def configure_logging(mass: float = None, simulation_type: str = 'black_hole'):
+    """Configure unified logging for quantum gravity framework.
+    
+    Args:
+        mass: Mass parameter for black hole simulations
+        simulation_type: Type of simulation ('black_hole' or 'cosmology')
+    """
+    # Clear existing handlers
     root = logging.getLogger()
     if root.handlers:
         for handler in root.handlers:
             root.removeHandler(handler)
             
-    # Create output directory if it doesn't exist
-    output_dir = Path("results/black_hole")
+    # Create output directory based on simulation type
+    output_dir = Path(f"results/{simulation_type}")
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Configure logging to both file and console
+    handlers = [logging.StreamHandler()]
+    
+    # Add appropriate file handler based on simulation type
+    if simulation_type == 'black_hole':
+        log_file = f"simulation_M{mass:.0f}.txt"
+    else:
+        log_file = "simulation.txt"
+        
+    handlers.append(logging.FileHandler(str(output_dir / log_file), mode='w'))
+    
     logging.basicConfig(
         level=logging.INFO,
         format='%(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(f"results/black_hole/simulation_M{mass:.0f}.txt", mode='w')
-        ]
+        handlers=handlers
     )
 
 

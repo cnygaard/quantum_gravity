@@ -133,3 +133,27 @@ class QuantumState:
     def set_metric_component(self, indices: Tuple[int, int], point_idx: int, value: float) -> None:
         """Set metric component value at specified indices and point."""
         self._metric_array[indices[0], indices[1], point_idx] = value
+
+class CosmologicalState(QuantumState):
+    """Quantum state for cosmological simulations."""
+    
+    def __init__(self, 
+                 grid: 'AdaptiveGrid',
+                 initial_scale: float,
+                 hubble_parameter: float):
+        """Initialize cosmological state.
+        
+        Args:
+            grid: Spatial grid
+            initial_scale: Initial scale factor a(t)
+            hubble_parameter: Initial Hubble parameter H(t)
+        """
+        super().__init__(grid, initial_mass=1.0)  # Mass not relevant for cosmology
+        self.initial_scale = initial_scale        # Initial scale factor 
+        self.scale_factor = initial_scale
+        self.hubble_parameter = hubble_parameter
+        self.time = 0.0
+        
+        # Initialize cosmological observables
+        self.energy_density = 3 * hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
+        self.pressure = -self.energy_density  # Vacuum dominated

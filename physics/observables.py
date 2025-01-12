@@ -523,3 +523,52 @@ class PerturbationSpectrumObservable(Observable):
             uncertainty=quantum_correction,
             metadata={'time': state.time}
         )
+
+class CosmicEvolutionObservable:
+    """Track detailed cosmic evolution parameters."""
+    
+    def measure(self, state: 'CosmologicalState') -> MeasurementResult:
+        # Hubble parameter with quantum corrections
+        H = state.hubble_parameter
+        H_quantum = H * (1 + (CONSTANTS['l_p'] * H)**2)
+        
+        # Equation of state w(t)
+        w = state.pressure / state.energy_density
+        
+        # Acceleration parameter
+        q = -state.scale_factor * H_quantum**2 / H**2
+        
+        # Cosmic entropy
+        S = 4 * np.pi * (state.scale_factor / CONSTANTS['l_p'])**2
+        
+        return MeasurementResult(
+            value={
+                'hubble': H_quantum,
+                'eos': w,
+                'acceleration': q,
+                'entropy': S
+            },
+            uncertainty=CONSTANTS['l_p'] * H,
+            metadata={'time': state.time}
+        )
+
+class CosmicMatterRadiationObservable:
+    """Track matter-radiation coupling and phase transitions."""
+    def measure(self, state: 'CosmologicalState') -> MeasurementResult:
+        # Matter-radiation coupling
+        coupling = self._compute_matter_radiation_coupling(state)
+        
+        # Phase transition detection
+        phase = self._detect_phase_transitions(state)
+        
+        # Track perturbation growth
+        perturbations = self._compute_perturbation_growth(state)
+        
+        return MeasurementResult(
+            value={
+                'coupling': coupling,
+                'phase': phase,
+                'perturbations': perturbations
+            },
+            uncertainty=CONSTANTS['l_p'] * state.hubble_parameter
+        )

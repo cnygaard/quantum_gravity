@@ -588,8 +588,7 @@ class EntanglementGeometryHandler:
         return np.sum(info) / (4 * np.pi * horizon_radius**2)
 
 class CosmologicalVerification:
-    """Verify quantum cosmology predictions."""
-    
+    """Verify quantum cosmology predictions.""" 
     def __init__(self, simulation: 'CosmologySimulation'):
         self.sim = simulation
         # Coupling constants for cosmological verification
@@ -604,6 +603,30 @@ class CosmologicalVerification:
             tolerance=1e-12
         )
            
+    def _verify_slow_roll(self, state: 'CosmologicalState') -> float:
+        """Compute slow-roll parameter epsilon."""
+        H = state.hubble_parameter
+        dH = (H - self._last_H) if hasattr(self, '_last_H') else 0
+        dt = state.time - self._last_time if hasattr(self, '_last_time') else 0.01
+        
+        # Store current values
+        self._last_H = H
+        self._last_time = state.time
+        
+        # Compute slow-roll parameter ε = -Ḣ/H²
+        epsilon = -dH/(H * H * dt) if dt > 0 else 0
+        
+        return epsilon
+
+    def _verify_perturbations(self, state: 'CosmologicalState') -> float:
+        """Verify perturbation spectrum amplitude."""
+        H = state.hubble_parameter
+        epsilon = max(self._verify_slow_roll(state), CONSTANTS['l_p'])  # Ensure non-zero
+        
+        # Compute spectrum amplitude with regularization
+        return (H * H)/(8 * np.pi * np.pi * epsilon)
+
+
     def verify_geometric_entanglement(self, state: 'CosmologicalState') -> Dict[str, float]:
         """Verify dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩ for cosmology."""
         a = state.scale_factor
@@ -683,4 +706,17 @@ class CosmologicalVerification:
             'quantum_correction': float(1 - bounce_term),
             'energy_density': float(state.energy_density),
             'relative_error': float(abs(lhs - rhs) / max(abs(lhs), abs(rhs)))
+        }
+
+    def verify_inflation_dynamics(self, state: 'CosmologicalState') -> Dict[str, float]:
+        """Verify inflation field evolution and perturbations."""
+        # Track slow-roll conditions
+        slow_roll = self._verify_slow_roll(state)
+        
+        # Verify perturbation spectrum
+        spectrum = self._verify_perturbations(state)
+        
+        return {
+            'slow_roll': slow_roll,
+            'spectrum': spectrum
         }

@@ -262,6 +262,8 @@ class TimeEvolution:
         # Update Hubble parameter based on Friedmann equation
         G = CONSTANTS['G']
         self.state.hubble_parameter = np.sqrt(8*np.pi*G*self.state.energy_density/3)
+
+        self.grid.quantum_state.evolve(dt)
     def _estimate_splitting_error(self,
                                 old_state: 'QuantumState',
                                 new_state: 'QuantumState') -> float:

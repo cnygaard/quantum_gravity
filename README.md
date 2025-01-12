@@ -1,16 +1,52 @@
 # Quantum Gravity Framework
 
-Experimental Quantum Physics simulator
+Experimental artifical intelligence cocreated Quantum Physics simulator
 A high-performance numerical framework for quantum gravity simulations, focusing on black hole dynamics and quantum effects.
 
 ## Features
 
 - Black hole evolution with quantum corrections
-- Hawking radiation and temperature calculations
+- Hawking radiation and temperature calculations 
+- EP=EPR correspondence tracking
+- Geometric-Quantum verification
 - Entanglement entropy measurements
 - Parallel computation support via MPI
 - Adaptive grid refinement
 - Error tracking and conservation laws
+- Near-horizon structure visualization
+- Quantum parameter evolution tracking
+
+## Theoretical Foundations
+
+This framework builds upon:
+
+- Loop Quantum Gravity (Rovelli, 2004)
+  - Discrete quantum geometry
+  - Background independence
+  - Spin networks and quantum states
+
+- String Theory & Holography
+  - AdS/CFT correspondence
+  - EP=EPR implementation
+
+- Black Hole Thermodynamics
+  - Hawking radiation
+  - Information preservation
+
+## Theory
+
+The framework implements a experimental unified quantum gravity theory combining:
+- Geometric-Entanglement correspondence
+- EP=EPR implementation 
+- Black hole evolution with quantum corrections
+- Adaptive grid refinement near horizons
+
+Key mathematical components:
+- Modified Einstein equations with quantum terms
+- Hawking radiation and temperature evolution
+- Information preservation via EP=EPR
+- Conservation law verification
+
 
 ## Installation
 
@@ -72,6 +108,19 @@ The black hole simulation generates the following outputs in `results/black_hole
   - Quantum effects distribution
   - Ergosphere
   - Quantum density field
+
+## Visualization Outputs
+
+The simulation generates comprehensive visualizations:
+- 3D quantum density plots
+- Event horizon evolution
+- Ergosphere boundary
+- Mass/temperature dynamics
+- Entropy evolution
+- Geometric-Entanglement verification
+- Beta parameter tracking
+- Gamma effective evolution
+- Radiation flux measurements
 
 ### Data Files  
 - `measurements_M{mass}.json`: Contains:
@@ -188,3 +237,4 @@ The framework includes comprehensive unit tests covering black hole simulation f
 Run the full test suite:
 ```bash
 python test_black_hole_simulation.py
+```

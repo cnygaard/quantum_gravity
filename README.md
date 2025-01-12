@@ -45,28 +45,42 @@ python examples/black_hole.py
 
 ## Simulation Outputs
 
-The black hole simulation generates the following output files in the `results/black_hole/` directory:
+The black hole simulation generates the following outputs in `results/black_hole/` for each mass configuration:
 
-### Visualization
-- `evolution.png`: Plot grid showing:
-  - Black hole mass evolution over time
+### Visualization Files
+- `evolution_M{mass}.png`: Evolution plots showing:
+  - Mass evolution over time
   - Entropy changes
-  - Temperature progression
-  - Hawking radiation flux
+  - Temperature progression 
+  - Geometric-Entanglement verification
+  - Beta parameter evolution
+  - Gamma effective parameter
+  - Radiation flux
+- `black_hole_geometry_M{mass}.png`: 3D and 2D visualizations of:
+  - Event horizon structure
+  - Quantum effects distribution
+  - Ergosphere
+  - Quantum density field
 
-### Data Files
-- `measurements_M.json`: Contains time series data of:
+### Data Files  
+- `measurements_M{mass}.json`: Contains:
+  - Time series data
   - Mass history
-  - Temperature measurements
   - Entropy calculations
+  - Temperature measurements
   - Radiation flux values
+  - Geometric-Entanglement verification metrics
+  - Beta and Gamma parameters
   - Measurement timestamps
 
-### Logging
-- Detailed progress updates
-- Trinity verification metrics
-- Physical parameter tracking
-- Conservation law validation
+### Simulation Logs
+- `simulation_M{mass}.txt`: Detailed output including:
+  - Initial simulation parameters
+  - Quantum Black Hole Physics at time intervals
+  - Classical Parameters (Mass, Horizon Radius, Temperature, Entropy)
+  - Quantum Parameters (β, γ_eff)
+  - Geometric-Entanglement Formula verification
+  - Final equation verification summary
 
 The output files provide both visual and numerical data for analysis of the black hole evolution, quantum effects, and thermodynamic properties.
 
@@ -125,19 +139,26 @@ sim.plot_results()
 
 The simulation tracks several key physical quantities during black hole evolution:
 
-## Trinity Verification Metrics
+## Verification Metrics
 
-- `spacetime_interval`: Measures the proper spacetime distance (dS²) between events, decreasing from ~880 to ~57 as the black hole evaporates, indicating spacetime geometry changes
-- `entanglement_measure`: Quantifies quantum entanglement (dE²) between horizon degrees of freedom, growing from ~5e5 to ~1.1e7, showing increasing quantum correlations
-- `information_metric`: Represents information flow (dI²) during evaporation, increasing from ~8e-7 to ~8e-5, tracking information release through Hawking radiation
+- `Geometric-Entanglement Formula`: Verifies the relationship dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
+  - LHS: Represents the spacetime interval measure
+  - RHS: Represents the quantum geometric-entanglement contribution
 
-## Physical Observables
+## Physical Parameters
 
-- `Temperature`: Hawking temperature in Planck units, inversely proportional to mass (T ∝ 1/M), increasing as the black hole evaporates
-- `Entropy`: Bekenstein-Hawking entropy (S = A/4ℏG), proportional to horizon area, decreasing with mass loss
-- `Flux`: Hawking radiation power output (F ∝ 1/M²), increasing as the black hole becomes smaller and hotter
+### Classical Parameters
+- `Mass`: Black hole mass in Planck masses (M_p)
+- `Horizon Radius`: Event horizon size in Planck lengths (l_p)
+- `Temperature`: Hawking temperature in Planck temperature units (T_p)
+- `Entropy`: Bekenstein-Hawking entropy in Boltzmann constant units (k_B)
 
-These metrics verify the unified theory relationship dS² = dE² + γ²dI², connecting spacetime geometry, quantum entanglement, and information flow during black hole evolution.
+### Quantum Parameters
+- `β (l_p/r_h)`: Quantum scale parameter relating Planck length to horizon radius
+- `γ_eff`: Effective coupling parameter for quantum corrections
+
+These metrics verify the geometric-entanglement relationship during black hole evolution, connecting classical geometry with quantum effects through the unified verification formula.
+
 
 ## Testing
 

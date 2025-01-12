@@ -175,7 +175,7 @@ def configure_logging(mass: float):
         format='%(message)s',
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler(f"results/black_hole/simulation_M{mass:.0f}.txt")
+            logging.FileHandler(f"results/black_hole/simulation_M{mass:.0f}.txt", mode='a')
         ]
     )
 

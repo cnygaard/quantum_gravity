@@ -355,8 +355,8 @@ class BlackHoleSimulation:
         
         logging.info("\nGeometric-Entanglement Formula:")
         logging.info("dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩")
-        logging.info(f"LHS = {self.ds2:.2e}")
-        logging.info(f"RHS = {self.integral:.2e}")
+        logging.info(f"LHS = {self.ds2:.22e}")
+        logging.info(f"RHS = {self.integral:.22e}")
     
             
     def _setup_observables(self) -> None:
@@ -490,6 +490,57 @@ class BlackHoleSimulation:
             'times': self.time_points
         }
 
+class EntanglementGeometryHandler:
+    """Handle geometric aspects of entanglement computation."""
+    
+    def compute_entanglement(self, state: 'QuantumState') -> float:
+        """Compute entanglement density with proper horizon scaling."""
+        # Grid parameters
+        r = np.linalg.norm(state.grid.points, axis=1)
+        horizon_radius = 2 * CONSTANTS['G'] * state.mass
+        
+        # Proper volume element with corrected metric components
+        g_tt = state._metric_array[0,0]
+        g_rr = state._metric_array[1,1]
+        g_theta = r**2  # Angular components
+        g_phi = r**2 * np.sin(np.arccos(state.grid.points[:,2]/r))**2
+        
+        # Full metric determinant
+        sqrt_g = np.sqrt(abs(g_tt * g_rr * g_theta * g_phi))
+        
+        # Enhanced entanglement near horizon with proper scaling
+        x = (r - horizon_radius)/horizon_radius
+        xi = 1.0/(1.0 + x*x)
+        
+        # Volume normalization
+        V_horizon = (4/3) * np.pi * horizon_radius**3
+        
+        # Compute total entanglement with proper scaling
+        return np.sum(xi * sqrt_g) * horizon_radius**2 / V_horizon
+
+    def compute_information(self, state: 'QuantumState') -> float:
+        """Compute quantum information with proper horizon scaling."""
+        # Grid parameters
+        r = np.linalg.norm(state.grid.points, axis=1)
+        horizon_radius = 2 * CONSTANTS['G'] * state.mass
+        
+        # Gaussian profile peaked at horizon
+        x = (r - horizon_radius)/horizon_radius
+        info = np.exp(-x*x/2)
+        
+        # Full metric determinant for proper volume element
+        g_tt = state._metric_array[0,0]
+        g_rr = state._metric_array[1,1]
+        g_theta = r**2
+        g_phi = r**2 * np.sin(np.arccos(state.grid.points[:,2]/r))**2
+        sqrt_g = np.sqrt(abs(g_tt * g_rr * g_theta * g_phi))
+        
+        # Volume normalization
+        V_horizon = (4/3) * np.pi * horizon_radius**3
+        
+        return np.sum(info * sqrt_g) * horizon_radius**2 / V_horizon
+
+
 def main():
     """Run black hole simulation example."""
     # Initialize framework once
@@ -497,8 +548,8 @@ def main():
     quantum_gravity = QuantumGravity()
 
     # List of Black hole mass configurations in Planck masses, this will be used to run multiple simulations
-    test_masses = [100, 500, 1000, 2000, 5000]
-    #test_masses = [1000]
+    #test_masses = [100, 500, 1000, 2000, 5000]
+    test_masses = [1000]
 
     for initial_mass in test_masses:
         configure_logging(initial_mass)
@@ -506,7 +557,7 @@ def main():
         
         # Pass existing QG instance to simulation
         sim = BlackHoleSimulation(initial_mass, quantum_gravity=quantum_gravity)
-        t_final = 1000.0
+        t_final = 1200.0
         sim.run_simulation(t_final)
        
         # Save simulation results
@@ -517,7 +568,7 @@ def main():
         sim.plot_results(str(output_dir / f"evolution_M{initial_mass:.0f}.png"))
 
         # Plot black hole geometry
-        sim.plot_black_hole_geometry(str(output_dir / f"black_hole_geometry_M{initial_mass:.0f}.png"))
+        #sim.plot_black_hole_geometry(str(output_dir / f"black_hole_geometry_M{initial_mass:.0f}.png"))
 
 
         # Create measurement results for this mass

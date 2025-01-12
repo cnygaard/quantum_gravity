@@ -19,11 +19,22 @@ A high-performance numerical framework for quantum gravity simulations, focusing
 apt install python3-pip pyton3-tk build-essential openmpi-devel
 ```
 
+
+### Clone the simualtor code
+
 ```bash
-git clone https://github.com/username/quantum_gravity.git
+git clone https://github.com/cnygaard/quantum_gravity.git
 cd quantum_gravity
+```
+
+### The simulator runs in Linux, the simulator is intended to be run in a Python virtual environment 
+
+```bash
+virtualenv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
 
 ## Architecture
 

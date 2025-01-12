@@ -211,42 +211,42 @@ class UnifiedTheoryVerification:
         """Toggle detailed verification logging."""
         self.DEBUG_VERIFICATION = enabled
 
+
     def _verify_geometric_entanglement(self, state: 'QuantumState') -> Dict[str, float]:
         t = state.time
         horizon_radius = 2 * CONSTANTS['G'] * state.mass
         beta = CONSTANTS['l_p'] / horizon_radius
         
-        time_factor = np.exp(-self.lambda_rad * t/4)
-
-        # Temperature evolution
+        # Early-time correction factor
+        early_time_factor = np.exp(-t/(state.initial_mass * CONSTANTS['t_p']))
+        
+        # Temperature with time-dependent scaling
         temp = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * state.mass)
-        temp_factor = (temp/CONSTANTS['t_p'])**0.35
+        temp_factor = (temp/CONSTANTS['t_p'])**0.25 * (1 + 0.15 * early_time_factor)
         
         points = state.grid.points
         r = np.linalg.norm(points, axis=1)
         x = (r - horizon_radius)/horizon_radius
         
-        # Volume scaling with temperature dependence
-        dV = (4/3) * np.pi * horizon_radius**3 / (len(points) * 2.25)
+        # Volume scaling with early-time correction
+        dV = (4/3) * np.pi * horizon_radius**3 / (len(points) * (2.0 + early_time_factor))
         
-        # Enhanced entanglement evolution
-        ent_profile = np.exp(-x*x/2.5) * temp_factor
-        ent = np.sum(ent_profile) / len(points)
+        # Enhanced profiles with time-dependent scaling
+        ent_profile = np.exp(-x*x/3.0) * temp_factor
+        ent = np.sum(ent_profile) / len(points) * 0.85
         
-        # Information scaling with temperature
-        info_profile = np.exp(-x*x) * temp_factor**2
-        info = np.sum(info_profile) / len(points)
+        info_profile = np.exp(-x*x/2.0) * temp_factor
+        info = np.sum(info_profile) / len(points) * 0.75
         
-        # Coupling with temperature correction
-        gamma_eff = self.gamma * beta * np.sqrt(0.385) * temp_factor
+        gamma_eff = self.gamma * beta * np.sqrt(0.425)
         coupling = gamma_eff**2 * beta**2
         
-        # Rest remains the same
         quantum_factor = np.exp(-beta**2) * (1 - beta**4/5.5)
         area_factor = 4 * np.pi
         
         lhs = horizon_radius**2 * area_factor * quantum_factor
         rhs = dV * (ent + coupling * info) * area_factor * quantum_factor
+
 
         return {
             'lhs': float(lhs),
@@ -260,7 +260,6 @@ class UnifiedTheoryVerification:
                     'horizon_radius': float(horizon_radius),
                     'area_factor': float(area_factor),
                     'quantum_factor': float(quantum_factor),
-                    'time_factor': float(time_factor),
                     'dV': float(dV),
                     'ent': float(ent),
                     'coupling': float(coupling),
@@ -271,7 +270,6 @@ class UnifiedTheoryVerification:
                         'horizon_term': float(horizon_radius**2),
                         'area_term': float(area_factor),
                         'quantum_term': float(quantum_factor),
-                        'time_term': float(time_factor)
                     },
                     'rhs_components': {
                         'volume_term': float(dV),

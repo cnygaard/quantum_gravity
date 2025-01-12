@@ -363,7 +363,7 @@ class BlackHoleSimulation:
         logging.info(f"Horizon Term: {geo_metrics['diagnostics']['components']['horizon_radius']:.4e}")
         logging.info(f"Area Factor: {geo_metrics['diagnostics']['components']['area_factor']:.4e}")
         logging.info(f"Quantum Factor: {geo_metrics['diagnostics']['components']['quantum_factor']:.4e}")
-        logging.info(f"Time Factor: {geo_metrics['diagnostics']['components']['time_factor']:.4e}")
+        #logging.info(f"Time Factor: {geo_metrics['diagnostics']['components']['time_factor']:.4e}")
         
         logging.info("\nRHS Components:")
         logging.info(f"Volume Term: {geo_metrics['diagnostics']['components']['dV']:.4e}")

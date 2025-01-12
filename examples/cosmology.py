@@ -28,6 +28,7 @@ from physics.conservation import ConservationLawTracker
 from physics.verification import CosmologicalVerification
 from core.state import QuantumState, CosmologicalState
 from core.grid import AdaptiveGrid
+from physics.observables import CosmicEvolutionObservable
 
 class CosmologySimulation:
     """Quantum cosmology simulation."""
@@ -164,6 +165,16 @@ class CosmologySimulation:
         self.spectrum_obs = self.qg.physics.PerturbationSpectrumObservable(
             self.qg.grid
         )
+
+        # Add cosmic evolution observable
+        self.cosmic_obs = CosmicEvolutionObservable()
+        
+        # Track evolution history
+        self.hubble_history = []
+        self.eos_history = []
+        self.acceleration_history = []
+        self.entropy_history = []
+
     def _check_quantum_bounce(self, state: 'QuantumState') -> bool:
         """Detect quantum bounce conditions."""
         # Planck density threshold with proper scaling
@@ -221,6 +232,26 @@ class CosmologySimulation:
                     'scale_factor': self.qg.state.scale_factor,
                     **metrics
                 })
+
+                # Add inflation verification
+                inflation_metrics = self.verifier.verify_inflation_dynamics(self.qg.state)
+                
+                logging.info(
+                    f"\nInflation Dynamics at t={t:.2f}:"
+                    f"\nSlow-roll parameter ε = {inflation_metrics['slow_roll']:.6e}"
+                    f"\nPerturbation spectrum = {inflation_metrics['spectrum']:.6e}"
+                )
+
+                # Get cosmic evolution measurements
+                cosmic = self.cosmic_obs.measure(self.qg.state)
+                
+                logging.info(
+                    f"\nCosmic Evolution at t={t:.2f}:"
+                    f"\nHubble Parameter H = {cosmic.value['hubble']:.6e}"
+                    f"\nEquation of State w = {cosmic.value['eos']:.6e}"
+                    f"\nAcceleration q = {cosmic.value['acceleration']:.6e}"
+                    f"\nCosmic Entropy S = {cosmic.value['entropy']:.6e}"
+                )
 
                 logging.info(
                     f"\nGeometric-Entanglement Formula at t={t:.2f}:"
@@ -303,6 +334,7 @@ class CosmologySimulation:
         density = self.density_obs.measure(self.qg.state)
         quantum = self.quantum_obs.measure(self.qg.state)
         spectrum = self.spectrum_obs.measure(self.qg.state)
+        cosmic = self.cosmic_obs.measure(self.qg.state)
         
         # Store results
         self.time_points.append(t)
@@ -310,6 +342,8 @@ class CosmologySimulation:
         self.energy_density_history.append(density.value)
         self.quantum_corrections_history.append(quantum.value)
         self.perturbation_spectrum_history.append(spectrum.value)
+        self.entropy_history.append(cosmic.value['entropy'])
+
     def plot_results(self, save_path: str = None) -> None:
         """Plot simulation results with enhanced matter power spectrum tracking."""
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))

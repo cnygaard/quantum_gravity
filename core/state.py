@@ -157,3 +157,44 @@ class CosmologicalState(QuantumState):
         # Initialize cosmological observables
         self.energy_density = 3 * hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
         self.pressure = -self.energy_density  # Vacuum dominated
+
+    def _compute_slow_roll(self) -> float:
+        """Compute slow-roll parameter epsilon."""
+        # Inflation potential parameters
+        m = 1e-6  # Mass parameter in Planck units
+        
+        # Compute slow-roll parameter ε = (V'/V)²/2
+        V = 0.5 * m * m * self.phi * self.phi  # Potential
+        V_prime = m * m * self.phi  # dV/dφ
+        
+        epsilon = 0.5 * (V_prime/V)**2 if V > 0 else 0.0
+        
+        return epsilon
+
+
+    def _evolve_inflation_field(self, dt: float) -> float:
+        """Evolve inflation field with proper potential."""
+        # Inflation potential parameters
+        m = 1e-6  # Mass parameter in Planck units
+        
+        # Current field value
+        if not hasattr(self, 'phi'):
+            self.phi = 3.0  # Initial field value
+            self.phi_dot = 0.0  # Initial field velocity
+        
+        # Update field with chaotic inflation potential V = m²φ²/2
+        V_prime = m * m * self.phi  # dV/dφ
+        self.phi_dot -= (3 * self.hubble_parameter * self.phi_dot + V_prime) * dt
+        self.phi += self.phi_dot * dt
+        
+        return self.phi
+
+    def evolve(self, dt: float) -> None:
+        # Inflation field dynamics
+        self.phi = self._evolve_inflation_field(dt)
+        
+        # Track slow-roll parameters
+        self.epsilon = self._compute_slow_roll()
+        
+        # Update scale factor with inflation
+        self.scale_factor *= np.exp(self.hubble_parameter * dt)

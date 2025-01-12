@@ -556,8 +556,8 @@ def main():
     quantum_gravity = QuantumGravity()
 
     # List of Black hole mass configurations in Planck masses, this will be used to run multiple simulations
-    #test_masses = [100, 500, 1000, 2000, 5000]
-    test_masses = [1000]
+    test_masses = [100, 500, 1000, 2000, 5000]
+    #test_masses = [1000]
 
     for initial_mass in test_masses:
         configure_logging(initial_mass)

@@ -29,11 +29,6 @@ from physics.verification import UnifiedTheoryVerification
 from utils.io import QuantumGravityIO, MeasurementResult
 
 
-#from core.constants import CONSTANTS
-
-
-#from quantum_gravity import QuantumGravity, CONSTANTS
-
 class BlackHoleSimulation:
     """Quantum black hole simulation."""
     def plot_results(self, save_path: str = None) -> None:
@@ -247,7 +242,6 @@ class BlackHoleSimulation:
         if mass <= 0:
             raise ValueError("Black hole mass must be positive")
         # Initialize framework
-        #self.qg = QuantumGravity(config_path)
         self.qg = quantum_gravity if quantum_gravity else QuantumGravity() 
 
         # Black hole parameters  
@@ -278,6 +272,7 @@ class BlackHoleSimulation:
         # Add verification
         self.verifier = UnifiedTheoryVerification(self)
         self.verification_results = []
+
     def _setup_grid(self) -> None:
         """Setup grid for cosmological simulation."""
         # Configure grid for large-scale structure
@@ -293,6 +288,7 @@ class BlackHoleSimulation:
         
         self.qg.grid.set_points(points)
         self.box_size = L
+
     def _setup_initial_state(self) -> None:
         """Setup initial state with time-dependent mass evolution."""
         state = self.qg.state
@@ -334,26 +330,24 @@ class BlackHoleSimulation:
             np.concatenate([g_tt, g_rr])
         )
 
-    def log_physics_output(self, t: float):
+    def log_physics_output(self, t: float, entropy: float, horizon_radius: float, temperature: float) -> None:
         """Log comprehensive physics parameters and formulas."""
         # Calculate physical parameters
-        self.temperature = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * self.qg.state.mass)
-        self.beta = CONSTANTS['l_p'] / self.horizon_radius
+        self.beta = CONSTANTS['l_p'] / horizon_radius
         self.gamma_eff = self.verifier.gamma * self.beta * np.sqrt(0.407)
         
         # Get verification metrics
         geo_metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
         self.ds2 = float(geo_metrics['lhs'])  # Convert to float for formatting
         self.integral = float(geo_metrics['rhs'])
-        self.entropy = np.pi * self.horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
 
         # Log physics output with proper formatting
         logging.info("\nQuantum Black Hole Physics at t = %.2f:", t)
         logging.info("Classical Parameters:")
         logging.info(f"Mass: {self.qg.state.mass:.2e} M_p")
-        logging.info(f"Horizon Radius: {self.horizon_radius:.2e} l_p")
-        logging.info(f"Temperature: {self.temperature:.2e} T_p")
-        logging.info(f"Entropy: {self.entropy:.2e} k_B")
+        logging.info(f"Horizon Radius: {horizon_radius:.2e} l_p")
+        logging.info(f"Temperature: {temperature:.2e} T_p")
+        logging.info(f"Entropy: {entropy:.8e} k_B")
         
         logging.info("\nQuantum Parameters:")
         logging.info(f"β (l_p/r_h): {self.beta:.2e}")
@@ -421,9 +415,6 @@ class BlackHoleSimulation:
             })
             
             # Extract equation verification results
-            #lhs = metrics['geometric_entanglement_lhs']
-            #rhs = metrics['geometric_entanglement_rhs']
-            #error = metrics['geometric_entanglement_error']
             lhs = metrics['lhs']
             rhs = metrics['rhs']
             error = metrics['relative_error']
@@ -433,15 +424,10 @@ class BlackHoleSimulation:
             lhs_history.append(lhs)
             rhs_history.append(rhs)
             
-            # Update quantum state with mass loss
-            #dm_dt = -(CONSTANTS['hbar'] * CONSTANTS['c']**6) / \
-            #        (15360 * np.pi * CONSTANTS['G']**2 * self.qg.state.mass**2)
-            #self.qg.state.mass += dm_dt * dt
             evaporation_rate = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / \
                             (15360 * np.pi * CONSTANTS['G']**2 * self.qg.state.mass**2)
             
             # Compute mass loss
-            #dm = evaporation_rate * dt * 1000.0
             original_dm = (self.qg.state.mass**2 * dt) / (15360 * np.pi)
 
             # Physical constants correction
@@ -475,10 +461,8 @@ class BlackHoleSimulation:
             
             # Log equation verification at intervals
             if int(t/t_final * 10) > int((t-dt)/t_final * 10):
-                self.log_physics_output(t)
+                self.log_physics_output(t, entropy, horizon_radius, temperature)
                 # logging.info(f"\nGeometric-Entanglement Equation at t={t:.2f}:")
-                # logging.info(f"LHS (dS²)     = {lhs:.6e}")
-                # logging.info(f"RHS (integral) = {rhs:.6e}")
                 # logging.info(f"Relative Error = {error:.6e}")
                 # logging.info(f"Mass = {self.qg.state.mass:.9e}, Entropy = {entropy:.3e}")
                 
@@ -508,43 +492,28 @@ class BlackHoleSimulation:
 
 def main():
     """Run black hole simulation example."""
-#    logging.basicConfig(level=logging.INFO)
-    configure_logging()
-
-
-    # # Configure logging
-    # logging.basicConfig(
-    #     level=logging.INFO,
-    #     format='%(message)s',  # Simplified format
-    #     force=True,  # Override any existing handlers
-    #     handlers=[
-    #         logging.StreamHandler(),  # Console handler
-    #         #logging.FileHandler('simulation.log')  # File handler
-    #     ]
-    # )
-
     # Initialize framework once
     config_path = None  # Use default config
     quantum_gravity = QuantumGravity()
+
+    # List of Black hole mass configurations in Planck masses, this will be used to run multiple simulations
     test_masses = [100, 500, 1000, 2000, 5000]
     #test_masses = [1000]
 
     for initial_mass in test_masses:
+        configure_logging(initial_mass)
         logging.info(f"\nRunning simulation for mass {initial_mass:.1f} Planck masses")
         
         # Pass existing QG instance to simulation
         sim = BlackHoleSimulation(initial_mass, quantum_gravity=quantum_gravity)
         t_final = 1000.0
         sim.run_simulation(t_final)
-        
-        # Rest of the code remains the same
-        # Inside run_simulation() where other measurements are recorded
-        #self.temperature_history.append(self.temperature)
-        #self.radiation_flux_history.append(evaporation_rate)        
-
+       
+        # Save simulation results
         output_dir = Path("results/black_hole")
         output_dir.mkdir(parents=True, exist_ok=True)
         
+        # Plot comprehensive results
         sim.plot_results(str(output_dir / f"evolution_M{initial_mass:.0f}.png"))
 
         # Plot black hole geometry

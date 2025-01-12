@@ -1,5 +1,6 @@
 # Quantum Gravity Framework
 
+Experimental Quantum Physics simulator
 A high-performance numerical framework for quantum gravity simulations, focusing on black hole dynamics and quantum effects.
 
 ## Features

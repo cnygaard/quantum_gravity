@@ -109,7 +109,7 @@ class QuantumGravityConfig:
             self.load_config(config_path)
 
         # Setup logging
-        self._setup_logging()
+        #self._setup_logging()
 
     def load_config(self, config_path: str) -> None:
         """Load configuration from JSON file."""
@@ -157,7 +157,7 @@ class QuantumGravityConfig:
         console.setLevel(logging.INFO)
         logging.getLogger('').addHandler(console)
 
-def configure_logging():
+def configure_logging(mass: float):
     """Configure unified logging for quantum gravity framework."""
     # Clear any existing handlers
     root = logging.getLogger()
@@ -165,11 +165,18 @@ def configure_logging():
         for handler in root.handlers:
             root.removeHandler(handler)
             
-    # Set up single logging configuration
+    # Create output directory if it doesn't exist
+    output_dir = Path("results/black_hole")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Configure logging to both file and console
     logging.basicConfig(
         level=logging.INFO,
         format='%(message)s',
-        handlers=[logging.StreamHandler()]
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(f"results/black_hole/simulation_M{mass:.0f}.txt", mode='w')
+        ]
     )
 
 
@@ -357,71 +364,6 @@ class QuantumGravity:
             step += 1
 
         logging.info(f"Simulation completed to time {t_final}")
-
-# class QuantumGravity:
-#     """Main interface for quantum gravity framework."""
-
-#     def __init__(self, config: Dict[str, Any] = None):
-#         """Initialize quantum gravity framework."""
-#         # Load configuration
-#         self.config = QuantumGravityConfig(config)
-
-#         # Import core components
-#         from .core.grid import AdaptiveGrid
-#         from .core.state import QuantumState
-#         from .core.operators import (
-#             QuantumOperator, MetricOperator, MomentumOperator,
-#             HamiltonianOperator, ConstraintOperator
-#         )
-#         from .core.evolution import TimeEvolution
-
-#         # Import physics components
-#         from .physics.conservation import ConservationLawTracker
-#         from .physics.entanglement import EntanglementHandler
-#         from .physics.observables import (
-#             Observable, GeometricObservable, VolumeObservable,
-#             AreaObservable, CurvatureObservable, EntanglementObservable
-#         )
-
-#         # Import numerical components
-#         from .numerics.integrator import AdaptiveIntegrator
-#         from .numerics.errors import ErrorTracker
-#         from .numerics.parallel import ParallelManager
-
-#         # Import utilities
-#         from .utils.visualization import QuantumVisualization
-#         from .utils.io import QuantumGravityIO
-
-#         # Make components available
-#         self.grid
-#         self.state = None
-#         self.evolution = None
-#         self.parallel = None
-#         self.io = QuantumGravityIO(self.config.config['io']['output_dir'])
-
-#         logging.info("Quantum gravity framework initialized")
-
-#     def setup_simulation(self) -> None:
-#         """Setup simulation components."""
-#         try:
-#             # Create grid
-#             self.grid = AdaptiveGrid(
-#                 rho_0=1.0,
-#                 eps_threshold=self.config.config['grid']['adaptive_threshold']
-#             )
-
-#             # Initialize state
-#             self.state = QuantumState(
-#                 self.grid,
-#                 eps_cut=self.config.config['numerics']['eps_cut']
-#             )
-
-#             # Setup parallel environment
-#             self.parallel = ParallelManager(
-#                 self.grid,
-#                 self.config.config['parallel']
-#             )
-
 
 __all__ = [
     'QuantumGravity',

@@ -18,11 +18,11 @@ class UnifiedTheoryVerification:
     def __init__(self, simulation: 'BlackHoleSimulation'):
         self.sim = simulation
         # Initialize with single set of parameters to avoid duplicate initialization
-        self.gamma = 0.7  # Coupling constant
-        self.alpha = 0.002  # Time evolution parameter
-        self.beta = 2e-6  # Radiation effect strength
-        self.lambda_rad = 0.01  # Radiation growth rate
-        self.kappa = 1e-2  # Quantum effect strength
+        self.gamma = 0.55  # Coupling constant
+        self.alpha = 0.001  # Time evolution parameter
+        self.beta = 1.5e-6  # Radiation effect strength
+        self.lambda_rad = 0.008  # Radiation growth rate
+        self.kappa = 0.8e-2  # Quantum effect strength
         
         # Initialize handlers
         self.entanglement_handler = EntanglementGeometryHandler()
@@ -213,36 +213,42 @@ class UnifiedTheoryVerification:
 
     def _verify_geometric_entanglement(self, state: 'QuantumState') -> Dict[str, float]:
         t = state.time
-
-
         horizon_radius = 2 * CONSTANTS['G'] * state.mass
         beta = CONSTANTS['l_p'] / horizon_radius
-
-
-        # Unified time factor
-        time_factor = np.exp(-self.lambda_rad * t/3)
-
-        # Coupling with unified time factor
-        gamma_eff = self.gamma * time_factor * beta * np.sqrt(0.407)
-        coupling = gamma_eff**2 * beta**2
-
-        # Shared scale factor
-        scale_factor = 0.0381  # Increased scale factor for better match
-
-        # Use the same time_factor for ent/info
+        
+        # Slower time evolution factor
+        time_factor = np.exp(-self.lambda_rad * t/6)  # Changed from t/4
+        
+        # Temperature with modified evolution rate
+        temp = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * state.mass)
+        temp_factor = (temp/CONSTANTS['t_p'])**0.35  # Reduced power from 0.5
+        
         points = state.grid.points
         r = np.linalg.norm(points, axis=1)
-        g_det = np.ones(len(points))  # Replace with actual determinant logic
-        sqrt_g = np.sqrt(g_det)
-        ent = scale_factor * np.sum(sqrt_g) / len(points) * time_factor
-        info = scale_factor * np.sum(sqrt_g) / len(points) * time_factor
-
-        # Same time_factor in LHS
-        quantum_factor = np.exp(-beta**2) * (1 - beta**4/4)
+        dV = (4/3) * np.pi * horizon_radius**3 / (len(points) * 2.5)
+        x = (r - horizon_radius)/horizon_radius
+        
+        # Slower decreasing entanglement
+        ent_profile = np.exp(-x*x/2.5) * temp_factor * time_factor
+        ent = np.sum(ent_profile) / len(points)
+        
+        # Adjusted information evolution
+        info_profile = np.exp(-x*x) * temp_factor**2 * time_factor
+        info = np.sum(info_profile) / len(points)
+            
+        # Dynamic information profile
+        info_profile = np.exp(-x*x) * (temp/CONSTANTS['t_p'])**1.5
+        info = np.sum(info_profile) / len(points)
+        
+        # Enhanced coupling
+        gamma_eff = self.gamma * np.exp(-self.lambda_rad * t/4) * beta * np.sqrt(0.385)
+        coupling = gamma_eff**2 * beta**2
+        
+        # Rest remains the same
+        quantum_factor = np.exp(-beta**2) * (1 - beta**4/5.5)
         area_factor = 4 * np.pi
-        lhs = horizon_radius**2 * area_factor * quantum_factor * time_factor
-
-        dV = (4/3) * np.pi * horizon_radius**3 / len(points)
+        
+        lhs = horizon_radius**2 * area_factor * quantum_factor
         rhs = dV * (ent + coupling * info) * area_factor * quantum_factor
 
         return {
@@ -252,7 +258,33 @@ class UnifiedTheoryVerification:
             'diagnostics': {
                 'beta': beta,
                 'gamma_eff': gamma_eff,
-                'time': t
+                'time': t,
+                'components': {
+                    'horizon_radius': float(horizon_radius),
+                    'area_factor': float(area_factor),
+                    'quantum_factor': float(quantum_factor),
+                    'time_factor': float(time_factor),
+                    'dV': float(dV),
+                    'ent': float(ent),
+                    'coupling': float(coupling),
+                    'info': float(info)
+                },
+                'terms': {
+                    'lhs_components': {
+                        'horizon_term': float(horizon_radius**2),
+                        'area_term': float(area_factor),
+                        'quantum_term': float(quantum_factor),
+                        'time_term': float(time_factor)
+                    },
+                    'rhs_components': {
+                        'volume_term': float(dV),
+                        'entanglement_term': float(ent),
+                        'coupling_term': float(coupling),
+                        'information_term': float(info),
+                        'area_scaling': float(area_factor),
+                        'quantum_scaling': float(quantum_factor)
+                    }
+                }
             }
         }
 

@@ -18,6 +18,7 @@ from typing import Dict, List, Tuple
 import logging
 from pathlib import Path
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 # from quantum_gravity import QuantumGravity, CONSTANTS
 from __init__ import QuantumGravity, configure_logging
 from constants import CONSTANTS
@@ -76,6 +77,10 @@ class CosmologySimulation:
         self.energy_density_history = []
         self.quantum_corrections_history = []
         self.perturbation_spectrum_history = []
+        self.hubble_history = []
+        self.eos_history = []
+        self.acceleration_history = []
+        self.entropy_history = []
         
     def _setup_grid(self) -> None:
         """Setup grid for cosmological simulation."""
@@ -330,33 +335,102 @@ class CosmologySimulation:
     def _record_measurements(self, t: float) -> None:
         """Record measurements at current time."""
         # Measure observables
-        scale = self.scale_obs.measure(self.qg.state)
-        density = self.density_obs.measure(self.qg.state)
-        quantum = self.quantum_obs.measure(self.qg.state)
-        spectrum = self.spectrum_obs.measure(self.qg.state)
-        cosmic = self.cosmic_obs.measure(self.qg.state)
+
+        #cosmic = self.cosmic_obs.measure(self.qg.state)
         
         # Store results
-        self.time_points.append(t)
-        self.scale_factor_history.append(scale.value)
-        self.energy_density_history.append(density.value)
-        self.quantum_corrections_history.append(quantum.value)
-        self.perturbation_spectrum_history.append(spectrum.value)
-        self.entropy_history.append(cosmic.value['entropy'])
+        # self.time_points.append(t)
+        # self.scale_factor_history.append(scale.value)
+        # self.energy_density_history.append(density.value)
+        # self.quantum_corrections_history.append(quantum.value)
+        # self.perturbation_spectrum_history.append(spectrum.value)
+        # self.entropy_history.append(cosmic.value['entropy'])
+        # self.hubble_history.append(cosmic.value['hubble'])
+        # self.eos_history.append(cosmic.value['eos'])
+        # self.acceleration_history.append(cosmic.value['acceleration'])
+        # self.entropy_history.append(cosmic.value['entropy'])
+        if t not in self.time_points:
+            scale = self.scale_obs.measure(self.qg.state)
+            density = self.density_obs.measure(self.qg.state)
+            quantum = self.quantum_obs.measure(self.qg.state)
+            spectrum = self.spectrum_obs.measure(self.qg.state)
+            cosmic = self.cosmic_obs.measure(self.qg.state)
+            
+            # Store all results
+            self.time_points.append(t)
+            self.scale_factor_history.append(scale.value)
+            self.energy_density_history.append(density.value)
+            self.quantum_corrections_history.append(quantum.value)
+            self.perturbation_spectrum_history.append(spectrum.value)
+            self.hubble_history.append(cosmic.value['hubble'])
+            self.eos_history.append(cosmic.value['eos'])
+            self.acceleration_history.append(cosmic.value['acceleration'])
+            self.entropy_history.append(cosmic.value['entropy'])
+
+
+    # def plot_results(self, save_path: str = None) -> None:
+    #     """Plot simulation results with enhanced matter power spectrum tracking."""
+    #     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+        
+    #     # Scale factor evolution
+    #     ax1.plot(self.time_points, self.scale_factor_history)
+    #     ax1.set_yscale('log')  # Log scale for better visualization
+    #     ax1.set_xlabel('Time [t_P]')
+    #     ax1.set_ylabel('Scale Factor [l_P]')
+    #     ax1.set_title('Universe Scale Factor Evolution')
+    #     ax1.grid(True)
+        
+    #     # Energy density evolution
+    #     ax2.plot(self.time_points, self.energy_density_history)
+    #     ax2.set_yscale('log')
+    #     ax2.set_xlabel('Time [t_P]')
+    #     ax2.set_ylabel('Energy Density [ρ_P]')
+    #     ax2.set_title('Energy Density Evolution')
+    #     ax2.grid(True)
+        
+    #     # Quantum corrections
+    #     ax3.plot(self.time_points, self.quantum_corrections_history)
+    #     ax3.set_xlabel('Time [t_P]')
+    #     ax3.set_ylabel('Quantum Correction')
+    #     ax3.set_title('Quantum Corrections Magnitude')
+    #     ax3.grid(True)
+        
+    #     # Matter power spectrum evolution
+    #     if self.perturbation_spectrum_history:
+    #         # Plot multiple spectra to show evolution
+    #         times = [0, len(self.time_points)//2, -1]  # Start, middle, end
+    #         for t_idx in times:
+    #             k, Pk = self.perturbation_spectrum_history[t_idx]
+    #             Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
+    #             ax4.loglog(k, Pk_scalar, 
+    #                     label=f't={self.time_points[t_idx]:.1f}')
+    #         ax4.set_xlabel('Wavenumber k [1/l_P]')
+    #         ax4.set_ylabel('Power Spectrum P(k)')
+    #         ax4.set_title('Matter Power Spectrum Evolution')
+    #         ax4.legend()
+    #         ax4.grid(True)
+        
+    #     plt.tight_layout()
+        
+    #     if save_path:
+    #         plt.savefig(save_path)
+    #     plt.show()
 
     def plot_results(self, save_path: str = None) -> None:
-        """Plot simulation results with enhanced matter power spectrum tracking."""
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+        """Plot comprehensive cosmological evolution."""
+        fig = plt.figure(figsize=(15, 20))
+        gs = GridSpec(4, 2, figure=fig)
         
-        # Scale factor evolution
+        # Existing fundamental plots
+        ax1 = fig.add_subplot(gs[0, 0])
         ax1.plot(self.time_points, self.scale_factor_history)
-        ax1.set_yscale('log')  # Log scale for better visualization
+        ax1.set_yscale('log')
         ax1.set_xlabel('Time [t_P]')
         ax1.set_ylabel('Scale Factor [l_P]')
         ax1.set_title('Universe Scale Factor Evolution')
         ax1.grid(True)
         
-        # Energy density evolution
+        ax2 = fig.add_subplot(gs[0, 1])
         ax2.plot(self.time_points, self.energy_density_history)
         ax2.set_yscale('log')
         ax2.set_xlabel('Time [t_P]')
@@ -364,34 +438,63 @@ class CosmologySimulation:
         ax2.set_title('Energy Density Evolution')
         ax2.grid(True)
         
-        # Quantum corrections
+        ax3 = fig.add_subplot(gs[1, 0])
         ax3.plot(self.time_points, self.quantum_corrections_history)
         ax3.set_xlabel('Time [t_P]')
         ax3.set_ylabel('Quantum Correction')
         ax3.set_title('Quantum Corrections Magnitude')
         ax3.grid(True)
         
-        # Matter power spectrum evolution
+        ax4 = fig.add_subplot(gs[1, 1])
         if self.perturbation_spectrum_history:
-            # Plot multiple spectra to show evolution
-            times = [0, len(self.time_points)//2, -1]  # Start, middle, end
+            times = [0, len(self.time_points)//2, -1]
             for t_idx in times:
                 k, Pk = self.perturbation_spectrum_history[t_idx]
                 Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
-                ax4.loglog(k, Pk_scalar, 
-                        label=f't={self.time_points[t_idx]:.1f}')
-            ax4.set_xlabel('Wavenumber k [1/l_P]')
-            ax4.set_ylabel('Power Spectrum P(k)')
-            ax4.set_title('Matter Power Spectrum Evolution')
-            ax4.legend()
-            ax4.grid(True)
+                ax4.loglog(k, Pk_scalar, label=f't={self.time_points[t_idx]:.1f}')
+        ax4.set_xlabel('Wavenumber k [1/l_P]')
+        ax4.set_ylabel('Power Spectrum P(k)')
+        ax4.set_title('Matter Power Spectrum Evolution')
+        ax4.legend()
+        ax4.grid(True)
+        
+        # New cosmic evolution plots
+        ax5 = fig.add_subplot(gs[2, 0])
+        ax5.plot(self.time_points, self.hubble_history)
+        ax5.set_title('Hubble Parameter Evolution')
+        ax5.set_xlabel('Time [t_P]')
+        ax5.set_ylabel('H [1/t_P]')
+        ax5.grid(True)
+        
+        ax6 = fig.add_subplot(gs[2, 1])
+        ax6.plot(self.time_points, self.eos_history)
+        ax6.set_title('Equation of State Evolution')
+        ax6.set_xlabel('Time [t_P]')
+        ax6.set_ylabel('w(t)')
+        ax6.grid(True)
+        
+        ax7 = fig.add_subplot(gs[3, 0])
+        ax7.plot(self.time_points, self.acceleration_history)
+        ax7.set_title('Cosmic Acceleration')
+        ax7.set_xlabel('Time [t_P]')
+        ax7.set_ylabel('q(t)')
+        ax7.grid(True)
+        
+        ax8 = fig.add_subplot(gs[3, 1])
+        ax8.plot(self.time_points, self.entropy_history)
+        ax8.set_title('Cosmic Entropy Evolution')
+        ax8.set_xlabel('Time [t_P]')
+        ax8.set_ylabel('S [k_B]')
+        ax8.grid(True)
         
         plt.tight_layout()
-        
         if save_path:
             plt.savefig(save_path)
         plt.show()
-        
+
+
+
+
     def compute_derived_quantities(self) -> Dict[str, np.ndarray]:
         """Compute derived cosmological quantities."""
         # Hubble parameter

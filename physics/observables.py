@@ -429,8 +429,11 @@ class ScaleFactorObservable(Observable):
         )
 
 class EnergyDensityObservable(Observable):
-    """Observable for measuring cosmic energy density."""
+    """Observable for measuring energy density in stars and cosmological scenarios."""
     
+    def __init__(self, grid):
+        super().__init__(grid)
+        
     def _construct_operator(self) -> csr_matrix:
         """Construct energy density operator."""
         n_points = len(self.grid.points)
@@ -444,21 +447,87 @@ class EnergyDensityObservable(Observable):
         return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
         
     def measure(self, state: 'QuantumState') -> MeasurementResult:
-        """Measure energy density with quantum corrections."""
-        # Extract metric components
-        g = state._metric_array
+        """Measure energy density with quantum corrections.
         
-        # Calculate classical energy density
-        rho = (3 * CONSTANTS['G'] * state.mass) / (8 * np.pi * g[0,0,0]**2)
+        Returns:
+            MeasurementResult with:
+            - value: np.ndarray for stellar case, float for cosmological
+            - uncertainty: same shape as value
+            - metadata: dict with additional information
+        """
+        is_cosmological = hasattr(state, 'scale_factor')
+        
+        if is_cosmological:
+            return self._measure_cosmological(state)
+        else:
+            return self._measure_stellar(state)
+    
+    def _measure_stellar(self, state: 'QuantumState') -> MeasurementResult:
+        """Measure stellar density profile."""
+        n_points = len(self.grid.points)
+        points = self.grid.points
+        density = np.zeros(n_points)
+        uncertainty = np.zeros(n_points)
+        
+        # Calculate radial distances
+        r = np.linalg.norm(points, axis=1)
+        r = np.maximum(r, CONSTANTS['l_p'])  # Prevent division by zero
+        
+        # Classical density with radial dependence
+        mass = state.mass
+        density = (3 * CONSTANTS['G'] * mass) / (4 * np.pi * r**3)
         
         # Add quantum corrections
-        quantum_correction = CONSTANTS['hbar'] / (g[0,0,0]**3)
+        quantum_factor = 1 + (CONSTANTS['l_p']/r)**2
+        density *= quantum_factor
+        
+        # Enforce minimum density
+        min_density = CONSTANTS['m_p']/(4*np.pi*CONSTANTS['l_p']**3)
+        density = np.maximum(density, min_density)
+        
+        # Calculate uncertainty
+        uncertainty = CONSTANTS['hbar'] / (r**3)
         
         return MeasurementResult(
-            value=rho,
-            uncertainty=quantum_correction,
-            metadata={'time': state.time}
+            value=density,
+            uncertainty=uncertainty,
+            metadata={
+                'time': state.time,
+                'mass': mass,
+                'quantum_factor': quantum_factor
+            }
         )
+    
+    def _measure_cosmological(self, state: 'CosmologicalState') -> MeasurementResult:
+        """Measure cosmological energy density."""
+        # Get basic Friedmann density
+        H = state.hubble_parameter
+        rho = 3 * H**2 / (8 * np.pi * CONSTANTS['G'])
+        
+        # Add quantum corrections for cosmology
+        quantum_factor = 1 + (CONSTANTS['l_p']/state.scale_factor)**2
+        rho *= quantum_factor
+        
+        # Near bounce behavior
+        rho_crit = 0.41 * CONSTANTS['rho_planck']
+        if rho > rho_crit:
+            rho = rho_crit * (2 - rho/rho_crit)  # Smooth bounce transition
+        
+        # Uncertainty from quantum corrections
+        uncertainty = CONSTANTS['hbar'] * H**3
+        
+        # For cosmological case, we still return a scalar
+        return MeasurementResult(
+            value=float(rho),
+            uncertainty=float(uncertainty),
+            metadata={
+                'time': state.time,
+                'scale_factor': state.scale_factor,
+                'hubble_parameter': H,
+                'quantum_factor': quantum_factor
+            }
+        )
+    
 
 class QuantumCorrectionsObservable(Observable):
     """Observable for measuring quantum corrections to classical geometry."""
@@ -571,4 +640,94 @@ class CosmicMatterRadiationObservable:
                 'perturbations': perturbations
             },
             uncertainty=CONSTANTS['l_p'] * state.hubble_parameter
+        )
+
+class StellarTemperatureObservable:
+    """Observable for measuring stellar temperature."""
+    
+    def __init__(self, grid):
+        self.grid = grid
+        self.mass_obs = ADMMassObservable(grid)
+
+    def measure(self, state):
+        """Measure stellar temperature with quantum corrections."""
+        mass_result = self.mass_obs.measure(state)
+        mass = mass_result.value
+        
+        # Stellar temperature scaling (~ M^(1/3) for main sequence)
+        classical_temp = (CONSTANTS['c']**2 * mass**(1/3)) / \
+                        (CONSTANTS['G'] * CONSTANTS['m_p'])
+                        
+        # Add quantum corrections
+        quantum_factor = 1 + (CONSTANTS['l_p']/(2 * CONSTANTS['G'] * mass))**2
+        temp = classical_temp * quantum_factor
+
+        return MeasurementResult(
+            value=temp,
+            uncertainty=abs(temp * mass_result.uncertainty / mass),
+            metadata={'mass': mass}
+        )
+    
+class PressureObservable(Observable):
+    """Observable for measuring stellar pressure."""
+    
+    def __init__(self, grid):
+        super().__init__(grid)
+        self.energy_obs = EnergyDensityObservable(grid)
+
+    def _construct_operator(self) -> csr_matrix:
+        """Construct pressure operator."""
+        n_points = len(self.grid.points)
+        rows, cols, data = [], [], []
+        
+        for i in range(n_points):
+            # Diagonal elements for local pressure
+            rows.append(i)
+            cols.append(i)
+            data.append(1.0)
+            
+            # Add coupling to neighbors for pressure gradients
+            for j in self.grid.neighbors[i]:
+                if j > i:  # Avoid double counting
+                    coupling = 1.0 / len(self.grid.neighbors[i])
+                    rows.extend([i, j])
+                    cols.extend([j, i])
+                    data.extend([coupling, coupling])
+                    
+        return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
+
+    def measure(self, state: 'QuantumState') -> MeasurementResult:
+        """Measure pressure with quantum corrections."""
+        # Get energy density first
+        energy_result = self.energy_obs.measure(state)
+        rho = energy_result.value
+        
+        # Handle scalar vs array density
+        if np.isscalar(rho):
+            rho = np.array([rho])
+            
+        # Prevent division by zero
+        min_density = CONSTANTS['m_p']/(4*np.pi*CONSTANTS['l_p']**3)  # Minimum physical density
+        rho = np.maximum(rho, min_density)
+        
+        # Calculate pressure using equation of state
+        w = 1/3  # Radiation-like equation of state
+        classical_pressure = w * rho
+        
+        # Add quantum corrections
+        if hasattr(state, 'scale_factor'):  # Cosmological case
+            quantum_factor = 1 + (CONSTANTS['l_p']/state.scale_factor)**2
+        else:  # Stellar case
+            r = np.maximum(np.linalg.norm(self.grid.points, axis=1), CONSTANTS['l_p'])
+            quantum_factor = 1 + (CONSTANTS['l_p']/r)**2
+            
+        pressure = classical_pressure * quantum_factor
+        
+        # Calculate uncertainty
+        uncertainty = abs(pressure * energy_result.uncertainty / rho)
+
+        return MeasurementResult(
+            value=pressure,
+            uncertainty=uncertainty,
+            metadata={'density': rho}
         )

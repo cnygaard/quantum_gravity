@@ -42,7 +42,7 @@ class AdaptiveGrid:
         #display_top(stats)
 
         # Store points efficiently
-        self.points = points.astype(np.float32)  # Use float32 instead of float64
+        self.points = points.astype(np.float64)  # Use float32 instead of float64
         
         # Build tree with memory-efficient parameters
         tree = cKDTree(self.points, leafsize=32, compact_nodes=True)

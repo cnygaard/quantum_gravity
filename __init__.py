@@ -21,7 +21,9 @@ from physics.observables import (
     ScaleFactorObservable,
     EnergyDensityObservable,
     QuantumCorrectionsObservable,
-    PerturbationSpectrumObservable
+    PerturbationSpectrumObservable,
+    StellarTemperatureObservable,
+    PressureObservable
 )
 
 # Make key components available at package level
@@ -219,10 +221,11 @@ class QuantumGravity:
         self.grid.set_points(initial_points)
 
         # Initialize state with populated grid
-        #self.state = QuantumState(
-        #    grid=self.grid,
-        #    eps_cut=self.config.config['numerics']['eps_cut']
-        #)
+        self.state = QuantumState(
+           grid=self.grid,
+           initial_mass=1.0,
+           eps_cut=self.config.config['numerics']['eps_cut']
+        )
 
         # Initialize quantum operators
         self.operators = {
@@ -286,7 +289,8 @@ class QuantumGravity:
         physics.EnergyDensityObservable = EnergyDensityObservable
         physics.QuantumCorrectionsObservable = QuantumCorrectionsObservable
         physics.PerturbationSpectrumObservable = PerturbationSpectrumObservable
-
+        physics.StellarTemperatureObservable = StellarTemperatureObservable
+        physics.PressureObservable = PressureObservable
         return physics
 
     def _load_config(self, config_path: str = None) -> Dict:
@@ -328,6 +332,38 @@ class QuantumGravity:
             else:
                 d[k] = v
         return d
+
+    def _setup_grid(self):
+        logging.debug(f"R_star = {self.R_star:.3e}")
+        
+        # Generate and validate points
+        points = self._generate_grid_points()
+        logging.debug(f"Points shape: {points.shape}")
+        logging.debug(f"Points stats: min={np.min(points):.3e}, max={np.max(points):.3e}")
+        
+        # Check for invalid values
+        if not np.all(np.isfinite(points)):
+            invalid_mask = ~np.isfinite(points)
+            invalid_points = points[invalid_mask]
+            invalid_indices = np.where(invalid_mask)
+            logging.error(f"Invalid points at indices {invalid_indices}")
+            logging.error(f"Invalid values: {invalid_points}")
+            raise ValueError("NaN/Inf found in grid points")
+            
+        # Clamp to safe range if needed
+        max_allowed = 1e308  # Max float64 ~1e308
+        if np.any(np.abs(points) > max_allowed):
+            points = np.clip(points, -max_allowed, max_allowed)
+            logging.warning("Points clipped to safe range")
+            
+        self.qg.grid.set_points(points)
+
+    def _generate_grid_points(self):
+        num_points = 1000
+        # Use smaller scale factor to avoid overflow
+        scale = min(self.R_star, 1e100)
+        points = np.random.rand(num_points, 3) * scale
+        return points
 
     def run_simulation(self, t_final: float, callback=None) -> None:
         """Run simulation to specified time."""

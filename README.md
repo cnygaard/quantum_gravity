@@ -47,6 +47,22 @@ Key mathematical components:
 - Information preservation via EP=EPR
 - Conservation law verification
 
+### Star Simulation (Experimental)
+
+The stellar evolution simulation (`examples/star.py`) models quantum gravitational effects in stellar objects:
+- Tracks density, pressure, and temperature profiles
+- Includes quantum corrections to metric components
+- Handles stellar structure with proper scaling to Planck units
+- Verifies geometric-entanglement relationships
+- Currently under active development
+
+### Cosmology Simulation (Experimental) 
+The cosmological simulation (`examples/cosmology.py`) explores quantum effects in early universe evolution:
+- Models scale factor evolution with quantum corrections
+- Tracks energy density and perturbation spectra
+- Handles quantum bounce scenarios
+- Includes inflation dynamics
+- Under development with ongoing refinements
 
 ## Installation
 
@@ -89,6 +105,19 @@ You can run the black hole simulation using the following command:
 ```bash
 python examples/black_hole.py
 ```
+
+You can run the cosmology simulation using the following command:
+
+```bash
+python examples/cosmology.py
+```
+
+You can run the star simulation using the following command:
+
+```bash
+python examples/star.py
+```
+
 
 ## Simulation Outputs
 
@@ -220,3 +249,53 @@ Run the full test suite:
 ```bash
 python test_black_hole_simulation.py
 ```
+
+## Physics Validation & Technical Details
+
+### Geometric-Entanglement Formula
+The framework implements the key relationship:
+dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
+
+Where:
+- dS² represents spacetime interval measure
+- γ is the coupling constant (currently set to 0.55)
+- êᵢ(x) are entanglement operators
+- îᵢ(x) are information operators
+
+### Quantum Effects Magnitude Ranges
+Quantum corrections scale as:
+- Black Holes: β = l_p/r_h ~ 10⁻(3-6)
+- Stars: β = l_p/R ~ 10⁻(5-8) 
+- Cosmology: β = l_p*H ~ 10⁻(2-4)
+
+Effective coupling γ_eff = γβ√0.407 determines correction strength.
+
+### Validation Metrics
+The framework tracks:
+1. Geometric-Entanglement Verification
+   - LHS/RHS relative error < 10⁻6
+   - Conservation law violations < 10⁻8
+   - Quantum corrections magnitude: 0.1% - 1%
+
+2. Physical Constraints
+   - Energy conditions preserved
+   - Horizon area quantization
+   - Entropy bounds respected
+
+3. Numerical Stability
+   - Grid point scaling: 10³ - 10⁵ points
+   - Adaptive timestep: 10⁻6 - 10⁻2 t_p
+   - Error tolerances: 10⁻8 - 10⁻10
+
+## Technical Requirements
+
+### System Requirements
+- Python 3.8+
+- NumPy 1.20+
+- SciPy 1.7+
+- 8GB RAM minimum
+- Multi-core CPU recommended tested on a x86 Linux Laptop
+
+### Dependencies
+- Matplotlib for visualization
+

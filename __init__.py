@@ -185,7 +185,7 @@ def configure_logging(mass: float = None, simulation_type: str = 'black_hole'):
     else:
         log_file = "simulation.txt"
         
-    handlers.append(logging.FileHandler(str(output_dir / log_file), mode='w'))
+    handlers.append(logging.FileHandler(str(output_dir / log_file), mode='a'))
     
     logging.basicConfig(
         level=logging.INFO,

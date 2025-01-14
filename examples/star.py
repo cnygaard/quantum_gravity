@@ -75,7 +75,7 @@ class StarSimulation:
         
         # Convert solar radius to proper units and set scale
         r_min = max(CONSTANTS['l_p'], self.R_star * 1e-6)  # Start from max of Planck length or small fraction of radius
-        r_max = self.R_star  # Use stellar radius directly (already in Planck units)
+        r_max = self.R_star / CONSTANTS['l_p']  # Normalize to Planck length
         
         # Use log spacing with more points near center
         r = np.geomspace(r_min, r_max, points_per_dim)
@@ -268,8 +268,8 @@ class StarSimulation:
                 
                 # Log geometric verification
                 logging.info(f"\nGeometric-Entanglement Formula:")
-                logging.info(f"LHS = {metrics['lhs']:.6e}")
-                logging.info(f"RHS = {metrics['rhs']:.6e}")
+                logging.info(f"LHS = {metrics['lhs']:.44e}")
+                logging.info(f"RHS = {metrics['rhs']:.44e}")
                 logging.info(f"Relative Error = {metrics['relative_error']:.6e}")
                 
                 # Log quantum parameters

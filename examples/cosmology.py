@@ -530,7 +530,7 @@ def main():
     sim = CosmologySimulation(initial_scale, hubble_parameter)
     
     # Run until significant expansion
-    t_final = 10.0  # in Planck times
+    t_final = 20.0  # in Planck times
     sim.run_simulation(t_final)
     
     # Plot and save results

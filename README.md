@@ -299,3 +299,21 @@ The framework tracks:
 ### Dependencies
 - Matplotlib for visualization
 
+
+### Quantum Effects as Dark Phenomena (Experimental non verified hypothesis)
+The framework implements quantum gravity corrections that manifest as dark matter and dark energy effects:
+
+Dark Matter as Quantum Gravity:
+- β_galaxy = ℓ_P/R_galaxy (quantum/classical scale ratio)
+- γ_eff = 2β√0.407 (effective coupling)
+- Force enhancement: F_eff/F_classical ≈ 1 + γ_eff
+
+Dark Energy as Modified Vacuum:
+- ρ_vacuum = ℏ/(cℓ_P⁴) (base vacuum energy)
+- ρ_modified = ρ_vacuum(1 + γ_eff) (quantum corrected)
+- Λ ∝ ρ_modified (cosmological constant)
+
+These quantum corrections naturally produce:
+- Galaxy rotation curve modifications
+- Large-scale structure formation
+- Cosmic acceleration

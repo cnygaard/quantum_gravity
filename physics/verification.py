@@ -1,6 +1,6 @@
 from physics.entanglement import EntanglementGeometryHandler
 from physics.conservation import ConservationLawTracker
-from typing import Dict, TYPE_CHECKING, List
+from typing import Dict, TYPE_CHECKING, List, Tuple
 import numpy as np
 from scipy.special import lambertw
 from constants import CONSTANTS
@@ -720,3 +720,93 @@ class CosmologicalVerification:
             'slow_roll': slow_roll,
             'spectrum': spectrum
         }
+
+class DarkMatterVerification(UnifiedTheoryVerification):
+    """Verify quantum gravity as dark matter."""
+    
+    def verify_rotation_curve(self, state, r_points: np.ndarray = None) -> Dict[str, np.ndarray]:
+        """Verify rotation curves with quantum corrections.
+        
+        Args:
+            state: Current quantum state
+            r_points: Radial points for velocity calculation
+            
+        Returns:
+            Dict containing velocity profiles and enhancement factors
+        """
+        if r_points is None:
+            r_points = np.geomspace(CONSTANTS['l_p'], state.galaxy_radius, 1000)
+            
+        # Classical Keplerian velocity
+        v_classical = np.sqrt(CONSTANTS['G'] * state.mass / r_points)
+        
+        # Quantum-corrected velocity with radius-dependent coupling
+        beta_r = CONSTANTS['l_p'] / r_points
+        gamma_eff_r = state.gamma * beta_r * np.sqrt(0.407)
+        quantum_factor = 1 + gamma_eff_r * (1 + np.log(r_points/CONSTANTS['l_p']))
+        v_quantum = v_classical * np.sqrt(quantum_factor)
+        
+        # Calculate characteristic scales
+        r_scale = np.sqrt(CONSTANTS['G'] * state.mass / CONSTANTS['c']**2)
+        v_scale = np.sqrt(CONSTANTS['G'] * state.mass / r_scale)
+        
+        return {
+            'radii': r_points,
+            'v_classical': v_classical,
+            'v_quantum': v_quantum,
+            'enhancement': v_quantum/v_classical,
+            'quantum_factor': quantum_factor,
+            'characteristic_scales': {
+                'r_scale': r_scale,
+                'v_scale': v_scale
+            }
+        }
+        
+    def verify_mass_profile(self, state) -> Dict[str, np.ndarray]:
+        """Verify effective mass distribution from quantum corrections."""
+        r_points = np.geomspace(CONSTANTS['l_p'], state.galaxy_radius, 1000)
+        
+        # Classical mass profile
+        M_classical = state.mass * np.ones_like(r_points)
+        
+        # Quantum-corrected effective mass
+        beta_r = CONSTANTS['l_p'] / r_points
+        gamma_eff_r = state.gamma * beta_r * np.sqrt(0.407)
+        M_quantum = M_classical * (1 + gamma_eff_r)
+        
+        return {
+            'radii': r_points,
+            'M_classical': M_classical,
+            'M_quantum': M_quantum,
+            'mass_ratio': M_quantum/M_classical
+        }
+
+class UniversalQuantumEffects:
+    """Unified quantum gravity effects at galactic and cosmic scales."""
+    
+    def __init__(self, R_galaxy: float, R_universe: float):
+        # Dark Matter (Quantum Gravity)
+        self.beta_galaxy = CONSTANTS['l_p']/R_galaxy  # Quantum/classical scale ratio
+        self.gamma_eff_galaxy = 2.0 * self.beta_galaxy * np.sqrt(0.407)  # Effective coupling
+        
+        # Dark Energy (Quantum Vacuum) 
+        self.beta_universe = CONSTANTS['l_p']/R_universe  # Cosmic scale ratio
+        self.vacuum_energy = CONSTANTS['hbar']/(CONSTANTS['c']*CONSTANTS['l_p']**4)  # Base vacuum energy
+        
+    def calculate_effects(self, r: float) -> Tuple[float, float]:
+        """Calculate quantum gravity effects at given radius.
+        
+        Args:
+            r: Radius in Planck lengths
+            
+        Returns:
+            force_enhancement: Dark matter-like force enhancement
+            expansion_rate: Modified vacuum energy contribution
+        """
+        # Scale-dependent force enhancement
+        force_enhancement = 1 + self.gamma_eff_galaxy * (r/self.beta_galaxy)**(-1/2)
+        
+        # Modified vacuum energy with quantum corrections
+        expansion_rate = self.vacuum_energy * (1 + self.gamma_eff_galaxy)
+        
+        return force_enhancement, expansion_rate

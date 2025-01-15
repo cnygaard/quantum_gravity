@@ -14,15 +14,18 @@ from utils.io import MeasurementResult  # Add this import
 
 class StarSimulation:
     """Quantum star simulation extending black hole framework."""
-    def __init__(self, mass: float, radius: float, quantum_gravity=None, debug=False):
-        """Initialize star simulation."""
+    def __init__(self, mass: float, radius: float, galaxy_radius: float = None, quantum_gravity=None, debug=False):
+        """Initialize star simulation with galaxy-scale effects."""
         self.mass = mass  # In solar masses
         self.radius = radius  # In solar radii
-        
+    
         # Convert to Planck units with proper scaling
         self.M_star = mass * CONSTANTS['M_sun']  
         self.R_star = radius * CONSTANTS['R_sun']
-        
+
+        # Add Hubble parameter initialization
+        self.hubble_parameter = 70.0 * 1000 / (3.086e22)  # H0 in Planck units
+    
         self.qg = quantum_gravity or QuantumGravity()
         self.debug = debug
 
@@ -31,12 +34,23 @@ class StarSimulation:
         self.beta = CONSTANTS['l_p'] / self.R_star  # Quantum scale parameter
         self.gamma_eff = self.gamma * self.beta * np.sqrt(0.407)  # Effective coupling
 
+        # Galaxy scale quantum parameters
+        self.galaxy_radius = galaxy_radius or 50000 * CONSTANTS['R_sun']  # Default ~50 kpc
+        self.beta_galaxy = CONSTANTS['l_p'] / self.galaxy_radius
+        self.gamma_eff_galaxy = self.gamma * self.beta_galaxy * np.sqrt(0.407)
+    
+        # Quantum vacuum parameters
+        self.rho_vacuum = CONSTANTS['hbar'] / (CONSTANTS['c'] * CONSTANTS['l_p']**4)
+        self.beta_universe = CONSTANTS['l_p'] / CONSTANTS['c'] * self.hubble_parameter
+        self.rho_vacuum_modified = self.rho_vacuum * (1 + self.gamma_eff * self.beta_universe)
+
         self.verifier = UnifiedTheoryVerification(self)
         self.verification_results = []
 
         # Setup grid and state first
         self._setup_grid()
         self._setup_observables()
+        self._initialize_profile_arrays()
         self._setup_initial_state()
 
         # Initialize arrays 
@@ -47,7 +61,6 @@ class StarSimulation:
         self.time_points = []
         self.quantum_corrections = []
 
-
     def _setup_grid(self):
         points = self._generate_grid_points()
         logging.debug(f"Points stats: min={np.min(points):.3e}, max={np.max(points):.3e}")
@@ -56,6 +69,31 @@ class StarSimulation:
             logging.error(f"Invalid points: {invalid_points}")
             raise ValueError("NaN/Inf found in grid points.")
         self.qg.grid.set_points(points)
+
+    def _initialize_profile_arrays(self):
+        """Initialize profile arrays with proper dimensions."""
+        n_points = len(self.qg.grid.points)
+        initial_capacity = 1000  # Initial capacity for time steps
+
+    def _setup_observables(self) -> None:
+        """Setup observables including galaxy-scale effects."""
+        # Existing observable setup...
+    
+        # Add galaxy-scale measurements
+        self.effective_force = self._compute_effective_force()
+        self.dark_matter_ratio = self.effective_force / self._compute_classical_force()
+    
+        # Track vacuum energy
+        self.vacuum_energy_density = self.rho_vacuum_modified
+        self.cosmological_constant = 8 * np.pi * CONSTANTS['G'] * self.rho_vacuum_modified
+
+    def _compute_effective_force(self) -> float:
+        """Compute force with quantum gravity corrections."""
+        return CONSTANTS['G'] * self.M_star * (1 + self.gamma_eff_galaxy * self.beta_galaxy) / self.galaxy_radius**2
+
+    def _compute_classical_force(self) -> float:
+        """Compute classical gravitational force."""
+        return CONSTANTS['G'] * self.M_star / self.galaxy_radius**2
 
     def _initialize_profile_arrays(self):
         """Initialize profile arrays with proper dimensions."""
@@ -218,11 +256,6 @@ class StarSimulation:
         self.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
         self.pressure_obs = self.qg.physics.PressureObservable(self.qg.grid)
         
-        # Trim arrays to actual size used
-        #self.density_profile = self.density_profile[:self.current_size]
-        #self.pressure_profile = self.pressure_profile[:self.current_size]
-        #self.temperature_profile = self.temperature_profile[:self.current_size]
-
     def run_simulation(self, t_final: float) -> None:
         """Run simulation until t_final."""
         try:
@@ -263,7 +296,7 @@ class StarSimulation:
                 logging.info(f"Mass: {self.M_star/CONSTANTS['M_sun']:.2e} M_sun")
                 logging.info(f"Radius: {self.R_star/CONSTANTS['R_sun']:.2e} R_sun")
                 logging.info(f"Central Density: {np.max(density.value):.2e}")
-                #logging.info(f"Central Pressure: {np.max(pressure.value):.2e}")
+                logging.info(f"Central Pressure: {np.max(pressure.value):.2e}")
                 #logging.info(f"Surface Temperature: {np.mean(temp.value):.2e}")
                 
                 # Log geometric verification

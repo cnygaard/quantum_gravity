@@ -22,6 +22,9 @@ class StarSimulation:
         # Convert to Planck units with proper scaling
         self.M_star = mass * CONSTANTS['M_sun']  
         self.R_star = radius * CONSTANTS['R_sun']
+
+        # Add Hubble parameter initialization
+        self.hubble_parameter = 70.0 * 1000 / (3.086e22)  # H0 in Planck units
     
         self.qg = quantum_gravity or QuantumGravity()
         self.debug = debug
@@ -47,6 +50,7 @@ class StarSimulation:
         # Setup grid and state first
         self._setup_grid()
         self._setup_observables()
+        self._initialize_profile_arrays()
         self._setup_initial_state()
 
         # Initialize arrays 
@@ -90,6 +94,11 @@ class StarSimulation:
     def _compute_classical_force(self) -> float:
         """Compute classical gravitational force."""
         return CONSTANTS['G'] * self.M_star / self.galaxy_radius**2
+
+    def _initialize_profile_arrays(self):
+        """Initialize profile arrays with proper dimensions."""
+        n_points = len(self.qg.grid.points)
+        initial_capacity = 1000  # Initial capacity for time steps
         
         # Initialize profile arrays with proper shape
         self.density_profile = np.zeros((initial_capacity, n_points))
@@ -247,11 +256,6 @@ class StarSimulation:
         self.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
         self.pressure_obs = self.qg.physics.PressureObservable(self.qg.grid)
         
-        # Trim arrays to actual size used
-        #self.density_profile = self.density_profile[:self.current_size]
-        #self.pressure_profile = self.pressure_profile[:self.current_size]
-        #self.temperature_profile = self.temperature_profile[:self.current_size]
-
     def run_simulation(self, t_final: float) -> None:
         """Run simulation until t_final."""
         try:
@@ -292,7 +296,7 @@ class StarSimulation:
                 logging.info(f"Mass: {self.M_star/CONSTANTS['M_sun']:.2e} M_sun")
                 logging.info(f"Radius: {self.R_star/CONSTANTS['R_sun']:.2e} R_sun")
                 logging.info(f"Central Density: {np.max(density.value):.2e}")
-                #logging.info(f"Central Pressure: {np.max(pressure.value):.2e}")
+                logging.info(f"Central Pressure: {np.max(pressure.value):.2e}")
                 #logging.info(f"Surface Temperature: {np.mean(temp.value):.2e}")
                 
                 # Log geometric verification

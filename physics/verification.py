@@ -1,6 +1,6 @@
 from physics.entanglement import EntanglementGeometryHandler
 from physics.conservation import ConservationLawTracker
-from typing import Dict, TYPE_CHECKING, List
+from typing import Dict, TYPE_CHECKING, List, Tuple
 import numpy as np
 from scipy.special import lambertw
 from constants import CONSTANTS

@@ -106,32 +106,43 @@ class StarSimulation:
         """Compute classical gravitational force."""
         return CONSTANTS['G'] * self.M_star / self.galaxy_radius**2
 
+    # def _compute_leech_vacuum_energy(self) -> float:
+    #     """Compute vacuum energy with Leech lattice corrections"""
+    #     # Get base vacuum energy from Leech lattice
+    #     leech_energy = self.leech.compute_vacuum_energy()
+        
+    #     # Apply quantum corrections
+    #     quantum_factor = 1 + self.gamma_eff * self.beta_universe
+        
+    #     # Combine effects
+    #     return leech_energy * quantum_factor
     def _compute_leech_vacuum_energy(self) -> float:
-        """Compute vacuum energy with Leech lattice corrections"""
-        # Get base vacuum energy from Leech lattice
-        leech_energy = self.leech.compute_vacuum_energy()
-        
-        # Apply quantum corrections
-        quantum_factor = 1 + self.gamma_eff * self.beta_universe
-        
-        # Combine effects
-        return leech_energy * quantum_factor
-        
+            """Compute vacuum energy with Leech lattice corrections"""
+            base_energy = CONSTANTS['hbar']/(CONSTANTS['c'] * CONSTANTS['l_p']**4)
+            leech_correction = self.leech.compute_vacuum_energy()
+            
+            # Combine quantum corrections with Leech lattice effects
+            return base_energy * (1 + self.gamma_eff * self.beta_universe) * leech_correction
+
     def _compute_modified_lambda(self) -> float:
         """Calculate modified cosmological constant"""
-        vacuum_energy = self._compute_leech_vacuum_energy()
+        return 8 * np.pi * CONSTANTS['G'] * self.rho_vacuum / CONSTANTS['c']**2
+
+    # def _compute_modified_lambda(self) -> float:
+    #     """Calculate modified cosmological constant"""
+    #     vacuum_energy = self._compute_leech_vacuum_energy()
         
-        # Convert to cosmological constant
-        lambda_modified = 8 * np.pi * CONSTANTS['G'] * vacuum_energy / CONSTANTS['c']**2
+    #     # Convert to cosmological constant
+    #     lambda_modified = 8 * np.pi * CONSTANTS['G'] * vacuum_energy / CONSTANTS['c']**2
         
-        # Track for verification
-        self.verification_results.append({
-            'time': self.qg.state.time,
-            'lambda': lambda_modified,
-            'vacuum_energy': vacuum_energy
-        })
+    #     # Track for verification
+    #     self.verification_results.append({
+    #         'time': self.qg.state.time,
+    #         'lambda': lambda_modified,
+    #         'vacuum_energy': vacuum_energy
+    #     })
         
-        return lambda_modified
+    #     return lambda_modified
 
     def _initialize_profile_arrays(self):
         """Initialize profile arrays with proper dimensions."""

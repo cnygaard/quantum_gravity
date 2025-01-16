@@ -179,13 +179,19 @@ class LeechLattice:
         self._symmetry_factor = self._compute_symmetry_factor()
 
     def compute_vacuum_energy(self) -> float:
-        """Compute vacuum energy with caching for performance."""
-        if self._cached_energy is None:
-            base_energy = CONSTANTS['hbar']/(CONSTANTS['c'] * CONSTANTS['l_p']**4)
-            lattice_sum = self._compute_lattice_sum()
-            symmetry_factor = self._compute_symmetry_factor()
-            self._cached_energy = base_energy * lattice_sum * symmetry_factor
-        return self._cached_energy
+        """Enhanced vacuum energy with geometric suppression"""
+        base_energy = CONSTANTS['hbar']/(CONSTANTS['c'] * CONSTANTS['l_p']**4)
+        lattice_sum = self._compute_lattice_sum()
+        
+        # Geometric suppression from Leech lattice symmetries
+        symmetry_factor = self._compute_symmetry_factor()
+        
+        # Enhanced scale factor with refined corrections
+        scale_factor = np.sqrt(self.n_points) * np.log(self.n_points) * (1 + np.log(self.n_points)/24)
+        
+        return base_energy * lattice_sum * symmetry_factor / scale_factor
+
+
 
     def _generate_lattice_points(self) -> np.ndarray:
         """Optimized Leech lattice point generation."""

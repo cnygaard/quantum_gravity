@@ -4,6 +4,7 @@ import linecache
 from typing import List, Tuple, Optional
 import numpy as np
 from scipy.spatial import cKDTree
+from constants import CONSTANTS
 
 def display_top(stats, limit=10):
     """Display top memory allocations."""
@@ -161,5 +162,57 @@ class AdaptiveGrid:
         self.qg.grid.set_points(points)
         self.qg.state = QuantumState(self.qg.grid)
 
+class LeechLattice:
+    def __init__(self, points=100000):  # Reduced from 10000
+        self.n_points = points
+        self._cached_energy = None
+        self._lattice_points = None
+        self._setup_lattice()
+
+    def _setup_lattice(self) -> None:
+        """Initialize the Leech lattice structure."""
+        # Generate initial lattice points
+        self._lattice_points = self._generate_lattice_points()
+        
+        # Pre-compute common values for efficiency
+        self._lattice_norms = np.linalg.norm(self._lattice_points, axis=1)
+        self._symmetry_factor = self._compute_symmetry_factor()
+
+    def compute_vacuum_energy(self) -> float:
+        """Compute vacuum energy with caching for performance."""
+        if self._cached_energy is None:
+            base_energy = CONSTANTS['hbar']/(CONSTANTS['c'] * CONSTANTS['l_p']**4)
+            lattice_sum = self._compute_lattice_sum()
+            symmetry_factor = self._compute_symmetry_factor()
+            self._cached_energy = base_energy * lattice_sum * symmetry_factor
+        return self._cached_energy
+
+    def _generate_lattice_points(self) -> np.ndarray:
+        """Optimized Leech lattice point generation."""
+        # Pre-allocate array
+        points = np.zeros((self.n_points, 24))
+        # Vectorized operations
+        points = np.random.randint(-2, 3, (self.n_points, 24))
+        # Adjust for divisibility conditions efficiently
+        sums = np.sum(points, axis=1)
+        squares = np.sum(points**2, axis=1)
+        # Quick fixes for conditions
+        points[:, 0] += (4 - sums % 4)
+        points[:, -1] += (8 - squares % 8)
+        return points
 
 
+    def _compute_lattice_sum(self) -> float:
+        """Sum over Leech lattice points"""
+        # Efficient implementation using numpy vectorization
+        lattice_points = self._generate_lattice_points()
+        return np.sum(1.0/np.linalg.norm(lattice_points, axis=1)**4)
+
+    def _compute_symmetry_factor(self) -> float:
+        """Calculate symmetry factor from Leech lattice"""
+        # M24 group order = 2^10 * 3^3 * 5 * 7 * 11 * 23
+        return np.sqrt(244823040 / self.n_points)
+
+    def compute_effective_coupling(self):
+        """Calculate effective coupling from lattice symmetries"""
+        # Coupling calculation code...

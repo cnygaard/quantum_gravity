@@ -7,6 +7,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from constants import CONSTANTS
 from core.state import QuantumState
+from core.grid import LeechLattice
 from physics.verification import UnifiedTheoryVerification
 from __init__ import QuantumGravity, configure_logging
 import logging
@@ -16,6 +17,9 @@ class StarSimulation:
     """Quantum star simulation extending black hole framework."""
     def __init__(self, mass: float, radius: float, galaxy_radius: float = None, quantum_gravity=None, debug=False):
         """Initialize star simulation with galaxy-scale effects."""
+        # Initialize verification tracking
+        self.verification_results = []
+
         self.mass = mass  # In solar masses
         self.radius = radius  # In solar radii
     
@@ -44,8 +48,15 @@ class StarSimulation:
         self.beta_universe = CONSTANTS['l_p'] / CONSTANTS['c'] * self.hubble_parameter
         self.rho_vacuum_modified = self.rho_vacuum * (1 + self.gamma_eff * self.beta_universe)
 
+        # Add Leech lattice vacuum energy calculations
+        self.leech = LeechLattice(points=100000)
+
+        # Compute initial vacuum energy and lambda
+        self.vacuum_energy = self._compute_leech_vacuum_energy()
+        self.cosmological_constant = self._compute_modified_lambda()
+
         self.verifier = UnifiedTheoryVerification(self)
-        self.verification_results = []
+
 
         # Setup grid and state first
         self._setup_grid()
@@ -94,6 +105,33 @@ class StarSimulation:
     def _compute_classical_force(self) -> float:
         """Compute classical gravitational force."""
         return CONSTANTS['G'] * self.M_star / self.galaxy_radius**2
+
+    def _compute_leech_vacuum_energy(self) -> float:
+        """Compute vacuum energy with Leech lattice corrections"""
+        # Get base vacuum energy from Leech lattice
+        leech_energy = self.leech.compute_vacuum_energy()
+        
+        # Apply quantum corrections
+        quantum_factor = 1 + self.gamma_eff * self.beta_universe
+        
+        # Combine effects
+        return leech_energy * quantum_factor
+        
+    def _compute_modified_lambda(self) -> float:
+        """Calculate modified cosmological constant"""
+        vacuum_energy = self._compute_leech_vacuum_energy()
+        
+        # Convert to cosmological constant
+        lambda_modified = 8 * np.pi * CONSTANTS['G'] * vacuum_energy / CONSTANTS['c']**2
+        
+        # Track for verification
+        self.verification_results.append({
+            'time': self.qg.state.time,
+            'lambda': lambda_modified,
+            'vacuum_energy': vacuum_energy
+        })
+        
+        return lambda_modified
 
     def _initialize_profile_arrays(self):
         """Initialize profile arrays with proper dimensions."""
@@ -282,7 +320,20 @@ class StarSimulation:
                 self.density_profile[self.current_size] = density_value
                 self.pressure_profile[self.current_size] = pressure_value
                 self.temperature_profile[self.current_size] = temp_value
+
+                # Update vacuum energy less frequently
+                if int(self.qg.state.time * 100) % 10 == 0:  # Every 0.1 time units
+                    self.vacuum_energy = self._compute_leech_vacuum_energy()
+                    self.cosmological_constant = self._compute_modified_lambda()
+
+                # Update vacuum energy and lambda each timestep
+                #self.vacuum_energy = self._compute_leech_vacuum_energy()
+                #self.cosmological_constant = self._compute_modified_lambda()
                 
+                # Log vacuum energy evolution
+                logging.info(f"\nVacuum Energy: {self.vacuum_energy:.2e}")
+                logging.info(f"Cosmological Constant: {self.cosmological_constant:.2e}")            
+
                 # Update counters and check array size
                 self.current_size += 1
 

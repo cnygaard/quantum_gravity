@@ -262,42 +262,34 @@ class StarSimulation:
             while self.qg.state.time < t_final:
                 self.qg.state.evolve(0.01)
                 metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
+
+            # Get measurements directly
+                density_result = self._measure_density_profile()
+                pressure_result = self._measure_pressure_profile()
+                temp_result = self._measure_temperature_profile()
+
+                # Extract numerical values
+                density_value = np.asarray(density_result.value)
+                pressure_value = pressure_result.value
+                pressure_value = np.array([result.value for result in pressure_result.value])
+
+                temp_value = np.asarray(temp_result.value)
                 
-                # Get density measurement
-                density_measurement = self._measure_density_profile()
-                
-                # Extract the actual numerical value, handling nested MeasurementResult
-                if isinstance(density_measurement.value, MeasurementResult):
-                    density_value = density_measurement.value.value
-                else:
-                    density_value = density_measurement.value
-                    
-                # Convert to array if scalar
-                if np.isscalar(density_value):
-                    new_density = np.full(len(self.qg.grid.points), float(density_value))
-                else:
-                    new_density = np.array(density_value)
-                
-                # Store in profile
-                self.density_profile[self.current_size] = new_density
+                # Store in profile arrays
+                self.density_profile[self.current_size] = density_value
+                self.pressure_profile[self.current_size] = pressure_value
+                self.temperature_profile[self.current_size] = temp_value
                 
                 # Update counters and check array size
                 self.current_size += 1
-                if self.current_size >= len(self.density_profile):
-                    self._resize_profile_arrays()
-
-                # Measure key observables
-                density = self._measure_density_profile()
-                pressure = self._measure_pressure_profile()
-                temp = self._measure_temperature_profile()
 
                 # Log comprehensive physics output
                 logging.info(f"\nStellar Structure at t={self.qg.state.time:.2f}:")
                 logging.info(f"Mass: {self.M_star/CONSTANTS['M_sun']:.2e} M_sun")
                 logging.info(f"Radius: {self.R_star/CONSTANTS['R_sun']:.2e} R_sun")
-                logging.info(f"Central Density: {np.max(density.value):.2e}")
-                logging.info(f"Central Pressure: {np.max(pressure.value):.2e}")
-                #logging.info(f"Surface Temperature: {np.mean(temp.value):.2e}")
+                logging.info(f"Central Density: {np.max(density_result.value):.2e}")
+                logging.info(f"Central Pressure: {np.max(pressure_value):.2e}")
+                logging.info(f"Surface Temperature: {np.mean(temp_result.value):.2e}")
                 
                 # Log geometric verification
                 logging.info(f"\nGeometric-Entanglement Formula:")
@@ -318,12 +310,16 @@ class StarSimulation:
             print(f"Current state: time={self.qg.state.time}, size={self.current_size}")
             raise
 
-
-    def _measure_density_profile(self) -> MeasurementResult:
-        """Measure current density profile with single MeasurementResult."""
-        try:
-            result = self.density_obs.measure(self.qg.state)
+    def _measure_profile(self, observable, name: str) -> MeasurementResult:
+        """Base method for measuring physical profiles with consistent handling.
         
+        Args:
+            observable: Physics observable instance
+            name: Name of the measurement for logging
+        """
+        try:
+            result = observable.measure(self.qg.state)
+            
             # Ensure we have array output
             if np.isscalar(result.value):
                 value = np.full(len(self.qg.grid.points), result.value)
@@ -339,7 +335,7 @@ class StarSimulation:
             )
                 
         except Exception as e:
-            logging.error(f"Error measuring density: {e}")
+            logging.error(f"Error measuring {name}: {e}")
             n_points = len(self.qg.grid.points)
             return MeasurementResult(
                 value=np.zeros(n_points),
@@ -347,65 +343,104 @@ class StarSimulation:
                 metadata={'time': self.qg.state.time, 'error': str(e)}
             )
 
+    # Then use it for specific measurements:
+    def _measure_density_profile(self) -> MeasurementResult:
+        return self._measure_profile(self.density_obs, "density")
+        
     def _measure_pressure_profile(self) -> MeasurementResult:
-        """Measure current pressure profile with proper error handling."""
-        try:
-            result = self.pressure_obs.measure(self.qg.state)
-            
-            if isinstance(result, MeasurementResult):
-                if isinstance(result.value, (float, int)):
-                    # If scalar, expand to array
-                    value = np.full(len(self.qg.grid.points), result.value)
-                    uncertainty = np.full(len(self.qg.grid.points), result.uncertainty)
-                    return MeasurementResult(value=value, uncertainty=uncertainty, metadata=result.metadata)
-                return result
-            else:
-                # Handle raw value
-                value = result if isinstance(result, np.ndarray) else np.full(len(self.qg.grid.points), result)
-                return MeasurementResult(
-                    value=value,
-                    uncertainty=np.zeros_like(value),
-                    metadata={'time': self.qg.state.time}
-                )
-                
-        except Exception as e:
-            logging.error(f"Error measuring pressure: {e}")
-            n_points = len(self.qg.grid.points)
-            return MeasurementResult(
-                value=np.zeros(n_points),
-                uncertainty=np.zeros(n_points),
-                metadata={'time': self.qg.state.time, 'error': str(e)}
-            )
-
+        return self._measure_profile(self.pressure_obs, "pressure")
+        
     def _measure_temperature_profile(self) -> MeasurementResult:
-        """Measure current temperature profile with proper error handling."""
-        try:
-            result = self.temp_obs.measure(self.qg.state)
+        return self._measure_profile(self.temp_obs, "temperature")
+
+
+    # def _measure_density_profile(self) -> MeasurementResult:
+    #     """Measure current density profile with single MeasurementResult."""
+    #     try:
+    #         result = self.density_obs.measure(self.qg.state)
+        
+    #         # Ensure we have array output
+    #         if np.isscalar(result.value):
+    #             value = np.full(len(self.qg.grid.points), result.value)
+    #             uncertainty = np.full(len(self.qg.grid.points), result.uncertainty)
+    #         else:
+    #             value = np.asarray(result.value)
+    #             uncertainty = np.asarray(result.uncertainty)
             
-            if isinstance(result, MeasurementResult):
-                if np.isscalar(result.value):
-                    value = np.full(len(self.qg.grid.points), result.value)
-                    uncertainty = np.full(len(self.qg.grid.points), result.uncertainty)
-                    return MeasurementResult(value=value, uncertainty=uncertainty, metadata=result.metadata)
-                return result
-            else:
-                value = np.asarray(result)
-                if np.isscalar(value):
-                    value = np.full(len(self.qg.grid.points), value)
-                return MeasurementResult(
-                    value=value,
-                    uncertainty=np.zeros_like(value),
-                    metadata={'time': self.qg.state.time}
-                )
+    #         return MeasurementResult(
+    #             value=value,
+    #             uncertainty=uncertainty,
+    #             metadata={'time': self.qg.state.time}
+    #         )
                 
-        except Exception as e:
-            logging.error(f"Error measuring temperature: {e}")
-            n_points = len(self.qg.grid.points)
-            return MeasurementResult(
-                value=np.zeros(n_points),
-                uncertainty=np.zeros(n_points),
-                metadata={'time': self.qg.state.time, 'error': str(e)}
-            )
+    #     except Exception as e:
+    #         logging.error(f"Error measuring density: {e}")
+    #         n_points = len(self.qg.grid.points)
+    #         return MeasurementResult(
+    #             value=np.zeros(n_points),
+    #             uncertainty=np.zeros(n_points),
+    #             metadata={'time': self.qg.state.time, 'error': str(e)}
+    #         )
+
+    # def _measure_pressure_profile(self) -> MeasurementResult:
+    #     """Measure current pressure profile with proper error handling."""
+    #     try:
+    #         result = self.pressure_obs.measure(self.qg.state)
+            
+    #         if isinstance(result, MeasurementResult):
+    #             if isinstance(result.value, (float, int)):
+    #                 # If scalar, expand to array
+    #                 value = np.full(len(self.qg.grid.points), result.value)
+    #                 uncertainty = np.full(len(self.qg.grid.points), result.uncertainty)
+    #                 return MeasurementResult(value=value, uncertainty=uncertainty, metadata=result.metadata)
+    #             return result
+    #         else:
+    #             # Handle raw value
+    #             value = result if isinstance(result, np.ndarray) else np.full(len(self.qg.grid.points), result)
+    #             return MeasurementResult(
+    #                 value=value,
+    #                 uncertainty=np.zeros_like(value),
+    #                 metadata={'time': self.qg.state.time}
+    #             )
+                
+    #     except Exception as e:
+    #         logging.error(f"Error measuring pressure: {e}")
+    #         n_points = len(self.qg.grid.points)
+    #         return MeasurementResult(
+    #             value=np.zeros(n_points),
+    #             uncertainty=np.zeros(n_points),
+    #             metadata={'time': self.qg.state.time, 'error': str(e)}
+    #         )
+
+    # def _measure_temperature_profile(self) -> MeasurementResult:
+    #     """Measure current temperature profile with proper error handling."""
+    #     try:
+    #         result = self.temp_obs.measure(self.qg.state)
+            
+    #         if isinstance(result, MeasurementResult):
+    #             if np.isscalar(result.value):
+    #                 value = np.full(len(self.qg.grid.points), result.value)
+    #                 uncertainty = np.full(len(self.qg.grid.points), result.uncertainty)
+    #                 return MeasurementResult(value=value, uncertainty=uncertainty, metadata=result.metadata)
+    #             return result
+    #         else:
+    #             value = np.asarray(result)
+    #             if np.isscalar(value):
+    #                 value = np.full(len(self.qg.grid.points), value)
+    #             return MeasurementResult(
+    #                 value=value,
+    #                 uncertainty=np.zeros_like(value),
+    #                 metadata={'time': self.qg.state.time}
+    #             )
+                
+    #     except Exception as e:
+    #         logging.error(f"Error measuring temperature: {e}")
+    #         n_points = len(self.qg.grid.points)
+    #         return MeasurementResult(
+    #             value=np.zeros(n_points),
+    #             uncertainty=np.zeros(n_points),
+    #             metadata={'time': self.qg.state.time, 'error': str(e)}
+    #         )
 
     def _evolve_step(self, dt: float) -> None:
         """Evolve system one timestep."""

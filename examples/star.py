@@ -263,7 +263,7 @@ class StarSimulation:
                 self.qg.state.evolve(0.01)
                 metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
 
-            # Get measurements directly
+                # Get measurements directly
                 density_result = self._measure_density_profile()
                 pressure_result = self._measure_pressure_profile()
                 temp_result = self._measure_temperature_profile()
@@ -272,8 +272,11 @@ class StarSimulation:
                 density_value = np.asarray(density_result.value)
                 pressure_value = pressure_result.value
                 pressure_value = np.array([result.value for result in pressure_result.value])
-
                 temp_value = np.asarray(temp_result.value)
+                
+                # Check and resize arrays if needed BEFORE storing new values
+                if self.current_size >= len(self.density_profile):
+                    self._resize_profile_arrays()
                 
                 # Store in profile arrays
                 self.density_profile[self.current_size] = density_value
@@ -283,6 +286,8 @@ class StarSimulation:
                 # Update counters and check array size
                 self.current_size += 1
 
+
+
                 # Log comprehensive physics output
                 logging.info(f"\nStellar Structure at t={self.qg.state.time:.2f}:")
                 logging.info(f"Mass: {self.M_star/CONSTANTS['M_sun']:.2e} M_sun")
@@ -290,7 +295,7 @@ class StarSimulation:
                 logging.info(f"Central Density: {np.max(density_result.value):.2e}")
                 logging.info(f"Central Pressure: {np.max(pressure_value):.2e}")
                 logging.info(f"Surface Temperature: {np.mean(temp_result.value):.2e}")
-                
+
                 # Log geometric verification
                 logging.info(f"\nGeometric-Entanglement Formula:")
                 logging.info(f"LHS = {metrics['lhs']:.44e}")

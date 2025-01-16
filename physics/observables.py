@@ -461,42 +461,26 @@ class EnergyDensityObservable(Observable):
             return self._measure_cosmological(state)
         else:
             return self._measure_stellar(state)
-    
+
     def _measure_stellar(self, state: 'QuantumState') -> MeasurementResult:
-        """Measure stellar density profile."""
-        n_points = len(self.grid.points)
         points = self.grid.points
-        density = np.zeros(n_points)
-        uncertainty = np.zeros(n_points)
-        
-        # Calculate radial distances
         r = np.linalg.norm(points, axis=1)
-        r = np.maximum(r, CONSTANTS['l_p'])  # Prevent division by zero
+        r = np.maximum(r, CONSTANTS['l_p'])
         
         # Classical density with radial dependence
         mass = state.mass
         density = (3 * CONSTANTS['G'] * mass) / (4 * np.pi * r**3)
         
-        # Add quantum corrections
-        quantum_factor = 1 + (CONSTANTS['l_p']/r)**2
-        density *= quantum_factor
-        
-        # Enforce minimum density
-        min_density = CONSTANTS['m_p']/(4*np.pi*CONSTANTS['l_p']**3)
-        density = np.maximum(density, min_density)
-        
-        # Calculate uncertainty
-        uncertainty = CONSTANTS['hbar'] / (r**3)
+        # Get central density (minimum radius = maximum density)
+        central_density = np.max(density)  # Use max since density peaks at center
         
         return MeasurementResult(
-            value=density,
-            uncertainty=uncertainty,
-            metadata={
-                'time': state.time,
-                'mass': mass,
-                'quantum_factor': quantum_factor
-            }
+            value=central_density,
+            uncertainty=CONSTANTS['hbar'] / (np.min(r)**3),
+            metadata={'full_profile': density}
         )
+
+
     
     def _measure_cosmological(self, state: 'CosmologicalState') -> MeasurementResult:
         """Measure cosmological energy density."""
@@ -667,7 +651,6 @@ class StellarTemperatureObservable:
             uncertainty=abs(temp * mass_result.uncertainty / mass),
             metadata={'mass': mass}
         )
-    
 class PressureObservable(Observable):
     """Observable for measuring stellar pressure."""
     
@@ -697,37 +680,16 @@ class PressureObservable(Observable):
         return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
 
     def measure(self, state: 'QuantumState') -> MeasurementResult:
-        """Measure pressure with quantum corrections."""
-        # Get energy density first
         energy_result = self.energy_obs.measure(state)
-        rho = energy_result.value
+        # Extract numeric value directly
+        density_value = energy_result.value if isinstance(energy_result.value, (float, int, np.ndarray)) else energy_result.value.value
         
-        # Handle scalar vs array density
-        if np.isscalar(rho):
-            rho = np.array([rho])
-            
-        # Prevent division by zero
-        min_density = CONSTANTS['m_p']/(4*np.pi*CONSTANTS['l_p']**3)  # Minimum physical density
-        rho = np.maximum(rho, min_density)
-        
-        # Calculate pressure using equation of state
+        # Calculate central pressure with numeric values
         w = 1/3  # Radiation-like equation of state
-        classical_pressure = w * rho
+        central_pressure = w * density_value
         
-        # Add quantum corrections
-        if hasattr(state, 'scale_factor'):  # Cosmological case
-            quantum_factor = 1 + (CONSTANTS['l_p']/state.scale_factor)**2
-        else:  # Stellar case
-            r = np.maximum(np.linalg.norm(self.grid.points, axis=1), CONSTANTS['l_p'])
-            quantum_factor = 1 + (CONSTANTS['l_p']/r)**2
-            
-        pressure = classical_pressure * quantum_factor
-        
-        # Calculate uncertainty
-        uncertainty = abs(pressure * energy_result.uncertainty / rho)
-
         return MeasurementResult(
-            value=pressure,
-            uncertainty=uncertainty,
-            metadata={'density': rho}
+            value=central_pressure,
+            uncertainty=w * energy_result.uncertainty,
+            metadata={'central_density': density_value}
         )

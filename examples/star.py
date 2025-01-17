@@ -12,6 +12,7 @@ from physics.verification import UnifiedTheoryVerification
 from __init__ import QuantumGravity, configure_logging
 import logging
 from utils.io import MeasurementResult  # Add this import
+from concurrent.futures import ThreadPoolExecutor
 
 class StarSimulation:
     """Quantum star simulation extending black hole framework."""
@@ -72,6 +73,8 @@ class StarSimulation:
         self.time_points = []
         self.quantum_corrections = []
 
+        self.next_checkpoint = 0.0
+
     def _setup_grid(self):
         points = self._generate_grid_points()
         logging.debug(f"Points stats: min={np.min(points):.3e}, max={np.max(points):.3e}")
@@ -98,6 +101,14 @@ class StarSimulation:
         self.vacuum_energy_density = self.rho_vacuum_modified
         self.cosmological_constant = 8 * np.pi * CONSTANTS['G'] * self.rho_vacuum_modified
 
+        """Setup observables for stellar measurements."""
+        self.mass_obs = self.qg.physics.ADMMassObservable(self.qg.grid)
+        self.radius_obs = self.qg.physics.AreaObservable(self.qg.grid)
+        self.temp_obs = self.qq.physics.StellarTemperatureObservable(self.qg.grid)  # Direct initialization
+        self.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
+        self.pressure_obs = self.qg.physics.PressureObservable(self.qg.grid)
+
+
     def _compute_effective_force(self) -> float:
         """Compute force with quantum gravity corrections."""
         return CONSTANTS['G'] * self.M_star * (1 + self.gamma_eff_galaxy * self.beta_galaxy) / self.galaxy_radius**2
@@ -106,16 +117,18 @@ class StarSimulation:
         """Compute classical gravitational force."""
         return CONSTANTS['G'] * self.M_star / self.galaxy_radius**2
 
-    # def _compute_leech_vacuum_energy(self) -> float:
-    #     """Compute vacuum energy with Leech lattice corrections"""
-    #     # Get base vacuum energy from Leech lattice
-    #     leech_energy = self.leech.compute_vacuum_energy()
+    def _compute_central_pressure(self):
+        """Compute realistic central pressure"""
+        G = CONSTANTS['G']
+        M = self.M_star
+        R = self.R_star
         
-    #     # Apply quantum corrections
-    #     quantum_factor = 1 + self.gamma_eff * self.beta_universe
+        # Basic stellar pressure with quantum corrections
+        P_classical = (3 * G * M**2) / (8 * np.pi * R**4)
+        P_quantum = P_classical * (1 + self.gamma_eff)
         
-    #     # Combine effects
-    #     return leech_energy * quantum_factor
+        return P_quantum
+
     def _compute_leech_vacuum_energy(self) -> float:
             """Compute vacuum energy with Leech lattice corrections"""
             base_energy = CONSTANTS['hbar']/(CONSTANTS['c'] * CONSTANTS['l_p']**4)
@@ -128,21 +141,12 @@ class StarSimulation:
         """Calculate modified cosmological constant"""
         return 8 * np.pi * CONSTANTS['G'] * self.rho_vacuum / CONSTANTS['c']**2
 
-    # def _compute_modified_lambda(self) -> float:
-    #     """Calculate modified cosmological constant"""
-    #     vacuum_energy = self._compute_leech_vacuum_energy()
-        
-    #     # Convert to cosmological constant
-    #     lambda_modified = 8 * np.pi * CONSTANTS['G'] * vacuum_energy / CONSTANTS['c']**2
-        
-    #     # Track for verification
-    #     self.verification_results.append({
-    #         'time': self.qg.state.time,
-    #         'lambda': lambda_modified,
-    #         'vacuum_energy': vacuum_energy
-    #     })
-        
-    #     return lambda_modified
+    def _track_energy_conservation(self):
+        """Track total energy conservation"""
+        kinetic = self.qg.physics.compute_kinetic_energy(self.qg.state)
+        potential = self.qg.physics.compute_potential_energy(self.qg.state)
+        quantum = self.qg.physics.compute_quantum_energy(self.qg.state)
+        return kinetic + potential + quantum
 
     def _initialize_profile_arrays(self):
         """Initialize profile arrays with proper dimensions."""
@@ -161,19 +165,20 @@ class StarSimulation:
         points_per_dim = int(np.cbrt(max_points/4))
         
         # Convert solar radius to proper units and set scale
-        r_min = max(CONSTANTS['l_p'], self.R_star * 1e-6)  # Start from max of Planck length or small fraction of radius
-        r_max = self.R_star / CONSTANTS['l_p']  # Normalize to Planck length
-        
-        # Use log spacing with more points near center
-        r = np.geomspace(r_min, r_max, points_per_dim)
-        
-        # Scale check to prevent numerical issues
-        if np.any(r > 1e30) or np.any(r < 1e-30):
-            logging.warning(f"Radial coordinates may be poorly scaled: range [{r_min:.2e}, {r_max:.2e}]")
-            # Rescale if necessary
-            scale_factor = r_max / 1e10  # Target a reasonable maximum
-            r = r / scale_factor
-        
+        #r_min = max(CONSTANTS['l_p'], self.R_star * 1e-6)  # Start from max of Planck length or small fraction of radius
+        #r_max = self.R_star / CONSTANTS['l_p']  # Normalize to Planck length
+        scale_factor = CONSTANTS['l_p']
+        r_min = max(1.0, (self.R_star/scale_factor) * 1e-6)
+        r_max = self.R_star/scale_factor 
+
+        # Rescale to manageable numbers
+        scale = np.log10(r_max)
+        if scale > 30:
+            r_min /= 10**scale
+            r_max /= 10**scale
+    
+        r = np.geomspace(r_min, r_max, points_per_dim) 
+                
         points = []
         total_points = 0
         
@@ -234,37 +239,28 @@ class StarSimulation:
             # Prevent division by zero
             r = np.maximum(r, CONSTANTS['l_p'])
             m = np.maximum(m, CONSTANTS['m_p'])
-            rho = np.maximum(self._equation_of_state(P), CONSTANTS['m_p']/(4*np.pi*r**3))
             
-            # Quantum corrections
-            P_quantum = P * (1 + self.gamma_eff*self.beta)
+
+            # Enhanced core density with original EOS
+            core_density = self.M_star / (4/3 * np.pi * (0.1*self.R_star)**3)
+            base_rho = np.maximum(self._equation_of_state(P), CONSTANTS['m_p']/(4*np.pi*r**3))
+            rho = np.maximum(base_rho, core_density * np.exp(-r/self.R_star))
+            
+            # Set minimum central pressure based on virial theorem
+            P_min = CONSTANTS['G'] * self.M_star**2 / (8 * np.pi * self.R_star**4)
+            P = np.maximum(P, P_min)
             rho_quantum = rho * (1 + self.gamma_eff*self.beta)
             
             # Mass evolution
             dm_dr = 4*np.pi*r**2 * rho_quantum
             
-            # Pressure evolution with regularization
+            # Full relativistic pressure evolution
             dP_dr = -CONSTANTS['G']*m*rho_quantum/(r**2) * \
                     (1 + P_quantum/(rho_quantum*CONSTANTS['c']**2)) * \
                     (1 + 4*np.pi*r**3*P_quantum/(m*CONSTANTS['c']**2)) * \
                     (1 - 2*CONSTANTS['G']*m/(r*CONSTANTS['c']**2))**(-1)
             
             return [dm_dr, dP_dr]
-        
-        # Initial conditions at center
-        P_c = 1e15
-        r_span = [1e-10, self.R_star]
-        y0 = [0, P_c]
-        
-        # Solve structure equations
-        sol = solve_ivp(stellar_structure, r_span, y0, 
-                       method='RK45', rtol=1e-8, atol=1e-8)
-        
-        # Store profiles
-        self.r_points = sol.t
-        self.mass_profile = sol.y[0]
-        self.pressure_profile = sol.y[1]
-        self.density_profile = self._equation_of_state(self.pressure_profile)
 
     def _equation_of_state(self, P: float) -> float:
         """Simple polytropic equation of state."""
@@ -279,7 +275,12 @@ class StarSimulation:
             initial_mass=self.M_star,
             eps_cut=self.qg.config.config['numerics']['eps_cut']
         )
-        
+
+        # Add stellar properties
+        state.R_star = self.R_star
+        state.T_surface = 5778  # K
+        state.T_core = 1.57e7  # K
+
         # Initialize metric
         points = self.qg.grid.points
         r = np.linalg.norm(points, axis=1)
@@ -306,76 +307,80 @@ class StarSimulation:
         self.pressure_obs = self.qg.physics.PressureObservable(self.qg.grid)
         
     def run_simulation(self, t_final: float) -> None:
-        """Run simulation until t_final."""
-        try:
-            while self.qg.state.time < t_final:
-                self.qg.state.evolve(0.01)
-                metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
+        """Run simulation with controlled time evolution and detailed logging"""
+        self.next_checkpoint = 0.1
+        checkpoint_interval = 0.1
+        
+        while self.qg.state.time < t_final:
+            dt = self._compute_timestep()
+            self.qg.state.evolve(dt)
+            
+            # Get measurements
+            density_result = self._measure_density_profile()
+            pressure_result = self._measure_pressure_profile()
+            temp_result = self._measure_temperature_profile()
 
-                # Get measurements directly
-                density_result = self._measure_density_profile()
-                pressure_result = self._measure_pressure_profile()
-                temp_result = self._measure_temperature_profile()
-
-                # Extract numerical values
-                density_value = np.asarray(density_result.value)
-                pressure_value = pressure_result.value
-                pressure_value = np.array([result.value for result in pressure_result.value])
-                temp_value = np.asarray(temp_result.value)
+            # Extract numeric values from MeasurementResults
+            density_value = np.asarray(density_result.value)
+            pressure_value = pressure_result.value[0].value if isinstance(pressure_result.value, np.ndarray) else pressure_result.value
+            temp_value = np.asarray(temp_result.value)
+            
+            # Store numeric values in profile arrays
+            if self.current_size >= len(self.density_profile):
+                self._resize_profile_arrays()
                 
-                # Check and resize arrays if needed BEFORE storing new values
-                if self.current_size >= len(self.density_profile):
-                    self._resize_profile_arrays()
-                
-                # Store in profile arrays
-                self.density_profile[self.current_size] = density_value
-                self.pressure_profile[self.current_size] = pressure_value
-                self.temperature_profile[self.current_size] = temp_value
+            self.density_profile[self.current_size] = density_value
+            self.pressure_profile[self.current_size] = pressure_value
+            self.temperature_profile[self.current_size] = temp_value
+            
+            self.current_size += 1
+            # Check if we've reached checkpoint
+            if self.qg.state.time >= self.next_checkpoint:
+                # Update vacuum energy calculations
+                self.vacuum_energy = self._compute_leech_vacuum_energy()
+                self.cosmological_constant = self._compute_modified_lambda()
 
-                # Update vacuum energy less frequently
-                if int(self.qg.state.time * 100) % 10 == 0:  # Every 0.1 time units
-                    self.vacuum_energy = self._compute_leech_vacuum_energy()
-                    self.cosmological_constant = self._compute_modified_lambda()
 
-                # Update vacuum energy and lambda each timestep
-                #self.vacuum_energy = self._compute_leech_vacuum_energy()
-                #self.cosmological_constant = self._compute_modified_lambda()
-                
-                # Log vacuum energy evolution
+                if self.qg.state.time >= self.next_checkpoint:
+                    metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
+                    
+                    # Pass metrics to normalization function
+                    normalized_scales = self._normalize_geometric_scales(metrics)
+
+                # Log vacuum energy metrics
                 logging.info(f"\nVacuum Energy: {self.vacuum_energy:.2e}")
-                logging.info(f"Cosmological Constant: {self.cosmological_constant:.2e}")            
+                logging.info(f"Cosmological Constant: {self.cosmological_constant:.2e}")
 
-                # Update counters and check array size
-                self.current_size += 1
-
-
-
-                # Log comprehensive physics output
+                # Log stellar structure
                 logging.info(f"\nStellar Structure at t={self.qg.state.time:.2f}:")
                 logging.info(f"Mass: {self.M_star/CONSTANTS['M_sun']:.2e} M_sun")
                 logging.info(f"Radius: {self.R_star/CONSTANTS['R_sun']:.2e} R_sun")
-                logging.info(f"Central Density: {np.max(density_result.value):.2e}")
+                logging.info(f"Central Density: {np.max(density_value):.2e}")
                 logging.info(f"Central Pressure: {np.max(pressure_value):.2e}")
-                logging.info(f"Surface Temperature: {np.mean(temp_result.value):.2e}")
+                logging.info(f"Surface Temperature: {np.mean(temp_value):.2e}")
 
                 # Log geometric verification
                 logging.info(f"\nGeometric-Entanglement Formula:")
                 logging.info(f"LHS = {metrics['lhs']:.44e}")
                 logging.info(f"RHS = {metrics['rhs']:.44e}")
+                logging.info(f"LHS (normalized) = {normalized_scales['lhs_normalized']:.44e}")
+                logging.info(f"RHS (normalized) = {normalized_scales['rhs_normalized']:.44e}")
                 logging.info(f"Relative Error = {metrics['relative_error']:.6e}")
-                
+
                 # Log quantum parameters
                 logging.info(f"\nQuantum Parameters:")
                 logging.info(f"β (l_p/R): {self.beta:.2e}")
                 logging.info(f"γ_eff: {self.gamma_eff:.2e}")
-                
-                # Log simulation progress
-                logging.info(f"\nSimulation progress: {(self.qg.state.time/t_final)*100:.1f}%")
 
-        except Exception as e:
-            print(f"Error in simulation step: {str(e)}")
-            print(f"Current state: time={self.qg.state.time}, size={self.current_size}")
-            raise
+                # Log progress
+                progress = min((self.qg.state.time/t_final) * 100, 100.0)
+                logging.info(f"\nSimulation progress: {progress:.1f}%")
+
+                # Update checkpoint
+                self.next_checkpoint += checkpoint_interval
+
+            self.current_size += 1
+
 
     def _measure_profile(self, observable, name: str) -> MeasurementResult:
         """Base method for measuring physical profiles with consistent handling.
@@ -411,8 +416,18 @@ class StarSimulation:
             )
 
     # Then use it for specific measurements:
+    #def _measure_density_profile(self) -> MeasurementResult:
     def _measure_density_profile(self) -> MeasurementResult:
-        return self._measure_profile(self.density_obs, "density")
+        result = self._measure_profile(self.density_obs, "density")
+        # Ensure minimum physical density
+        min_density = CONSTANTS['m_p']/(4*np.pi*self.R_star**3)  # Base stellar density
+        density_value = np.maximum(result.value, min_density)
+        return MeasurementResult(
+            value=density_value,
+            uncertainty=result.uncertainty,
+            metadata=result.metadata
+        )
+
         
     def _measure_pressure_profile(self) -> MeasurementResult:
         return self._measure_profile(self.pressure_obs, "pressure")
@@ -420,100 +435,61 @@ class StarSimulation:
     def _measure_temperature_profile(self) -> MeasurementResult:
         return self._measure_profile(self.temp_obs, "temperature")
 
+    def _compute_surface_temperature(self):
+        """Calculate surface temperature with proper scaling"""
+        # Include radiation pressure and quantum effects
+        T_classical = (G * M * m_p / (k_B * R))**(1/4)
+        T_quantum = T_classical * (1 + self.beta * self.gamma_eff)
+        return T_quantum
 
-    # def _measure_density_profile(self) -> MeasurementResult:
-    #     """Measure current density profile with single MeasurementResult."""
-    #     try:
-    #         result = self.density_obs.measure(self.qg.state)
+
+
+
+    def _parallel_profile_measurement(self):
+        """Measure profiles in parallel"""
+        with ThreadPoolExecutor() as executor:
+            density_future = executor.submit(self._measure_density_profile)
+            pressure_future = executor.submit(self._measure_pressure_profile)
+            temp_future = executor.submit(self._measure_temperature_profile)
+            return (density_future.result(), pressure_future.result(), 
+                    temp_future.result())
+
+    def _normalize_geometric_scales(self, metrics):
+        # Use physical scale normalization
+        planck_scale = CONSTANTS['l_p']
+        stellar_scale = self.R_star
         
-    #         # Ensure we have array output
-    #         if np.isscalar(result.value):
-    #             value = np.full(len(self.qg.grid.points), result.value)
-    #             uncertainty = np.full(len(self.qg.grid.points), result.uncertainty)
-    #         else:
-    #             value = np.asarray(result.value)
-    #             uncertainty = np.asarray(result.uncertainty)
-            
-    #         return MeasurementResult(
-    #             value=value,
-    #             uncertainty=uncertainty,
-    #             metadata={'time': self.qg.state.time}
-    #         )
-                
-    #     except Exception as e:
-    #         logging.error(f"Error measuring density: {e}")
-    #         n_points = len(self.qg.grid.points)
-    #         return MeasurementResult(
-    #             value=np.zeros(n_points),
-    #             uncertainty=np.zeros(n_points),
-    #             metadata={'time': self.qg.state.time, 'error': str(e)}
-    #         )
-
-    # def _measure_pressure_profile(self) -> MeasurementResult:
-    #     """Measure current pressure profile with proper error handling."""
-    #     try:
-    #         result = self.pressure_obs.measure(self.qg.state)
-            
-    #         if isinstance(result, MeasurementResult):
-    #             if isinstance(result.value, (float, int)):
-    #                 # If scalar, expand to array
-    #                 value = np.full(len(self.qg.grid.points), result.value)
-    #                 uncertainty = np.full(len(self.qg.grid.points), result.uncertainty)
-    #                 return MeasurementResult(value=value, uncertainty=uncertainty, metadata=result.metadata)
-    #             return result
-    #         else:
-    #             # Handle raw value
-    #             value = result if isinstance(result, np.ndarray) else np.full(len(self.qg.grid.points), result)
-    #             return MeasurementResult(
-    #                 value=value,
-    #                 uncertainty=np.zeros_like(value),
-    #                 metadata={'time': self.qg.state.time}
-    #             )
-                
-    #     except Exception as e:
-    #         logging.error(f"Error measuring pressure: {e}")
-    #         n_points = len(self.qg.grid.points)
-    #         return MeasurementResult(
-    #             value=np.zeros(n_points),
-    #             uncertainty=np.zeros(n_points),
-    #             metadata={'time': self.qg.state.time, 'error': str(e)}
-    #         )
-
-    # def _measure_temperature_profile(self) -> MeasurementResult:
-    #     """Measure current temperature profile with proper error handling."""
-    #     try:
-    #         result = self.temp_obs.measure(self.qg.state)
-            
-    #         if isinstance(result, MeasurementResult):
-    #             if np.isscalar(result.value):
-    #                 value = np.full(len(self.qg.grid.points), result.value)
-    #                 uncertainty = np.full(len(self.qg.grid.points), result.uncertainty)
-    #                 return MeasurementResult(value=value, uncertainty=uncertainty, metadata=result.metadata)
-    #             return result
-    #         else:
-    #             value = np.asarray(result)
-    #             if np.isscalar(value):
-    #                 value = np.full(len(self.qg.grid.points), value)
-    #             return MeasurementResult(
-    #                 value=value,
-    #                 uncertainty=np.zeros_like(value),
-    #                 metadata={'time': self.qg.state.time}
-    #             )
-                
-    #     except Exception as e:
-    #         logging.error(f"Error measuring temperature: {e}")
-    #         n_points = len(self.qg.grid.points)
-    #         return MeasurementResult(
-    #             value=np.zeros(n_points),
-    #             uncertainty=np.zeros(n_points),
-    #             metadata={'time': self.qg.state.time, 'error': str(e)}
-    #         )
+        scale_factor = np.sqrt(planck_scale * stellar_scale)
+        
+        normalized = {
+            'lhs_normalized': metrics['lhs'] / scale_factor,
+            'rhs_normalized': metrics['rhs'] / scale_factor,
+            'scale_factor': scale_factor
+        }
+        
+        return normalized
 
     def _evolve_step(self, dt: float) -> None:
         """Evolve system one timestep."""
         self._setup_stellar_structure()
         self.qg.state.time += dt
         self._update_metric()
+
+    def _compute_timestep(self):
+        """Compute adaptive timestep with proper scaling"""
+        # Update velocity with scaling
+        self.qg.state.compute_velocity()
+        
+        # Calculate characteristic timescales in natural units
+        t_dynamic = CONSTANTS['c'] * self.R_star / (CONSTANTS['G'] * self.M_star)
+        t_quantum = CONSTANTS['hbar'] / (self.gamma_eff * CONSTANTS['c']**2)
+        
+        # Use smallest timescale with safety factor
+        dt = min(t_dynamic, t_quantum) * 0.01
+        
+        # Enforce maximum timestep relative to total simulation time
+        max_dt = 0.01  # Maximum timestep of 0.01 time units
+        return min(dt, max_dt)
 
     def _update_metric(self) -> None:
         """Update metric with quantum corrections."""
@@ -633,7 +609,7 @@ def main():
     """Run star simulation example."""
     configure_logging(simulation_type='star_simulation')
     sim = StarSimulation(mass=1.0, radius=1.0)
-    sim.run_simulation(t_final=10.0)
+    sim.run_simulation(t_final=40.0)
 
 if __name__ == "__main__":
     main()

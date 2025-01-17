@@ -38,7 +38,31 @@ class QuantumState:
         self.scale_factor = 1.0
         self.energy_density = 0.0
         self.equation_of_state = -1.0
-        self.hubble_parameter = 0.0
+        self.hubble_parameter = 0.
+        
+        self.velocity = np.zeros(len(self.grid.points))  # Initialize velocity field
+
+    def compute_velocity(self) -> np.ndarray:
+        """Compute velocity field with numerical stability"""
+        points = self.grid.points
+        r = np.linalg.norm(points, axis=1)
+        
+        # Scale to natural units
+        r_scaled = r / CONSTANTS['l_p']
+        mass_scaled = self.mass / CONSTANTS['m_p']
+        
+        # Compute scaled velocity
+        v = np.sqrt(2 * CONSTANTS['G'] * mass_scaled / np.maximum(r_scaled, 1e-10))
+        v = np.minimum(v, 0.99 * CONSTANTS['c'])  # Enforce subluminal speeds
+        
+        # Safe relativistic correction
+        beta = v / CONSTANTS['c']
+        gamma = 1 / np.sqrt(np.maximum(1e-10, 1 - beta**2))
+        
+        self.velocity = v * gamma
+        return self.velocity
+
+
     @property
     def entropy(self) -> float:
         """Get black hole entropy using Bekenstein-Hawking formula."""

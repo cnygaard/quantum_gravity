@@ -13,6 +13,8 @@ from __init__ import QuantumGravity, configure_logging
 import logging
 from utils.io import MeasurementResult  # Add this import
 from concurrent.futures import ThreadPoolExecutor
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 
 class StarSimulation:
     """Quantum star simulation extending black hole framework."""
@@ -74,6 +76,13 @@ class StarSimulation:
         self.quantum_corrections = []
 
         self.next_checkpoint = 0.0
+
+        # Add history tracking
+        self.central_density_history = []
+        self.central_pressure_history = []
+        self.core_temperature_history = []
+        self.quantum_corrections_history = []
+        self.vacuum_energy_history = []
 
     def _setup_grid(self):
         points = self._generate_grid_points()
@@ -320,6 +329,9 @@ class StarSimulation:
             pressure_result = self._measure_pressure_profile()
             temp_result = self._measure_temperature_profile()
 
+            # Track time points along with measurements
+            self.time_points.append(self.qg.state.time)  # Add this line
+
             # Extract numeric values from MeasurementResults
             density_value = np.asarray(density_result.value)
             pressure_value = pressure_result.value[0].value if isinstance(pressure_result.value, np.ndarray) else pressure_result.value
@@ -334,6 +346,14 @@ class StarSimulation:
             self.temperature_profile[self.current_size] = temp_value
             
             self.current_size += 1
+
+            # Record data
+            self.central_density_history.append(np.max(density_value))
+            self.central_pressure_history.append(np.max(pressure_value))
+            self.core_temperature_history.append(np.mean(temp_value))
+            self.quantum_corrections_history.append(self.gamma_eff)
+            self.vacuum_energy_history.append(self.vacuum_energy)
+
             # Check if we've reached checkpoint
             if self.qg.state.time >= self.next_checkpoint:
                 # Update vacuum energy calculations
@@ -343,9 +363,10 @@ class StarSimulation:
 
                 if self.qg.state.time >= self.next_checkpoint:
                     metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
-                    
                     # Pass metrics to normalization function
                     normalized_scales = self._normalize_geometric_scales(metrics)
+                self.verification_results.append(metrics)
+
 
                 # Log vacuum energy metrics
                 logging.info(f"\nVacuum Energy: {self.vacuum_energy:.2e}")
@@ -622,11 +643,77 @@ class StarSimulation:
                 metadata={'time': self.qg.state.time, 'error': str(e)}
             )
 
+    def plot_results(self, save_path: str = None) -> None:
+        fig = plt.figure(figsize=(15, 24))
+        gs = GridSpec(5, 2, figure=fig)
+
+        # Get verification time points
+        #verification_times = [t for t in self.time_points if t % checkpoint_interval == 0]
+
+        # Core Properties Evolution
+        ax1 = fig.add_subplot(gs[0, 0])
+        ax1.plot(self.time_points, self.central_density_history)
+        ax1.set_yscale('log')
+        ax1.set_xlabel('Time [t_P]')
+        ax1.set_ylabel('Central Density [ρ_P]')
+        ax1.grid(True)
+        
+        ax2 = fig.add_subplot(gs[0, 1])
+        ax2.plot(self.time_points, self.central_pressure_history)
+        ax2.set_yscale('log')
+        ax2.set_xlabel('Time [t_P]')
+        ax2.set_ylabel('Central Pressure [P_P]')
+        ax2.grid(True)
+        
+        # Temperature and Quantum Effects
+        ax3 = fig.add_subplot(gs[1, 0])
+        ax3.plot(self.time_points, self.core_temperature_history)
+        ax3.set_xlabel('Time [t_P]')
+        ax3.set_ylabel('Core Temperature [T_P]')
+        ax3.grid(True)
+        
+        ax4 = fig.add_subplot(gs[1, 1])
+        ax4.plot(self.time_points, self.quantum_corrections_history)
+        ax4.set_xlabel('Time [t_P]')
+        ax4.set_ylabel('Quantum Correction Factor')
+        ax4.grid(True)
+        
+        # Geometric-Entanglement Verification
+        # ax5 = fig.add_subplot(gs[2, 0])
+        # ax5.plot(verification_times, [v['lhs'] for v in self.verification_results], label='LHS')
+        # ax5.plot(verification_times, [v['rhs'] for v in self.verification_results], label='RHS')
+        # #ax5.plot(self.time_points, [v['lhs'] for v in self.verification_results], label='LHS')
+        # #ax5.plot(self.time_points, [v['rhs'] for v in self.verification_results], label='RHS')
+        # ax5.set_yscale('log')
+        # ax5.set_xlabel('Time [t_P]')
+        # ax5.set_ylabel('Geometric-Entanglement Terms')
+        # ax5.legend()
+        # ax5.grid(True)
+        
+        # Leech Lattice Energy
+        ax6 = fig.add_subplot(gs[2, 1])
+        ax6.plot(self.time_points, self.vacuum_energy_history)
+        ax6.set_xlabel('Time [t_P]')
+        ax6.set_ylabel('Vacuum Energy [E_P]')
+        ax6.grid(True)
+
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path)
+        plt.show()
+
 def main():
     """Run star simulation example."""
     configure_logging(simulation_type='star_simulation')
     sim = StarSimulation(mass=1.0, radius=1.0)
-    sim.run_simulation(t_final=40.0)
+    sim.run_simulation(t_final=5.0)
+
+    # Add plotting with proper output paths
+    output_dir = Path("results/star")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Plot evolution results
+    sim.plot_results(str(output_dir / "star_evolution.png"))
 
 if __name__ == "__main__":
     main()

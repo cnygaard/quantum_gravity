@@ -3,6 +3,67 @@
 Experimental artifical intelligence cocreated Quantum Physics simulator
 A high-performance numerical framework for quantum gravity simulations, focusing on black hole dynamics and quantum effects.
 
+## Latest Results
+
+### Star Simulation
+- Quantum Parameters:
+  * β (l_p/R): 2.32e-44
+  * γ_eff: 8.15e-45
+- Vacuum Energy: 2.00e-01
+- Cosmological Constant: 2.51e+01
+- Core Properties:
+  * Mass: 1.00 M_sun
+  * Radius: 1.00 R_sun
+  * Central Density: 1.62e+05
+  * Central Pressure: 1.32e+16
+  * Core Temperature: 1.57e+08
+
+### Cosmology Results
+- Scale Factor Evolution: a = 7.39e+03
+- Hubble Parameter: H = 1.01e-01
+- Equation of State: w = -9.99e-01
+- Acceleration: q = -7.54e+03
+- Cosmic Entropy: S = 6.86e+08
+- Power Spectrum: P(k) mean = 1.85e+16
+
+## Enhanced Features
+
+### Star Simulation
+- Full stellar structure evolution
+- Quantum-corrected central conditions
+- Geometric-entanglement verification
+- Leech lattice vacuum energy
+- Visualization:
+  * Core property evolution plots
+  * 3D structure visualization
+  * Quantum effects distribution
+  * Leech lattice representation
+
+### Cosmology Updates
+- Quantum-corrected Friedmann equations
+- Inflation dynamics tracking
+- Enhanced scale factor evolution
+- Power spectrum analysis
+- Comprehensive visualization suite
+
+## Verification Metrics
+- Geometric-Entanglement Formula
+- Quantum-Classical Transition
+- Scale-dependent coupling
+- Conservation law tracking
+
+## Output Structure
+/results
+  /star
+    - star_evolution.png
+    - star_geometry.png
+    - measurements.json
+  /cosmology
+    - evolution.png
+    - measurements.json
+
+
+
 ## Features
 
 - Black hole evolution with quantum corrections
@@ -87,56 +148,56 @@ The cosmological simulation (`examples/cosmology.py`) explores quantum effects i
 ## Installation
 
 ## Linux Install Debian/Ubuntu tools
-```bash
+
 apt install python3-pip pyton3-tk build-essential openmpi-devel
-```
+
 
 
 ### Clone the simualtor code
 
-```bash
+
 git clone https://github.com/cnygaard/quantum_gravity.git
 cd quantum_gravity
-```
+
 
 ### The simulator runs in Linux, the simulator is intended to be run in a Python virtual environment 
 
-```bash
+
 virtualenv .venv
-source .venv/bin/activate
+source .venv/activate
 pip install -r requirements.txt
-```
+
 
 
 ## Architecture
 
-```
+
 core/      Core quantum gravity implementation
 physics/   Physical observables and measurements
 numerics/  Numerical methods and parallel computing
 examples/  Usage examples and demonstrations
 results/   Simulation results folder
-```
+
 
 ## Running the Simulation
 
 You can run the black hole simulation using the following command:
 
-```bash
+
 python examples/black_hole.py
-```
+
 
 You can run the cosmology simulation using the following command:
 
-```bash
+
 python examples/cosmology.py
-```
+
 
 You can run the star simulation using the following command:
 
-```bash
+
 python examples/star.py
-```
+
 
 
 ## Simulation Outputs
@@ -199,32 +260,32 @@ The output files provide both visual and numerical data for analysis of the blac
 You can run the black hole simulation in a container:
 
 To build the container with Docker:
-```bash
+
 docker build -t quantum-gravity -f Containerfile .
-```
+
 
 To build the container with Podman:
-```bash
+
 podman build -t quantum-gravity -f Containerfile .
-```
+
 
 
 To run the container with Docker:
-```bash
+
 docker run -v $(pwd)/results:/app/results --name quantum-sim quantum-gravity
-```
+
 
 To run the container with Podman:
-```bash
+
 podman run -v $(pwd)/results:/app/results --replace --name quantum-sim quantum-gravity
-```
+
 
 This bind mounts the local results directory to the container's /app/results directory, making simulation outputs directly accessible on the host system. The visualization plots and measurement data will be available immediately after the simulation completes.
 
 View simulation output logs:
-```bash
+
 docker logs -f quantum-sim
-```
+
 
 # Runtime Metrics Explanation
 
@@ -266,9 +327,9 @@ The framework includes comprehensive unit tests covering black hole simulation f
 ### Running Tests
 
 Run the full test suite:
-```bash
+
 python test_black_hole_simulation.py
-```
+
 
 ## Physics Validation & Technical Details
 

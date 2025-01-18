@@ -1,9 +1,18 @@
+
+from core.grid import LeechLattice
+import numpy as np
+
 class EntanglementGeometryHandler:
     """Handle unified entanglement-geometry relation."""
     
     def __init__(self, gamma: float = 1.0):
         self.gamma = gamma  # Universal coupling constant
-        
+        self.leech = LeechLattice(points=100000)  # Initialize Leech lattice
+
+    def compute_effective_coupling(self) -> float:
+        """Compute effective coupling from lattice structure."""
+        return self.leech.compute_effective_coupling()
+
     def compute_spacetime_interval(self, 
                                  entanglement: float,
                                  information: float) -> float:

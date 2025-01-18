@@ -70,7 +70,12 @@ class CosmologySimulation:
         self._setup_grid()
         self._setup_initial_state()
         self._setup_observables()
-        
+
+        # Add tracking lists for verification metrics
+        self.verification_results = []
+        self.hubble_squared_lhs = []
+        self.hubble_squared_rhs = []
+
         # Results storage
         self.time_points = []
         self.scale_factor_history = []
@@ -218,38 +223,81 @@ class CosmologySimulation:
             state.hubble_parameter = self.hubble_parameter
 
     def run_simulation(self, t_final: float, dt_save: float = None) -> None:
+        """Run simulation with synchronized data collection and full logging."""
+        # Initialize simulation parameters
         dt = 0.01
         t = 0.0
-
-        logging.info(f"Starting simulation with initial scale factor: {self.qg.state.scale_factor}")
-
-        # Initialize verification
-        self.verifier = CosmologicalVerification(self)
-        self.verification_results = []
-
         step_count = 0
+        
+        # Initialize all tracking arrays
+        self.time_points = []
+        self.verification_results = []
+        self.hubble_squared_lhs = []
+        self.hubble_squared_rhs = []
+        
+        logging.info(f"Starting simulation with initial scale factor: {self.qg.state.scale_factor}")
+        self.verifier = CosmologicalVerification(self)
+        
+        # Record initial state
+        self._record_measurements(t)
+        initial_metrics = self.verifier.verify_geometric_entanglement(self.qg.state)
+        initial_friedmann = self.verifier.verify_friedmann_equations(self.qg.state)
+        
+        self.verification_results.append({
+            'time': t,
+            'scale_factor': self.qg.state.scale_factor,
+            'lhs': initial_metrics['lhs'],
+            'rhs': initial_metrics['rhs']
+        })
+        self.hubble_squared_lhs.append(initial_friedmann['lhs'])
+        self.hubble_squared_rhs.append(initial_friedmann['rhs'])
+        
+        # Base evolution configuration
+        evolution_config = {
+            'dt': dt,
+            'error_tolerance': 1e-6
+        }
+        
         while t < t_final:
+            # Evolution step
+            evolution = TimeEvolution(
+                grid=self.qg.grid,
+                config=evolution_config,
+                error_tracker=self.error_tracker,
+                conservation_tracker=self.conservation_tracker,
+                state=self.qg.state
+            )
+            evolution._evolve_state(dt)
+            
+            # Update time and collect metrics
+            t += dt
+            step_count += 1
+            
+            metrics = self.verifier.verify_geometric_entanglement(self.qg.state)
+            friedmann = self.verifier.verify_friedmann_equations(self.qg.state)
+            
+            # Store verification results
+            self.verification_results.append({
+                'time': t,
+                'scale_factor': self.qg.state.scale_factor,
+                'lhs': metrics['lhs'],
+                'rhs': metrics['rhs']
+            })
+            self.hubble_squared_lhs.append(friedmann['lhs'])
+            self.hubble_squared_rhs.append(friedmann['rhs'])
+            
+            # Detailed logging every 100 steps
             if step_count % 100 == 0:
-                # Add verification step
-                metrics = self.verifier.verify_geometric_entanglement(self.qg.state)
-                self.verification_results.append({
-                    'time': t,
-                    'scale_factor': self.qg.state.scale_factor,
-                    **metrics
-                })
-
-                # Add inflation verification
+                # Log inflation dynamics
                 inflation_metrics = self.verifier.verify_inflation_dynamics(self.qg.state)
-                
                 logging.info(
                     f"\nInflation Dynamics at t={t:.2f}:"
                     f"\nSlow-roll parameter ε = {inflation_metrics['slow_roll']:.6e}"
                     f"\nPerturbation spectrum = {inflation_metrics['spectrum']:.6e}"
                 )
-
-                # Get cosmic evolution measurements
-                cosmic = self.cosmic_obs.measure(self.qg.state)
                 
+                # Log cosmic evolution
+                cosmic = self.cosmic_obs.measure(self.qg.state)
                 logging.info(
                     f"\nCosmic Evolution at t={t:.2f}:"
                     f"\nHubble Parameter H = {cosmic.value['hubble']:.6e}"
@@ -257,106 +305,95 @@ class CosmologySimulation:
                     f"\nAcceleration q = {cosmic.value['acceleration']:.6e}"
                     f"\nCosmic Entropy S = {cosmic.value['entropy']:.6e}"
                 )
-
+                
+                # Log geometric entanglement
                 logging.info(
                     f"\nGeometric-Entanglement Formula at t={t:.2f}:"
                     f"\nLHS = {metrics['lhs']:.6e}"
                     f"\nRHS = {metrics['rhs']:.6e}"
                     f"\nRelative Error = {metrics['relative_error']:.6e}"
                 )
-
-                # Add Friedmann equation verification
-                friedmann_metrics = self.verifier.verify_friedmann_equations(self.qg.state)
                 
+                # Log Friedmann equations
                 logging.info(
                     f"\nQuantum-Corrected Friedmann Equations at t={t:.2f}:"
-                    f"\nH² (LHS) = {friedmann_metrics['lhs']:.6e}"
-                    f"\nH² (RHS) = {friedmann_metrics['rhs']:.6e}"
-                    f"\nQuantum Correction = {friedmann_metrics['quantum_correction']:.6e}"
+                    f"\nH² (LHS) = {friedmann['lhs']:.6e}"
+                    f"\nH² (RHS) = {friedmann['rhs']:.6e}"
+                    f"\nQuantum Correction = {friedmann['quantum_correction']:.6e}"
                 )
-
+                
+                # Log observables
                 scale = self.scale_obs.measure(self.qg.state)
                 density = self.density_obs.measure(self.qg.state)
                 quantum = self.quantum_obs.measure(self.qg.state)
                 spectrum = self.spectrum_obs.measure(self.qg.state)
-        
-                # Calculate power spectrum metrics
+                
+                # Calculate and log power spectrum metrics
                 k, Pk = spectrum.value
                 Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
-
                 logging.info(
                     f"Time t={t:.2f}, a={self.qg.state.scale_factor:.6e}: "
                     f"Energy Density={density.value:.6e}, "
                     f"Quantum Corrections={quantum.value:.6e}"
                     f"\nScale Factor = {scale.value:.6e}"
                     f"\nPower Spectrum k_max = {np.max(k):.6e}"
-                    f"\nPower Spectrum P(k) mean = {np.mean(Pk_scalar):.6e}"      
+                    f"\nPower Spectrum P(k) mean = {np.mean(Pk_scalar):.6e}"
                 )
-
-                # Create config dict with required parameters
-                evolution_config = self.qg.config.config.copy()
-                evolution_config['dt'] = dt
-                evolution_config['error_tolerance'] = 1e-6
-
+                
                 logging.info(f"Simulation progress: {t/t_final*100:.1f}% (t={t:.2f}/{t_final})")
-
+            
             # Store quantum state on grid
             self.qg.grid.quantum_state = self.qg.state
-
-            # Initialize evolution with correct number of arguments
-            evolution = TimeEvolution(self.qg.grid, evolution_config,
-                                        self.error_tracker, self.conservation_tracker)
-            evolution._evolve_state(dt)
-
+            
             # Check for bounce conditions
             if self._check_quantum_bounce(self.qg.state):
                 self._handle_bounce(self.qg.state)
                 logging.info(f"Quantum bounce detected at t={t:.2f}, a={self.qg.state.scale_factor:.6e}")
-
-            # Calculate quantum corrections
-            quantum_factor = 1 + (CONSTANTS['l_p']/self.qg.state.scale_factor)**2
-
+            
             # Update metric with quantum corrections
+            quantum_factor = 1 + (CONSTANTS['l_p']/self.qg.state.scale_factor)**2
             for i in range(len(self.qg.grid.points)):
                 for mu in range(1, 4):
                     current = self.qg.state.get_metric_component((mu, mu), i)
-                    self.qg.state.set_metric_component((mu, mu), i,
-                        current * quantum_factor)
+                    self.qg.state.set_metric_component((mu, mu), i, current * quantum_factor)
+            
+            # Record measurements
+            self._record_measurements(t)
+        
+        logging.info(f"Simulation completed: {step_count} steps")
 
-            # Record measurements periodically
-            if dt_save is None or t % dt_save < dt:
-                self._record_measurements(t)
-
-            t += dt
-            step_count += 1
-
-        logging.info(f"Simulation completed: {step_count} steps")    
 
     def _record_measurements(self, t: float) -> None:
         """Record measurements at current time."""
-        # Measure observables
-
-        #cosmic = self.cosmic_obs.measure(self.qg.state)
+        # Always measure when this method is called
+        scale = self.scale_obs.measure(self.qg.state)
+        density = self.density_obs.measure(self.qg.state)
+        quantum = self.quantum_obs.measure(self.qg.state)
+        spectrum = self.spectrum_obs.measure(self.qg.state)
+        cosmic = self.cosmic_obs.measure(self.qg.state)
         
-        # Store results
-        # self.time_points.append(t)
-        # self.scale_factor_history.append(scale.value)
-        # self.energy_density_history.append(density.value)
-        # self.quantum_corrections_history.append(quantum.value)
-        # self.perturbation_spectrum_history.append(spectrum.value)
-        # self.entropy_history.append(cosmic.value['entropy'])
-        # self.hubble_history.append(cosmic.value['hubble'])
-        # self.eos_history.append(cosmic.value['eos'])
-        # self.acceleration_history.append(cosmic.value['acceleration'])
-        # self.entropy_history.append(cosmic.value['entropy'])
-        if t not in self.time_points:
-            scale = self.scale_obs.measure(self.qg.state)
-            density = self.density_obs.measure(self.qg.state)
-            quantum = self.quantum_obs.measure(self.qg.state)
-            spectrum = self.spectrum_obs.measure(self.qg.state)
-            cosmic = self.cosmic_obs.measure(self.qg.state)
-            
-            # Store all results
+        # Initialize lists if they don't exist
+        if not hasattr(self, 'time_points'):
+            self.time_points = []
+        if not hasattr(self, 'scale_factor_history'):
+            self.scale_factor_history = []
+        if not hasattr(self, 'energy_density_history'):
+            self.energy_density_history = []
+        if not hasattr(self, 'quantum_corrections_history'):
+            self.quantum_corrections_history = []
+        if not hasattr(self, 'perturbation_spectrum_history'):
+            self.perturbation_spectrum_history = []
+        if not hasattr(self, 'hubble_history'):
+            self.hubble_history = []
+        if not hasattr(self, 'eos_history'):
+            self.eos_history = []
+        if not hasattr(self, 'acceleration_history'):
+            self.acceleration_history = []
+        if not hasattr(self, 'entropy_history'):
+            self.entropy_history = []
+        
+        # Store all results
+        if t not in self.time_points:  # Only record if we haven't recorded this time point
             self.time_points.append(t)
             self.scale_factor_history.append(scale.value)
             self.energy_density_history.append(density.value)
@@ -366,64 +403,38 @@ class CosmologySimulation:
             self.eos_history.append(cosmic.value['eos'])
             self.acceleration_history.append(cosmic.value['acceleration'])
             self.entropy_history.append(cosmic.value['entropy'])
-
-
-    # def plot_results(self, save_path: str = None) -> None:
-    #     """Plot simulation results with enhanced matter power spectrum tracking."""
-    #     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
-        
-    #     # Scale factor evolution
-    #     ax1.plot(self.time_points, self.scale_factor_history)
-    #     ax1.set_yscale('log')  # Log scale for better visualization
-    #     ax1.set_xlabel('Time [t_P]')
-    #     ax1.set_ylabel('Scale Factor [l_P]')
-    #     ax1.set_title('Universe Scale Factor Evolution')
-    #     ax1.grid(True)
-        
-    #     # Energy density evolution
-    #     ax2.plot(self.time_points, self.energy_density_history)
-    #     ax2.set_yscale('log')
-    #     ax2.set_xlabel('Time [t_P]')
-    #     ax2.set_ylabel('Energy Density [ρ_P]')
-    #     ax2.set_title('Energy Density Evolution')
-    #     ax2.grid(True)
-        
-    #     # Quantum corrections
-    #     ax3.plot(self.time_points, self.quantum_corrections_history)
-    #     ax3.set_xlabel('Time [t_P]')
-    #     ax3.set_ylabel('Quantum Correction')
-    #     ax3.set_title('Quantum Corrections Magnitude')
-    #     ax3.grid(True)
-        
-    #     # Matter power spectrum evolution
-    #     if self.perturbation_spectrum_history:
-    #         # Plot multiple spectra to show evolution
-    #         times = [0, len(self.time_points)//2, -1]  # Start, middle, end
-    #         for t_idx in times:
-    #             k, Pk = self.perturbation_spectrum_history[t_idx]
-    #             Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
-    #             ax4.loglog(k, Pk_scalar, 
-    #                     label=f't={self.time_points[t_idx]:.1f}')
-    #         ax4.set_xlabel('Wavenumber k [1/l_P]')
-    #         ax4.set_ylabel('Power Spectrum P(k)')
-    #         ax4.set_title('Matter Power Spectrum Evolution')
-    #         ax4.legend()
-    #         ax4.grid(True)
-        
-    #     plt.tight_layout()
-        
-    #     if save_path:
-    #         plt.savefig(save_path)
-    #     plt.show()
+            
+            # Log measurements periodically
+            if len(self.time_points) % 100 == 0:
+                logging.info(
+                    f"Time t={t:.2f}, a={scale.value:.6e}: "
+                    f"Energy Density={density.value:.6e}, "
+                    f"Quantum Corrections={quantum.value:.6e}"
+                    f"\nScale Factor = {scale.value:.6e}"
+                    f"\nPower Spectrum k_max = {np.max(spectrum.value[0]):.6e}"
+                    f"\nPower Spectrum P(k) mean = {np.mean(spectrum.value[1]):.6e}"
+                )
 
     def plot_results(self, save_path: str = None) -> None:
-        """Plot comprehensive cosmological evolution."""
-        fig = plt.figure(figsize=(15, 20))
-        gs = GridSpec(4, 2, figure=fig)
+        """Plot comprehensive cosmological evolution with synchronized data."""
+        fig = plt.figure(figsize=(15, 24))
+        gs = GridSpec(5, 2, figure=fig)
         
-        # Existing fundamental plots
+        # Ensure time_array matches the actual data length
+        time_array = np.array(self.time_points)
+        
+        # Verification data arrays
+        verification_times = np.array([v['time'] for v in self.verification_results])
+        lhs_values = np.array([v['lhs'] for v in self.verification_results])
+        rhs_values = np.array([v['rhs'] for v in self.verification_results])
+        
+        # Ensure all arrays have the same length
+        min_length = min(len(time_array), len(verification_times))
+        time_array = time_array[:min_length]
+        
+        # Basic evolution plots
         ax1 = fig.add_subplot(gs[0, 0])
-        ax1.plot(self.time_points, self.scale_factor_history)
+        ax1.plot(time_array, self.scale_factor_history[:min_length])
         ax1.set_yscale('log')
         ax1.set_xlabel('Time [t_P]')
         ax1.set_ylabel('Scale Factor [l_P]')
@@ -431,7 +442,7 @@ class CosmologySimulation:
         ax1.grid(True)
         
         ax2 = fig.add_subplot(gs[0, 1])
-        ax2.plot(self.time_points, self.energy_density_history)
+        ax2.plot(time_array, self.energy_density_history[:min_length])
         ax2.set_yscale('log')
         ax2.set_xlabel('Time [t_P]')
         ax2.set_ylabel('Energy Density [ρ_P]')
@@ -439,60 +450,85 @@ class CosmologySimulation:
         ax2.grid(True)
         
         ax3 = fig.add_subplot(gs[1, 0])
-        ax3.plot(self.time_points, self.quantum_corrections_history)
+        ax3.plot(time_array, self.quantum_corrections_history[:min_length])
         ax3.set_xlabel('Time [t_P]')
         ax3.set_ylabel('Quantum Correction')
         ax3.set_title('Quantum Corrections Magnitude')
         ax3.grid(True)
         
+        # Power spectrum evolution
         ax4 = fig.add_subplot(gs[1, 1])
         if self.perturbation_spectrum_history:
-            times = [0, len(self.time_points)//2, -1]
+            times = [0, min_length//2, -1]
             for t_idx in times:
-                k, Pk = self.perturbation_spectrum_history[t_idx]
-                Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
-                ax4.loglog(k, Pk_scalar, label=f't={self.time_points[t_idx]:.1f}')
+                if t_idx < len(self.perturbation_spectrum_history):
+                    k, Pk = self.perturbation_spectrum_history[t_idx]
+                    Pk_scalar = np.mean(np.mean(Pk, axis=0), axis=0)
+                    ax4.loglog(k, Pk_scalar, label=f't={time_array[t_idx]:.1f}')
         ax4.set_xlabel('Wavenumber k [1/l_P]')
         ax4.set_ylabel('Power Spectrum P(k)')
         ax4.set_title('Matter Power Spectrum Evolution')
         ax4.legend()
         ax4.grid(True)
         
-        # New cosmic evolution plots
+        # Cosmic evolution plots with synchronized lengths
         ax5 = fig.add_subplot(gs[2, 0])
-        ax5.plot(self.time_points, self.hubble_history)
+        ax5.plot(time_array, self.hubble_history[:min_length])
         ax5.set_title('Hubble Parameter Evolution')
         ax5.set_xlabel('Time [t_P]')
         ax5.set_ylabel('H [1/t_P]')
         ax5.grid(True)
         
         ax6 = fig.add_subplot(gs[2, 1])
-        ax6.plot(self.time_points, self.eos_history)
+        ax6.plot(time_array, self.eos_history[:min_length])
         ax6.set_title('Equation of State Evolution')
         ax6.set_xlabel('Time [t_P]')
         ax6.set_ylabel('w(t)')
         ax6.grid(True)
         
         ax7 = fig.add_subplot(gs[3, 0])
-        ax7.plot(self.time_points, self.acceleration_history)
+        ax7.plot(time_array, self.acceleration_history[:min_length])
         ax7.set_title('Cosmic Acceleration')
         ax7.set_xlabel('Time [t_P]')
         ax7.set_ylabel('q(t)')
         ax7.grid(True)
         
         ax8 = fig.add_subplot(gs[3, 1])
-        ax8.plot(self.time_points, self.entropy_history)
+        ax8.plot(time_array, self.entropy_history[:min_length])
         ax8.set_title('Cosmic Entropy Evolution')
         ax8.set_xlabel('Time [t_P]')
         ax8.set_ylabel('S [k_B]')
         ax8.grid(True)
         
+        # Verification plots with synchronized data
+        ax9 = fig.add_subplot(gs[4, 0])
+        ax9.plot(verification_times[:min_length], lhs_values[:min_length], 
+                label='LHS', color='blue')
+        ax9.plot(verification_times[:min_length], rhs_values[:min_length], 
+                label='RHS', color='red')
+        ax9.set_yscale('log')
+        ax9.set_xlabel('Time [t_P]')
+        ax9.set_ylabel('Geometric-Entanglement Terms')
+        ax9.set_title('Geometric-Entanglement Evolution')
+        ax9.legend()
+        ax9.grid(True)
+        
+        # Friedmann equations error plot
+        ax10 = fig.add_subplot(gs[4, 1])
+        hubble_lhs = np.array(self.hubble_squared_lhs[:min_length])
+        hubble_rhs = np.array(self.hubble_squared_rhs[:min_length])
+        friedmann_error = np.abs(hubble_lhs - hubble_rhs) / hubble_lhs
+        ax10.plot(time_array, friedmann_error)
+        ax10.set_yscale('log')
+        ax10.set_xlabel('Time [t_P]')
+        ax10.set_ylabel('Relative Error')
+        ax10.set_title('Friedmann Equations Error Evolution')
+        ax10.grid(True)
+        
         plt.tight_layout()
         if save_path:
             plt.savefig(save_path)
         plt.show()
-
-
 
 
     def compute_derived_quantities(self) -> Dict[str, np.ndarray]:
@@ -530,7 +566,7 @@ def main():
     sim = CosmologySimulation(initial_scale, hubble_parameter)
     
     # Run until significant expansion
-    t_final = 20.0  # in Planck times
+    t_final = 10.0  # in Planck times
     sim.run_simulation(t_final)
     
     # Plot and save results

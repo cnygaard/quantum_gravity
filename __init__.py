@@ -385,7 +385,8 @@ class QuantumGravity:
                     'error_tolerance': 1e-6
                 },
                 error_tracker=error_tracker,
-                conservation_tracker=conservation_tracker
+                conservation_tracker=conservation_tracker,
+                state=self.qg.state  # Add state parameter
             )
 
         # Add progress tracking

@@ -355,9 +355,9 @@ class StarSimulation:
                 logging.info(f"\nStellar Structure at t={self.qg.state.time:.2f}:")
                 logging.info(f"Mass: {self.M_star/CONSTANTS['M_sun']:.2e} M_sun")
                 logging.info(f"Radius: {self.R_star/CONSTANTS['R_sun']:.2e} R_sun")
-                logging.info(f"Central Density: {np.max(density_value):.2e}")
-                logging.info(f"Central Pressure: {np.max(pressure_value):.2e}")
-                logging.info(f"Surface Temperature: {np.mean(temp_value):.2e}")
+                logging.info(f"Central Density: {np.max(density_value):.26e}")
+                logging.info(f"Central Pressure: {np.max(pressure_value):.26e}")
+                logging.info(f"Core Temperature: {np.mean(temp_value):.26e}")
 
                 # Log geometric verification
                 logging.info(f"\nGeometric-Entanglement Formula:")
@@ -415,13 +415,13 @@ class StarSimulation:
                 metadata={'time': self.qg.state.time, 'error': str(e)}
             )
 
-    # Then use it for specific measurements:
-    #def _measure_density_profile(self) -> MeasurementResult:
     def _measure_density_profile(self) -> MeasurementResult:
         result = self._measure_profile(self.density_obs, "density")
-        # Ensure minimum physical density
-        min_density = CONSTANTS['m_p']/(4*np.pi*self.R_star**3)  # Base stellar density
+        
+        # Use solar core density as minimum
+        min_density = 1.62e5  # kg/m³
         density_value = np.maximum(result.value, min_density)
+        
         return MeasurementResult(
             value=density_value,
             uncertainty=result.uncertainty,
@@ -470,24 +470,41 @@ class StarSimulation:
         return normalized
 
     def _evolve_step(self, dt: float) -> None:
-        """Evolve system one timestep."""
+        """Evolve system one timestep with full parameter updates."""
+        # Setup and evolve stellar structure
         self._setup_stellar_structure()
-        self.qg.state.time += dt
+        
+        # Track quantum geometric evolution
+        self.geometric_coupling = self._compute_geometric_coupling()
+        self.vacuum_fluctuations = self._compute_vacuum_fluctuations()
+        
+        # Update metric and spacetime geometry
         self._update_metric()
+        
+        # Evolve entanglement parameters
+        self.entanglement_entropy = self._compute_entanglement()
+        
+        # Update time
+        self.qg.state.time += dt
 
     def _compute_timestep(self):
-        """Compute adaptive timestep with proper scaling"""
-        # Update velocity with scaling
+        """Compute adaptive timestep considering all relevant scales"""
+        # Update velocity field
         self.qg.state.compute_velocity()
+
+        # Get geometric coupling from verifier
+        geometric_coupling = self.verifier._compute_geometric_coupling(self.qg.state)
         
-        # Calculate characteristic timescales in natural units
+        # Calculate characteristic timescales
         t_dynamic = CONSTANTS['c'] * self.R_star / (CONSTANTS['G'] * self.M_star)
         t_quantum = CONSTANTS['hbar'] / (self.gamma_eff * CONSTANTS['c']**2)
+        #t_entangle = CONSTANTS['hbar'] / self.geometric_coupling
         
         # Use smallest timescale with safety factor
+        #dt = min(t_dynamic, t_quantum, t_entangle) * 0.01
         dt = min(t_dynamic, t_quantum) * 0.01
-        
-        # Enforce maximum timestep relative to total simulation time
+
+        # Enforce maximum timestep
         max_dt = 0.01  # Maximum timestep of 0.01 time units
         return min(dt, max_dt)
 

@@ -52,7 +52,7 @@ class StarSimulation:
         self.rho_vacuum_modified = self.rho_vacuum * (1 + self.gamma_eff * self.beta_universe)
 
         # Add Leech lattice vacuum energy calculations
-        self.leech = LeechLattice(points=100000)
+        self.leech = LeechLattice(points=CONSTANTS['LEECH_LATTICE_POINTS'])
 
         # Compute initial vacuum energy and lambda
         self.vacuum_energy = self._compute_leech_vacuum_energy()
@@ -702,6 +702,109 @@ class StarSimulation:
             plt.savefig(save_path)
         plt.show()
 
+    def plot_star_geometry(self, save_path: str = None):
+        fig = plt.figure(figsize=(15, 12))
+
+    # Add main title with key parameters
+        #central_pressure = np.max(self.pressure_profile[-1])
+        #central_pressure = np.max(self.pressure_profile[-1])
+        valid_pressures = self.pressure_profile[self.pressure_profile != 0]
+        central_pressure = valid_pressures[0] if len(valid_pressures) > 0 else 0
+        core_temperature = np.mean(self.temperature_profile[-1])
+        fig.suptitle(f'Quantum Star Structure (M={self.M_star/CONSTANTS["M_sun"]:.1f} M☉, R={self.R_star/CONSTANTS["R_sun"]:.1f} R☉)\n' + 
+                    f'T_core={self.qg.state.temperature:.2e} K, P_c={central_pressure:.2e} Pa', 
+                    fontsize=14)
+        
+
+
+        ax1 = fig.add_subplot(121, projection='3d')
+
+        # Add quantum parameters text box
+        ax1.text2D(0.05, 0.95, 
+                f'Quantum Parameters:\n' +
+                f'β (l_p/R): {self.beta:.2e}\n' +
+                f'γ_eff: {self.gamma_eff:.2e}\n' +
+                f'Vacuum Energy: {self.vacuum_energy:.2e}',
+                transform=ax1.transAxes,
+                bbox=dict(facecolor='white', alpha=0.8))
+
+        # Generate proper grid size
+        n_points = 50  # Define grid resolution
+        theta = np.linspace(0, np.pi, n_points)
+        phi = np.linspace(0, 2*np.pi, n_points)
+        
+        # Normalize radius to solar radius
+        R_normalized = self.R_star/CONSTANTS["R_sun"]
+    
+        X, Y, Z = self._generate_surface_grid(R_normalized, theta, phi)
+        #X, Y, Z = self._generate_surface_grid(self.R_star, theta, phi)
+        quantum_density = self._compute_quantum_density()
+        
+        # Interpolate quantum density onto visualization grid
+        r_grid = np.sqrt(X**2 + Y**2 + Z**2)
+        density_grid = np.interp(r_grid.flatten(), 
+                                np.linalg.norm(self.qg.grid.points, axis=1),
+                                quantum_density).reshape(X.shape)
+        
+        surf = ax1.plot_surface(X, Y, Z, 
+                            facecolors=plt.cm.plasma(density_grid),
+                            alpha=0.8)
+        
+        if save_path:
+            plt.savefig(save_path)
+
+
+    def _compute_quantum_density(self) -> np.ndarray:
+        """Compute quantum density distribution using existing central density."""
+        
+        # Use existing central density
+        central_density = 1.62e5  # Known solar core density
+        
+        # Get normalized radial coordinates
+        points = self.qg.grid.points
+        r = np.linalg.norm(points, axis=1)
+        r_norm = r / self.R_star
+        
+        # Density profile with quantum corrections
+        density = central_density * np.exp(-r_norm**2)
+        
+        # Add quantum effects
+        quantum_factor = 1 + self.gamma_eff * (CONSTANTS['l_p']/r)**CONSTANTS['LEECH_LATTICE_DIMENSION']
+        density *= quantum_factor
+        
+        # Normalize for visualization
+        return density / central_density
+
+
+
+    def _generate_surface_grid(self, r: float, theta: np.ndarray, phi: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Generate 3D surface grid for stellar visualization.
+        
+        Args:
+            r: Stellar radius
+            theta: Array of theta angles
+            phi: Array of phi angles
+            
+        Returns:
+            Tuple of (X, Y, Z) coordinate meshgrids
+        """
+        # Create meshgrid for spherical coordinates
+        THETA, PHI = np.meshgrid(theta, phi)
+        
+        # Convert to Cartesian coordinates
+        X = r * np.sin(THETA) * np.cos(PHI)
+        Y = r * np.sin(THETA) * np.sin(PHI)
+        Z = r * np.cos(THETA)
+        
+        # Apply quantum corrections to surface
+        quantum_factor = 1 + self.gamma_eff * self.beta
+        X *= quantum_factor
+        Y *= quantum_factor
+        Z *= quantum_factor
+        
+        return X, Y, Z
+
+
 def main():
     """Run star simulation example."""
     configure_logging(simulation_type='star_simulation')
@@ -714,6 +817,7 @@ def main():
     
     # Plot evolution results
     sim.plot_results(str(output_dir / "star_evolution.png"))
+    sim.plot_star_geometry(str(output_dir / "star_geometry.png"))
 
 if __name__ == "__main__":
     main()

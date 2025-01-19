@@ -163,8 +163,9 @@ class AdaptiveGrid:
         self.qg.state = QuantumState(self.qg.grid)
 
 class LeechLattice:
-    def __init__(self, points=100000):  # Reduced from 10000
+    def __init__(self, points=CONSTANTS['LEECH_LATTICE_POINTS']):  # Reduced from 10000
         self.n_points = points
+        self.dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
         self._cached_energy = None
         self._lattice_points = None
         self._setup_lattice()
@@ -187,7 +188,7 @@ class LeechLattice:
         symmetry_factor = self._compute_symmetry_factor()
         
         # Enhanced scale factor with refined corrections
-        scale_factor = np.sqrt(self.n_points) * np.log(self.n_points) * (1 + np.log(self.n_points)/24)
+        scale_factor = np.sqrt(self.n_points) * np.log(self.n_points) * (1 + np.log(self.n_points)/self.dimension)
         
         return base_energy * lattice_sum * symmetry_factor / scale_factor
 
@@ -196,9 +197,9 @@ class LeechLattice:
     def _generate_lattice_points(self) -> np.ndarray:
         """Optimized Leech lattice point generation."""
         # Pre-allocate array
-        points = np.zeros((self.n_points, 24))
+        points = np.zeros((self.n_points, self.dimension))
         # Vectorized operations
-        points = np.random.randint(-2, 3, (self.n_points, 24))
+        points = np.random.randint(-2, 3, (self.n_points, self.dimension))
         # Adjust for divisibility conditions efficiently
         sums = np.sum(points, axis=1)
         squares = np.sum(points**2, axis=1)

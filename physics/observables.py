@@ -716,7 +716,7 @@ class PressureObservable(Observable):
 class RingdownObservable(Observable):
     def __init__(self, grid):
         super().__init__(grid)
-        self.leech = LeechLattice(points=100000)
+        self.leech = LeechLattice(points=CONSTANTS['LEECH_LATTICE_POINTS'])
 
     def _construct_operator(self) -> csr_matrix:
             """Construct ringdown operator matrix."""

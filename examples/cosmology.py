@@ -56,7 +56,7 @@ class CosmologySimulation:
         self.lambda_cosm = CONSTANTS['lambda']  # Cosmological constant
 
         # Add Leech lattice structure
-        self.leech_lattice = LeechLattice(points=100000)
+        self.leech_lattice = LeechLattice(points=CONSTANTS['LEECH_LATTICE_POINTS'])
         
         # Add vacuum energy from Leech lattice
         self.vacuum_energy = self.leech_lattice.compute_vacuum_energy()
@@ -133,7 +133,7 @@ class CosmologySimulation:
         # Set metric components
         state._metric_array[0, 0, :] = -1  # Proper time components
         quantum_factor = 1 + (CONSTANTS['l_p']/state.scale_factor)**2
-        leech_factor = self.vacuum_energy * (CONSTANTS['l_p']/state.scale_factor)**24
+        leech_factor = self.vacuum_energy * (CONSTANTS['l_p']/state.scale_factor)**CONSTANTS['LEECH_LATTICE_DIMENSION']
 
         for i in range(1, 4):
             state._metric_array[i, i, :] = state.scale_factor**2 * quantum_factor

@@ -28,7 +28,7 @@ from numerics.errors import ErrorTracker
 from physics.conservation import ConservationLawTracker
 from physics.verification import CosmologicalVerification
 from core.state import QuantumState, CosmologicalState
-from core.grid import AdaptiveGrid
+from core.grid import AdaptiveGrid, LeechLattice
 from physics.observables import CosmicEvolutionObservable
 
 class CosmologySimulation:
@@ -54,6 +54,13 @@ class CosmologySimulation:
         self.initial_scale = initial_scale
         self.hubble_parameter = hubble_parameter
         self.lambda_cosm = CONSTANTS['lambda']  # Cosmological constant
+
+        # Add Leech lattice structure
+        self.leech_lattice = LeechLattice(points=100000)
+        
+        # Add vacuum energy from Leech lattice
+        self.vacuum_energy = self.leech_lattice.compute_vacuum_energy()
+
 
         self.qg.state = CosmologicalState(
             grid=self.qg.grid,
@@ -86,7 +93,9 @@ class CosmologySimulation:
         self.eos_history = []
         self.acceleration_history = []
         self.entropy_history = []
-        
+
+
+
     def _setup_grid(self) -> None:
         """Setup grid for cosmological simulation."""
         # Configure grid for large-scale structure
@@ -113,8 +122,10 @@ class CosmologySimulation:
         
         # Initialize cosmological parameters
         state.scale_factor = self.initial_scale
-        state.energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
-        
+        #state.energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
+        base_energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
+        state.energy_density = base_energy_density + self.vacuum_energy
+
         # Set up FLRW metric with quantum corrections
         n_points = len(self.qg.grid.points)
         state._metric_array = np.zeros((4, 4, n_points))
@@ -122,10 +133,12 @@ class CosmologySimulation:
         # Set metric components
         state._metric_array[0, 0, :] = -1  # Proper time components
         quantum_factor = 1 + (CONSTANTS['l_p']/state.scale_factor)**2
-        
+        leech_factor = self.vacuum_energy * (CONSTANTS['l_p']/state.scale_factor)**24
+
         for i in range(1, 4):
             state._metric_array[i, i, :] = state.scale_factor**2 * quantum_factor
-            
+        #for i in range(1, 4):
+        #    state._metric_array[i, i, :] = state.scale_factor**2 * (quantum_factor + leech_factor)    
         # Add initial perturbations
         self._add_quantum_fluctuations(state)
         
@@ -566,7 +579,7 @@ def main():
     sim = CosmologySimulation(initial_scale, hubble_parameter)
     
     # Run until significant expansion
-    t_final = 10.0  # in Planck times
+    t_final = 20.0  # in Planck times
     sim.run_simulation(t_final)
     
     # Plot and save results

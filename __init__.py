@@ -23,7 +23,8 @@ from physics.observables import (
     QuantumCorrectionsObservable,
     PerturbationSpectrumObservable,
     StellarTemperatureObservable,
-    PressureObservable
+    PressureObservable,
+    RingdownObservable
 )
 
 # Make key components available at package level
@@ -291,6 +292,7 @@ class QuantumGravity:
         physics.PerturbationSpectrumObservable = PerturbationSpectrumObservable
         physics.StellarTemperatureObservable = StellarTemperatureObservable
         physics.PressureObservable = PressureObservable
+        physics.RingdownObservable = RingdownObservable 
         return physics
 
     def _load_config(self, config_path: str = None) -> Dict:

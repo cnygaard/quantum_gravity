@@ -15,4 +15,6 @@ CONSTANTS = {
     'R_sun': 6.957e8 / 1.616e-35,   # Solar radius in Planck units
     'k_B': 1.380649e-23,            # Boltzmann constant in J/K
     'L_sun': 3.828e26,              # Solar luminosity in watts
+    'LEECH_LATTICE_POINTS': 196560, # Default leech lattice size in number of points
+    'LEECH_LATTICE_DIMENSION': 24   # Leech lattice dimension
 }

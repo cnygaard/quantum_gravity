@@ -7,7 +7,7 @@ class EntanglementGeometryHandler:
     
     def __init__(self, gamma: float = 1.0):
         self.gamma = gamma  # Universal coupling constant
-        self.leech = LeechLattice(points=100000)  # Initialize Leech lattice
+        self.leech = LeechLattice(points=CONSTANTS['LEECH_LATTICE_POINTS'])  # Initialize Leech lattice
 
     def compute_effective_coupling(self) -> float:
         """Compute effective coupling from lattice structure."""

@@ -5,7 +5,7 @@ from scipy.sparse import csr_matrix, linalg as sparse_linalg
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from constants import CONSTANTS
-from core.grid import AdaptiveGrid
+from core.grid import AdaptiveGrid, LeechLattice
 from core.state import QuantumState
 import logging
 
@@ -712,3 +712,61 @@ class PressureObservable(Observable):
             uncertainty=0.1 * pressure,
             metadata={'r_max': r_max}
         )
+
+class RingdownObservable(Observable):
+    def __init__(self, grid):
+        super().__init__(grid)
+        self.leech = LeechLattice(points=100000)
+
+    def _construct_operator(self) -> csr_matrix:
+            """Construct ringdown operator matrix."""
+            n_points = len(self.grid.points)
+            rows, cols, data = [], [], []
+            
+            # Build sparse matrix elements for ringdown modes
+            for i in range(n_points):
+                rows.append(i)
+                cols.append(i)
+                # Diagonal elements for frequency operator
+                data.append(1.0)
+                
+                # Add neighbor coupling terms
+                for j in self.grid.neighbors[i]:
+                    if j > i:  # Avoid double counting
+                        coupling = 1.0 / len(self.grid.neighbors[i])
+                        rows.extend([i, j])
+                        cols.extend([j, i])
+                        data.extend([coupling, coupling])
+            
+            return csr_matrix((data, (rows, cols)), shape=(n_points, n_points))
+
+    def measure(self, state):
+        # Standard QNM frequencies
+        M = state.mass
+        l = 2  # Quadrupole mode
+        n = 0  # Fundamental tone
+        omega_standard = self._compute_standard_frequency(M, l, n)
+        
+        # Get Leech lattice coupling with default value
+        beta_leech = self.leech.compute_effective_coupling()
+        if beta_leech is None:
+            beta_leech = 0.407  # Theoretical value from Leech lattice
+
+        # Leech lattice correction
+        #beta_leech = self.leech.compute_effective_coupling()
+        omega_modified = omega_standard * (1 + beta_leech)
+        
+        return MeasurementResult(
+            value=omega_modified,
+            uncertainty=abs(omega_modified - omega_standard),
+            metadata={
+                'standard_freq': omega_standard,
+                'leech_correction': beta_leech
+            }
+        )
+        
+    def _compute_standard_frequency(self, M, l, n):
+        """Standard 4D Schwarzschild QNM frequency"""
+        # For l=2, n=0 mode
+        omega_R = (0.37367 - 0.08896j) / M
+        return omega_R

@@ -27,60 +27,109 @@ from constants import CONSTANTS
 from core.state import QuantumState
 from physics.verification import UnifiedTheoryVerification
 from utils.io import QuantumGravityIO, MeasurementResult
-
+from matplotlib.gridspec import GridSpec
 
 class BlackHoleSimulation:
     """Quantum black hole simulation."""
     def plot_results(self, save_path: str = None) -> None:
         """Plot comprehensive simulation results."""
-        fig, ((ax1, ax2, ax3), (ax4, ax5, ax6)) = plt.subplots(2, 3, figsize=(15, 10))
-        
+        #fig = plt.figure(figsize=(15, 12))
+        #gs = GridSpec(4, 2, figure=fig)  # 4 rows, 2 columns for all plots
+        #fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7)) = plt.subplots(3, 3, figsize=(15, 12))
+        #((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7)) = plt.subplots(3, 3, figsize=(15, 12))[1]
+        #fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7,)) = plt.subplots(3, 3, figsize=(15, 12))
+        fig = plt.figure(figsize=(15, 12))
+        fig.suptitle(f'Quantum Black Hole Evolution: M = {self.initial_mass:.0f} M_p Planck masses', 
+                fontsize=16, y=1.0)
+        gs = GridSpec(3, 3, figure=fig)
+        ax1 = fig.add_subplot(gs[0, 0])
+        ax2 = fig.add_subplot(gs[0, 1])
+        ax3 = fig.add_subplot(gs[0, 2])
+        ax4 = fig.add_subplot(gs[1, 0])
+        ax5 = fig.add_subplot(gs[1, 1])
+        ax6 = fig.add_subplot(gs[1, 2])
+        ax7 = fig.add_subplot(gs[2, 0])
+
         # Mass evolution with temperature
-        ax1.plot(self.time_points, self.mass_history, 'b-', label='Mass')
+        #ax1 = fig.add_subplot(gs[0, 0])
+        ax1.plot(self.time_points, self.mass_history, 'b-', label='Mass [M_P]')
         ax1_twin = ax1.twinx()
-        ax1_twin.plot(self.time_points, self.temperature_history, 'r--', label='Temperature')
+        ax1_twin.plot(self.time_points, self.temperature_history, 'r--', label='Temperature [T_P]')
         ax1.set_xlabel('Time [t_P]')
         ax1.set_ylabel('Mass [m_P]', color='b')
         ax1_twin.set_ylabel('Temperature [T_P]', color='r')
+        ax1.legend(loc='upper left')
+        ax1_twin.legend(loc='upper right')
         ax1.grid(True)
         
         # Entropy evolution
-        ax2.plot(self.time_points, self.entropy_history)
+        ax2.plot(self.time_points, self.entropy_history, label='Entropy [k_B]')
         ax2.set_xlabel('Time [t_P]')
         ax2.set_ylabel('Entropy [k_B]')
         ax2.set_yscale('log')
+        ax2.legend()
         ax2.grid(True)
         
         # Geometric-Entanglement Verification
-        ax3.plot(self.time_points, [v['lhs'] for v in self.verification_results], label='LHS')
-        ax3.plot(self.time_points, [v['rhs'] for v in self.verification_results], label='RHS')
+        ax3.plot(self.time_points, [v['lhs'] for v in self.verification_results], label='LHS classical geometry')
+        ax3.plot(self.time_points, [v['rhs'] for v in self.verification_results], label='RHS quantum geometry')
         ax3.set_xlabel('Time [t_P]')
-        ax3.set_ylabel('ds² terms')
+        ax3.set_ylabel('ds² Geometric-Entanglement Terms [l_P²]')
         ax3.set_yscale('log')
         ax3.legend()
         ax3.grid(True)
         
         # Beta parameter
-        ax4.plot(self.time_points, [v['diagnostics']['beta'] for v in self.verification_results])
+        ax4.plot(self.time_points, [v['diagnostics']['beta'] for v in self.verification_results], 'b-', 
+                 label='β (l_p/r_h) quantum scale parameter')
         ax4.set_xlabel('Time [t_P]')
         ax4.set_ylabel('β (l_p/r_h)')
         ax4.set_yscale('log')
+        ax4.legend()
         ax4.grid(True)
         
         # Gamma effective
-        ax5.plot(self.time_points, [v['diagnostics']['gamma_eff'] for v in self.verification_results])
+        ax5.plot(self.time_points, [v['diagnostics']['gamma_eff'] for v in self.verification_results], label='γ_eff Effective strength Quantum Coupling')
         ax5.set_xlabel('Time [t_P]')
-        ax5.set_ylabel('γ_eff')
+        ax5.set_ylabel('γ_eff Effective strength Quantum Coupling')
         ax5.set_yscale('log')
+        ax5.legend()
         ax5.grid(True)
         
         # Radiation flux
-        ax6.plot(self.time_points, self.radiation_flux_history)
+        ax6.plot(self.time_points, self.radiation_flux_history, label='Radiation Flux [P_p] Planck power')
         ax6.set_xlabel('Time [t_P]')
         ax6.set_ylabel('Radiation Flux')
         ax6.set_yscale('log')
+        ax6.legend()
         ax6.grid(True)
         
+        # Add ringdown comparison
+        #ax7 = fig.add_subplot(gs[3, 1])
+        #standard_freqs = [r.metadata['standard_freq'] for r in self.ringdown_frequencies]
+#        modified_freqs = [r.value for r in self.ringdown_measurements]
+        #modified_freqs = [r.metadata['modified_freq'] for r in self.ringdown_measurements]
+#        standard_freqs = [r.metadata['standard_freq'] for r in self.ringdown_measurements]
+        standard_freqs = np.array([r.metadata['standard_freq'] for r in self.ringdown_measurements])
+        modified_freqs = np.array([r.value for r in self.ringdown_measurements])
+        #ax7.plot(self.time_points, np.real(standard_freqs), 'b--', label='Standard QNM')
+        #ax7.plot(self.time_points, np.real(modified_freqs), 'r-', label='Leech-modified')
+        #ax7.plot(self.time_points, np.real(modified_freqs), 'r-', label='Leech-modified')
+        ax7.plot(self.time_points[:len(standard_freqs)], np.real(standard_freqs), 'b--', 
+                label='Standard QNM')
+        ax7.plot(self.time_points[:len(modified_freqs)], np.real(modified_freqs), 'r-', 
+                label='Leech-lattice-modified')
+        ax7.set_xlabel('Time [t_P]')
+        ax7.set_ylabel('QNM Frequency Re(ω) [1/M]')
+        ax7.legend()
+        #standard_freqs = [omega_standard for omega_standard in self.standard_frequencies]
+        #modified_freqs = [omega_modified for omega_modified in self.ringdown_frequencies]
+#        ax7.plot(self.time_points, np.real(standard_freqs2), 'b--', label='Standard QNM')
+        #ax7.plot(self.time_points, np.real(modified_freqs), 'r-', label='Leech-modified')
+        #ax7.set_xlabel('Time [t_P]')
+        #ax7.set_ylabel('Re(ω) [1/M]')
+        #ax7.legend()
+
         plt.tight_layout()
         
         if save_path:
@@ -268,6 +317,9 @@ class BlackHoleSimulation:
         self.entropy_history = []  
         self.temperature_history = []
         self.radiation_flux_history = []
+        self.ringdown_measurements = []  # Store full MeasurementResult objects
+        self.ringdown_frequencies = []  # Add this line
+        self.standard_frequencies = []  # Add this line
 
         # Add verification
         self.verifier = UnifiedTheoryVerification(self)
@@ -395,6 +447,10 @@ class BlackHoleSimulation:
             self.qg.grid
         )
 
+        self.ringdown_obs = self.qg.physics.RingdownObservable(
+            self.qg.grid
+        )
+
     def run_simulation(self, t_final: float) -> None:
         """Run black hole evolution simulation with geometric-entanglement verification."""
         # Add initial parameter logging
@@ -472,6 +528,12 @@ class BlackHoleSimulation:
             self.temperature_history.append(temperature)
             self.radiation_flux_history.append(evaporation_rate)
             
+            # Measure ringdown
+            ringdown = self.ringdown_obs.measure(self.qg.state)
+            #self.ringdown_frequencies.append(ringdown.value)
+            self.ringdown_measurements.append(ringdown)  # Complete MeasurementResult
+            self.ringdown_frequencies.append(ringdown.value)  # Modified frequency
+            self.standard_frequencies.append(ringdown.metadata['standard_freq'])  # Standard frequency
             # Log equation verification at intervals
             if int(t/t_final * 10) > int((t-dt)/t_final * 10):
                 self.log_physics_output(t, entropy, horizon_radius, temperature)

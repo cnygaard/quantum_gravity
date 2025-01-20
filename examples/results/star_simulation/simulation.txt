@@ -1,0 +1,2 @@
+Quantum gravity framework initialized
+Radial coordinates may be poorly scaled: range [4.31e+37, 4.31e+43]

@@ -44,25 +44,39 @@ class StellarDynamics(DarkMatterAnalysis):
 
 
     def calculate_universal_dark_matter(self):
-        k = 1.5  # elongation factor for non-spherical distributions
-        base_mass = k * (self.orbital_velocity**2 * self.radius) / CONSTANTS['G']
-        
         # Leech lattice parameters
         dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']  # 24
         points = CONSTANTS['LEECH_LATTICE_POINTS']        # 196560
         lattice_factor = np.sqrt(points/dimension)        # ~90.5
         
-        # Known gravity enhancement from dark matter
-        dark_matter_factor = 26/5
+        # Standard dark matter ratio for spiral galaxies (5:1 to 10:1)
+        dark_matter_factor = 7.2
         
-        # Quantum geometric coupling through Leech lattice
-        beta_universal = self.beta * lattice_factor
+        # Scale geometric coupling with radius
+        radius_scale = (self.radius/CONSTANTS['R_sun']) * 1e-15
+        beta_universal = self.beta * lattice_factor * radius_scale
         
-        # Calculate total dark matter mass from gravity ratio
-        total_mass = base_mass * dark_matter_factor * beta_universal
+        # Total mass with radius-dependent scaling
+        total_mass = self.mass * dark_matter_factor * (1 + beta_universal)
+    # def calculate_universal_dark_matter(self):
+    #     # Leech lattice parameters
+    #     dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']  # 24
+    #     points = CONSTANTS['LEECH_LATTICE_POINTS']        # 196560
+    #     lattice_factor = np.sqrt(points/dimension)        # ~90.5
         
+    #     # Known gravity enhancement from dark matter
+    #     dark_matter_factor = 26/5
+        
+    #     # Quantum geometric coupling through Leech lattice
+    #     beta_universal = self.beta * lattice_factor
+        
+    #     # Calculate total dark matter mass from gravity ratio
+    #     total_mass = self.mass * dark_matter_factor * beta_universal
+        
+    #     return total_mass
+
+
         return total_mass    
-    
     def compute_quantum_factor(self):
         beta = 2.32e-44 * (self.radius/CONSTANTS['R_sun'])
         gamma_eff = 8.15e-45

@@ -110,6 +110,25 @@ Key results:
 - Quantum coupling β: 2.32e-44
 - Effective coupling γ: 8.15e-45
 
+### Dark Matter Implementation
+The framework implements dark matter effects through quantum geometric coupling:
+
+- Scaling Parameters:
+  * Dark matter ratio: 7.2 (typical for spiral galaxies 5:1 to 10:1)
+  * Radius-dependent scaling: R/R_sun * 1e-15
+  * Beta universal: β * lattice_factor * radius_scale
+
+- Leech Lattice Integration:
+  * Dimension: 24
+  * Points: 196,560
+  * Lattice factor: ~90.5 (√(points/dimension))
+
+### Quantum-Geometric Coupling
+- Beta parameter: 2.32e-44 * (R/R_sun)
+- Gamma effective: 8.15e-45
+- Total mass calculation: M_total = M * dark_matter_factor * (1 + β_universal)
+
+
 ## Theory
 
 The framework implements a experimental unified quantum gravity theory combining:
@@ -398,3 +417,20 @@ These quantum corrections naturally produce:
 - Galaxy rotation curve modifications
 - Large-scale structure formation
 - Cosmic acceleration
+
+### Dark Matter Analysis [Highly Experimental]
+- Quantum Parameters:
+  * β (scaled): 2.32e-44 [quantum scale parameter]
+  * γ_eff: 8.15e-45 [effective coupling]
+- Dark Matter Ratio: 7.2 [apparent/visible mass]
+- Radius-dependent scaling implemented through Leech lattice geometry
+- Geometric coupling through 24-dimensional Leech lattice structure
+
+Note: This is a highly experimental framework exploring a novel theoretical approach 
+to dark matter through geometric effects rather than particles. All results are 
+preliminary and require further validation. The framework suggests dark matter 
+effects might emerge from spacetime warping into higher dimensions, but this 
+remains an untested hypothesis.
+
+This research was developed with AI assistance as an exploration of theoretical 
+possibilities in quantum gravity.

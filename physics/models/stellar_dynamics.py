@@ -1,3 +1,6 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
 from physics.models.dark_matter import DarkMatterAnalysis
 import numpy as np
 from constants import CONSTANTS
@@ -20,11 +23,9 @@ class StellarDynamics(DarkMatterAnalysis):
         Computes the rotation curve accounting for quantum gravity effects
         Returns velocity in km/s
         """
-        # Calculate quantum geometric coupling
-        beta_factor = self.beta * (self.radius/CONSTANTS['R_sun'])
-        
-        # Quantum enhancement factor
-        quantum_factor = np.sqrt(1 + beta_factor)
+        quantum_factor = self.compute_quantum_factor()
+        geometric_mass = self.mass * quantum_factor
+        # Calculate velocity using enhanced mass...
         
         # Apply quantum correction to orbital velocity
         corrected_velocity = self.orbital_velocity * quantum_factor
@@ -34,27 +35,40 @@ class StellarDynamics(DarkMatterAnalysis):
         dm_velocity_factor = np.sqrt(dark_matter_mass / self.mass)
         
         # Final rotation velocity 
-        rotation_velocity = corrected_velocity * dm_velocity_factor
+        rotation_velocity = corrected_velocity 
+        #* dm_velocity_factor
         
         return rotation_velocity
 
 
 
+
     def calculate_universal_dark_matter(self):
+        k = 1.5  # elongation factor for non-spherical distributions
+        base_mass = k * (self.orbital_velocity**2 * self.radius) / CONSTANTS['G']
+        
         # Leech lattice parameters
         dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']  # 24
         points = CONSTANTS['LEECH_LATTICE_POINTS']        # 196560
         lattice_factor = np.sqrt(points/dimension)        # ~90.5
         
-        # Standard dark matter ratio for spiral galaxies (5:1 to 10:1)
-        dark_matter_factor = 1
+        # Known gravity enhancement from dark matter
+        dark_matter_factor = 26/5
         
-        # Scale geometric coupling with radius
-        radius_scale = (self.radius/CONSTANTS['R_sun']) * 1e-15
-        beta_universal = self.beta * lattice_factor * radius_scale
+        # Quantum geometric coupling through Leech lattice
+        beta_universal = self.beta * lattice_factor
         
-        # Total mass with radius-dependent scaling
-        total_mass = self.mass * dark_matter_factor * (1 + beta_universal)
+        # Calculate total dark matter mass from gravity ratio
+        total_mass = base_mass * dark_matter_factor * beta_universal
         
-        return total_mass
+        return total_mass    
+    
+    def compute_quantum_factor(self):
+        beta = 2.32e-44 * (self.radius/CONSTANTS['R_sun'])
+        gamma_eff = 8.15e-45
+        geometric_factor = 1 + gamma_eff * np.sqrt(0.407)
+        return geometric_factor
+
+
+
 

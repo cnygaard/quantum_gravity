@@ -1,3 +1,6 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
 import unittest
 from __init__ import QuantumGravity, QuantumState, TimeEvolution
 from examples.black_hole import BlackHoleSimulation

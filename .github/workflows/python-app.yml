@@ -34,4 +34,8 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with black hole simulation
       run: |
-        python test_black_hole_simulation.py
+        python tests/test_black_hole_simulation.py
+      - name: Test Stellar Dynamics
+      run: |
+        python tests/test_stellar_dynamics.py
+  

@@ -35,7 +35,7 @@ jobs:
     - name: Test with black hole simulation
       run: |
         python tests/test_black_hole_simulation.py
-      - name: Test Stellar Dynamics
+    - name: Test Stellar Dynamics
       run: |
         python tests/test_stellar_dynamics.py
   

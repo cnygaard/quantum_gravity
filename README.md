@@ -3,6 +3,164 @@
 Experimental artifical intelligence cocreated Quantum Physics simulator
 A high-performance numerical framework for quantum gravity simulations, focusing on black hole dynamics and quantum effects.
 
+### Quantum Gravity Framework
+A high-performance numerical framework for quantum gravity simulations, focusing on black hole dynamics, dark matter effects, and quantum corrections across multiple scales.
+
+#### Core Features
+Physics Simulations
+1. Black Hole Evolution
+
+* Hawking radiation tracking
+* Horizon dynamics
+* Information preservation
+* Temperature evolution
+
+2. Dark Matter Analysis
+
+* Quantum geometric coupling
+* Rotation curve predictions
+* Galactic structure modeling
+* Leech lattice integration
+
+3. Cosmological Evolution
+
+* Scale factor dynamics
+* Quantum bounce handling
+* Inflation modeling
+* Structure formation
+
+#### Technical Capabilities
+* Adaptive grid refinement
+* Conservation law tracking
+* Error analysis system
+* Visualization toolkit
+* Mathematical Foundation
+
+#### Key Relationships
+1. Geometric-Entanglement Formula:
+dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
+
+Where:
+- dS² represents spacetime interval measure
+- γ is the coupling constant (currently set to 0.55)
+- êᵢ(x) are entanglement operators
+- îᵢ(x) are information operators
+
+
+2. Modified Friedmann Equation:
+H² = (8πG/3)ρ(1 - ρ/ρc)
+
+
+3. Quantum Corrections:
+β = l_p/R  # Scale parameter
+γ_eff = γβ√0.407  # Effective coupling
+
+
+#### Usage Examples
+#### Black Hole Simulation
+
+```
+from quantum_gravity import BlackHoleSimulation
+
+# Initialize simulation
+sim = BlackHoleSimulation(
+    mass=1000,  # Solar masses
+    grid_points=10000
+)
+
+# Run evolution
+sim.evolve(t_final=1000)
+
+# Analyze results
+sim.plot_evolution()
+sim.verify_conservation()
+```
+
+#### Dark Matter Analysis
+```
+from quantum_gravity import DarkMatterAnalysis
+
+# Setup galaxy analysis
+galaxy = DarkMatterAnalysis(
+    visible_mass=1e11,  # Solar masses
+    radius=50000,       # Light years
+    velocity=220        # km/s
+)
+
+# Calculate quantum effects
+results = galaxy.compute_rotation_curve()
+galaxy.plot_results()
+```
+
+#### Installation
+
+Requirements
+Python 3.8+
+Scientific Python stack
+
+#### Setup
+```
+git clone https://github.com/username/quantum_gravity.git
+cd quantum_gravity
+pip install -r requirements.txt
+```
+
+### Framework Architecture 
+
+quantum_gravity/
+├── core/           # Core implementation
+    grid.py         # Grid
+    state.py        # State management
+    operators.py    # Operators
+    state.py        # State handling
+├── physics/        # Physics modules
+    conservation.py # Physical conservation laws
+    entaglement.py  # Entaglement
+    observables.py  # Physical observables
+    verification.py # Physics verification
+├── numerics/       # Numerical methods
+    errors.py       # Error handling
+    integrator.py   # Integrator
+    parellel.py     # MPI implmentation not done
+├── utils/  # Plotting tools
+    visualizations  # Visualization helper
+    io.py           # io handling
+└── examples/       # Usage examples
+    black_hole.py   # Black hole simulation 
+    cosmology.py    # Cosmology simulation
+    star.py         # Star simulation
+└── results/        # Simulation output results files png and txt
+    black_hole      # Black hole simulation 2d and 3d plots
+    star            # Star simulation 
+    cosmology       # Cosmology simulation plot
+
+#### Verification Metrics
+The framework tracks:
+
+1. Conservation Laws
+
+* Energy conservation
+* Angular momentum
+* Information preservation
+
+2. Physical Constraints
+* Subluminal velocities
+* Positive energy conditions
+* Entropy bounds
+
+3. Numerical Stability
+* Grid convergence
+* Error propagation
+* Conservation violations
+
+#### Documentation
+Detailed guides available in docs/:
+
+Theory Guide: Mathematical foundation
+API Reference: Function documentation
+Examples: Additional scenarios
+Validation: Framework verification
+
 ## Latest Results
 
 ### Star Simulation
@@ -172,13 +330,6 @@ apt install python3-pip pyton3-tk build-essential openmpi-devel
 
 
 
-### Clone the simualtor code
-
-
-git clone https://github.com/cnygaard/quantum_gravity.git
-cd quantum_gravity
-
-
 ### The simulator runs in Linux, the simulator is intended to be run in a Python virtual environment 
 
 
@@ -191,11 +342,7 @@ pip install -r requirements.txt
 ## Architecture
 
 
-core/      Core quantum gravity implementation
-physics/   Physical observables and measurements
-numerics/  Numerical methods and parallel computing
-examples/  Usage examples and demonstrations
-results/   Simulation results folder
+
 
 
 ## Running the Simulation
@@ -352,15 +499,6 @@ python test_black_hole_simulation.py
 
 ## Physics Validation & Technical Details
 
-### Geometric-Entanglement Formula
-The framework implements the key relationship:
-dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
-
-Where:
-- dS² represents spacetime interval measure
-- γ is the coupling constant (currently set to 0.55)
-- êᵢ(x) are entanglement operators
-- îᵢ(x) are information operators
 
 ### Quantum Effects Magnitude Ranges
 Quantum corrections scale as:

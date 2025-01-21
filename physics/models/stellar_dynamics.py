@@ -40,9 +40,6 @@ class StellarDynamics(DarkMatterAnalysis):
         
         return rotation_velocity
 
-
-
-
     def calculate_universal_dark_matter(self):
         # Leech lattice parameters
         dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']  # 24
@@ -58,24 +55,6 @@ class StellarDynamics(DarkMatterAnalysis):
         
         # Total mass with radius-dependent scaling
         total_mass = self.mass * dark_matter_factor * (1 + beta_universal)
-    # def calculate_universal_dark_matter(self):
-    #     # Leech lattice parameters
-    #     dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']  # 24
-    #     points = CONSTANTS['LEECH_LATTICE_POINTS']        # 196560
-    #     lattice_factor = np.sqrt(points/dimension)        # ~90.5
-        
-    #     # Known gravity enhancement from dark matter
-    #     dark_matter_factor = 26/5
-        
-    #     # Quantum geometric coupling through Leech lattice
-    #     beta_universal = self.beta * lattice_factor
-        
-    #     # Calculate total dark matter mass from gravity ratio
-    #     total_mass = self.mass * dark_matter_factor * beta_universal
-        
-    #     return total_mass
-
-
         return total_mass    
     def compute_quantum_factor(self):
         beta = 2.32e-44 * (self.radius/CONSTANTS['R_sun'])

@@ -4,7 +4,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 import pytest
 import numpy as np
 from physics.models.stellar_dynamics import StellarDynamics
-from constants import CONSTANTS, GALAXY_DATA
+from constants import CONSTANTS, GALAXY_DATA, SI_UNITS
 
 def test_dark_matter_ratio():
     """Verify dark matter ratios match observational data"""

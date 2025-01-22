@@ -19,6 +19,24 @@ CONSTANTS = {
     'LEECH_LATTICE_DIMENSION': 24,   # Leech lattice dimension
     'light_year': 9.461e15,         # Light year in meters  
 }
+PLANCK_UNITS = CONSTANTS
+
+# SI Units (for galactic/stellar calculations)
+SI_UNITS = {
+    'G_si': 6.674e-11,        # Gravitational constant [m³ kg⁻¹ s⁻²]
+    'c_si': 2.998e8,          # Speed of light [m/s]
+    'M_sun_si': 1.989e30,     # Solar mass [kg]
+    'R_sun_si': 6.957e8,      # Solar radius [m]
+    'ly_si': 9.461e15,        # Light year [m]
+    'k_B_si': 1.380649e-23    # Boltzmann constant [J/K]
+}
+
+# Conversion Factors (SI to Planck)
+CONVERSIONS = {
+    'mass_to_planck': SI_UNITS['M_sun_si'] / 2.176e-8,    # Solar mass in Planck units
+    'length_to_planck': SI_UNITS['R_sun_si'] / 1.616e-35, # Solar radius in Planck units
+    'time_to_planck': SI_UNITS['ly_si'] / 5.391e-44       # Light year in Planck time
+}
 
 GALAXY_DATA = {
     'milky_way': {

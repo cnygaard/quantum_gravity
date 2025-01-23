@@ -12,7 +12,10 @@ def test_dark_matter_ratio():
         galaxy = StellarDynamics(
             orbital_velocity=data['velocity'],
             radius=data['radius'],
-            mass=data['visible_mass']
+            mass=data['visible_mass'],
+            dark_mass=data['dark_mass'],  # Add dark matter mass
+            total_mass=data['mass'] ,
+            visible_mass=data['visible_mass']  # Add total mass
         )
         dark_mass = galaxy.calculate_universal_dark_matter()
         calculated_ratio = dark_mass / data['visible_mass']
@@ -39,7 +42,10 @@ def test_quantum_factors():
         galaxy = StellarDynamics(
             orbital_velocity=data['velocity'],
             radius=data['radius'],
-            mass=data['visible_mass']
+            mass=data['visible_mass'],
+            dark_mass=data['dark_mass'],  # Add dark matter mass
+            total_mass=data['mass'] ,
+            visible_mass=data['visible_mass']  # Add total mass
         )
         quantum_factor = galaxy.compute_quantum_factor()
         # Use relative scaling comparison
@@ -51,7 +57,10 @@ def test_dark_matter_scaling():
         galaxy = StellarDynamics(
             orbital_velocity=data['velocity'],
             radius=data['radius'],
-            mass=data['visible_mass']
+            mass=data['visible_mass'],
+            dark_mass=data['dark_mass'],  # Add dark matter mass
+            total_mass=data['mass'] ,
+            visible_mass=data['visible_mass']  # Add total mass
         )
         dark_mass = galaxy.calculate_universal_dark_matter()
         # Use logarithmic comparison for large numbers

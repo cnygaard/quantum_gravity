@@ -12,6 +12,7 @@ class DarkMatterAnalysis:
         self.observed_mass = observed_mass  # Solar masses
         self.total_mass = total_mass        # Solar masses 
         self.radius = radius                # Light years
+        self.visible_mass = visible_mass    # Solar masses
         self.velocity_dispersion = velocity_dispersion  # km/s
 
         # Compute quantum parameters from cluster properties

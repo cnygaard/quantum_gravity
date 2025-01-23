@@ -1,13 +1,11 @@
 # Quantum Gravity Framework
 
 Experimental artifical intelligence cocreated Quantum Physics simulator
-A high-performance numerical framework for quantum gravity simulations, focusing on black hole dynamics and quantum effects.
-
-### Quantum Gravity Framework
-A high-performance numerical framework for quantum gravity simulations, focusing on black hole dynamics, dark matter effects, and quantum corrections across multiple scales.
+A numerical framework for quantum gravity simulations, focusing on black hole dynamics and quantum effects.
 
 #### Core Features
 Physics Simulations
+
 1. Black Hole Evolution
 
 * Hawking radiation tracking
@@ -34,9 +32,15 @@ Physics Simulations
 * Conservation law tracking
 * Error analysis system
 * Visualization toolkit
-* Mathematical Foundation
+* Experimental Mathematical Foundation
 
-#### Key Relationships
+
+## Current Status & Features
+- Black hole evolution: Working (known LHS/RHS discrepancy ~37%)
+- Galaxy dynamics: 16/18 tests passing (quantum corrections need refinement)  
+- Star/Cosmology: Early development stage
+
+#### Key Relationships [Experimental]
 1. Geometric-Entanglement Formula:
 dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
 
@@ -107,6 +111,7 @@ pip install -r requirements.txt
 
 ### Framework Architecture 
 
+```bash
 quantum_gravity/
 ├── core/           # Core implementation
     grid.py         # Grid
@@ -133,8 +138,10 @@ quantum_gravity/
     black_hole      # Black hole simulation 2d and 3d plots
     star            # Star simulation 
     cosmology       # Cosmology simulation plot
+```
 
 #### Verification Metrics
+
 The framework tracks:
 
 1. Conservation Laws
@@ -161,81 +168,6 @@ API Reference: Function documentation
 Examples: Additional scenarios
 Validation: Framework verification
 
-## Latest Results
-
-### Star Simulation
-- Quantum Parameters:
-  * β (l_p/R): 2.32e-44
-  * γ_eff: 8.15e-45
-- Vacuum Energy: 2.00e-01
-- Cosmological Constant: 2.51e+01
-- Core Properties:
-  * Mass: 1.00 M_sun
-  * Radius: 1.00 R_sun
-  * Central Density: 1.62e+05
-  * Central Pressure: 1.32e+16
-  * Core Temperature: 1.57e+08
-
-### Cosmology Results
-- Scale Factor Evolution: a = 7.39e+03
-- Hubble Parameter: H = 1.01e-01
-- Equation of State: w = -9.99e-01
-- Acceleration: q = -7.54e+03
-- Cosmic Entropy: S = 6.86e+08
-- Power Spectrum: P(k) mean = 1.85e+16
-
-## Enhanced Features
-
-### Star Simulation
-- Full stellar structure evolution
-- Quantum-corrected central conditions
-- Geometric-entanglement verification
-- Leech lattice vacuum energy
-- Visualization:
-  * Core property evolution plots
-  * 3D structure visualization
-  * Quantum effects distribution
-  * Leech lattice representation
-
-### Cosmology Updates
-- Quantum-corrected Friedmann equations
-- Inflation dynamics tracking
-- Enhanced scale factor evolution
-- Power spectrum analysis
-- Comprehensive visualization suite
-
-## Verification Metrics
-- Geometric-Entanglement Formula
-- Quantum-Classical Transition
-- Scale-dependent coupling
-- Conservation law tracking
-
-## Output Structure
-/results
-  /star
-    - star_evolution.png
-    - star_geometry.png
-    - measurements.json
-  /cosmology
-    - evolution.png
-    - measurements.json
-
-
-
-## Features
-
-- Black hole evolution with quantum corrections
-- Hawking radiation and temperature calculations 
-- EP=EPR correspondence tracking
-- Geometric-Quantum verification
-- Entanglement entropy measurements
-- Parallel computation support via MPI
-- Adaptive grid refinement
-- Error tracking and conservation laws
-- Near-horizon structure visualization
-- Quantum parameter evolution tracking
-- Leech lattice vacuum energy calculations [experimental]
-- Dark energy emergence from quantum geometry
 
 ## Theoretical Foundations
 
@@ -255,6 +187,7 @@ This framework builds upon:
   - Information preservation
 
 ### Vacuum Energy Implementation [Experimental]
+
 The framework implements vacuum energy calculations using:
 - 24-dimensional Leech lattice geometry
 - M24 symmetry group effects
@@ -262,11 +195,6 @@ The framework implements vacuum energy calculations using:
 - Geometric suppression mechanisms
 - Quantum-to-classical scale transitions
 
-Key results:
-- Stable vacuum energy: 2.01e-01 (Planck units)
-- Cosmological constant: 2.51e+01
-- Quantum coupling β: 2.32e-44
-- Effective coupling γ: 8.15e-45
 
 ### Dark Matter Implementation
 The framework implements dark matter effects through quantum geometric coupling:
@@ -276,30 +204,12 @@ The framework implements dark matter effects through quantum geometric coupling:
   * Radius-dependent scaling: R/R_sun * 1e-15
   * Beta universal: β * lattice_factor * radius_scale
 
-- Leech Lattice Integration:
-  * Dimension: 24
-  * Points: 196,560
-  * Lattice factor: ~90.5 (√(points/dimension))
 
 ### Quantum-Geometric Coupling
 - Beta parameter: 2.32e-44 * (R/R_sun)
 - Gamma effective: 8.15e-45
 - Total mass calculation: M_total = M * dark_matter_factor * (1 + β_universal)
 
-
-## Theory
-
-The framework implements a experimental unified quantum gravity theory combining:
-- Geometric-Entanglement correspondence
-- EP=EPR implementation 
-- Black hole evolution with quantum corrections
-- Adaptive grid refinement near horizons
-
-Key mathematical components:
-- Modified Einstein equations with quantum terms
-- Hawking radiation and temperature evolution
-- Information preservation via EP=EPR
-- Conservation law verification
 
 ### Star Simulation (Experimental)
 
@@ -337,33 +247,25 @@ virtualenv .venv
 source .venv/activate
 pip install -r requirements.txt
 
-
-
-## Architecture
-
-
-
-
-
 ## Running the Simulation
 
 You can run the black hole simulation using the following command:
 
-
+```bash
 python examples/black_hole.py
-
+```
 
 You can run the cosmology simulation using the following command:
 
-
+```bash
 python examples/cosmology.py
-
+```
 
 You can run the star simulation using the following command:
 
-
+```bash
 python examples/star.py
-
+```
 
 
 ## Simulation Outputs
@@ -427,31 +329,36 @@ You can run the black hole simulation in a container:
 
 To build the container with Docker:
 
+```bash
 docker build -t quantum-gravity -f Containerfile .
-
+```
 
 To build the container with Podman:
 
+```bash
 podman build -t quantum-gravity -f Containerfile .
-
+```
 
 
 To run the container with Docker:
 
+```bash
 docker run -v $(pwd)/results:/app/results --name quantum-sim quantum-gravity
-
+```
 
 To run the container with Podman:
 
+```bash
 podman run -v $(pwd)/results:/app/results --replace --name quantum-sim quantum-gravity
-
+```
 
 This bind mounts the local results directory to the container's /app/results directory, making simulation outputs directly accessible on the host system. The visualization plots and measurement data will be available immediately after the simulation completes.
 
 View simulation output logs:
 
+```bash
 docker logs -f quantum-sim
-
+```
 
 # Runtime Metrics Explanation
 
@@ -480,50 +387,37 @@ These metrics verify the geometric-entanglement relationship during black hole e
 
 ## Testing
 
-The framework includes comprehensive unit tests covering black hole simulation functionality:
+The framework includes unit tests covering black hole simulation functionality:
 
 ### Test Coverage
 
-- Simulation initialization and parameters
-- Mass evolution and conservation
-- Temperature and entropy tracking 
-- Radiation flux measurements
-- Trinity verification metrics
+### 1. Galactic Dynamics Tests (test_small_large_galaxy.py)
+- Quantum correction scaling across galaxy sizes - needs work
+- Rotation curve flatness validation - needs work
+- Universal scaling relationships
+- Quantum-classical transitions
+- Virial theorem compliance
+
+### 2. Stellar Physics Tests (test_stellar_dynamics.py)
+Dark matter ratio verification
+Mass distribution validation
+Velocity profile matching
+Quantum geometric effects
+
+### 3. Black Hole Tests (test_black_hole_simulation.py)
+Mass evolution tracking
+Hawking radiation verification
+Horizon dynamics
+Information preservation
+Geometric-entanglement validation
 
 ### Running Tests
 
 Run the full test suite:
 
-python test_black_hole_simulation.py
-
-
-## Physics Validation & Technical Details
-
-
-### Quantum Effects Magnitude Ranges
-Quantum corrections scale as:
-- Black Holes: β = l_p/r_h ~ 10⁻(3-6)
-- Stars: β = l_p/R ~ 10⁻(5-8) 
-- Cosmology: β = l_p*H ~ 10⁻(2-4)
-
-Effective coupling γ_eff = γβ√0.407 determines correction strength.
-
-### Validation Metrics
-The framework tracks:
-1. Geometric-Entanglement Verification
-   - LHS/RHS relative error < 10⁻6
-   - Conservation law violations < 10⁻8
-   - Quantum corrections magnitude: 0.1% - 1%
-
-2. Physical Constraints
-   - Energy conditions preserved
-   - Horizon area quantization
-   - Entropy bounds respected
-
-3. Numerical Stability
-   - Grid point scaling: 10³ - 10⁵ points
-   - Adaptive timestep: 10⁻6 - 10⁻2 t_p
-   - Error tolerances: 10⁻8 - 10⁻10
+```
+python -m pytest
+```
 
 ## Technical Requirements
 

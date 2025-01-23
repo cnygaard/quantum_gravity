@@ -391,18 +391,32 @@ The framework includes unit tests covering black hole simulation functionality:
 
 ### Test Coverage
 
-- Simulation initialization and parameters
-- Mass evolution and conservation
-- Temperature and entropy tracking 
-- Radiation flux measurements
-- Trinity verification metrics
+### 1. Galactic Dynamics Tests (test_small_large_galaxy.py)
+- Quantum correction scaling across galaxy sizes - needs work
+- Rotation curve flatness validation - needs work
+- Universal scaling relationships
+- Quantum-classical transitions
+- Virial theorem compliance
+
+### 2. Stellar Physics Tests (test_stellar_dynamics.py)
+Dark matter ratio verification
+Mass distribution validation
+Velocity profile matching
+Quantum geometric effects
+
+### 3. Black Hole Tests (test_black_hole_simulation.py)
+Mass evolution tracking
+Hawking radiation verification
+Horizon dynamics
+Information preservation
+Geometric-entanglement validation
 
 ### Running Tests
 
 Run the full test suite:
 
 ```
-python test_black_hole_simulation.py
+python -m pytest
 ```
 
 ## Technical Requirements

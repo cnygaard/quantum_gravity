@@ -39,23 +39,28 @@ CONVERSIONS = {
 }
 
 GALAXY_DATA = {
-    'milky_way': {
-        'visible_mass': 1e11,
-        'dark_ratio': 7.0,
-        'radius': 50000,
-        'velocity': 220
-    },
+
     'andromeda': {
         'visible_mass': 1.5e11,
         'dark_ratio': 8.0,
         'dark_mass': 1.2e12,
         'radius': 110000,
-        'velocity': 250
-    },
-    'ngc3198': {
-        'visible_mass': 7e10,
-        'dark_ratio': 7.0,
-        'radius': 45000,
-        'velocity': 150
+        'velocity': 250,
+        'mass': 1.5e12
     }
 }
+
+    # 'milky_way': {
+    #     'visible_mass': 1e11,
+    #     'dark_ratio': 9.0,
+    #     'radius': 50000,
+    #     'velocity': 220,
+    #     'mass': 1.15e12
+    # },
+
+    #'ngc3198': {
+    #    'visible_mass': 7e10,
+    #    'dark_ratio': 7.0,
+    #    'radius': 45000,
+    #    'velocity': 150
+    #}

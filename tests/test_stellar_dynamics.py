@@ -26,7 +26,10 @@ def test_rotation_curves():
         galaxy = StellarDynamics(
             orbital_velocity=data['velocity'],
             radius=data['radius'],
-            mass=data['visible_mass']
+            mass=data['visible_mass'],
+            dark_mass=data['dark_mass'],  # Add dark matter mass
+            total_mass=data['mass'] ,
+            visible_mass=data['visible_mass']  # Add total mass
         )
         predicted_velocity = galaxy.compute_rotation_curve()
         assert abs(predicted_velocity - data['velocity']) < 10

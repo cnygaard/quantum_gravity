@@ -6,7 +6,9 @@ class DarkMatterAnalysis:
                  observed_mass: float,
                  total_mass: float, 
                  radius: float,
-                 velocity_dispersion: float):
+                 velocity_dispersion: float,
+                 dark_mass: float = None,
+                 visible_mass: float = None):
         self.observed_mass = observed_mass  # Solar masses
         self.total_mass = total_mass        # Solar masses 
         self.radius = radius                # Light years

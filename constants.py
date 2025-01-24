@@ -43,7 +43,7 @@ GALAXY_DATA = {
         'visible_mass': 1.5e11,  # Solar masses
         'dark_ratio': 8.0,
         'dark_mass': 1.2e12,
-        'radius': 110000,        # Light years
+        'radius': 152000,        # Light years
         'velocity': 250,         # km/s
         'mass': 1.5e12
     },
@@ -51,24 +51,24 @@ GALAXY_DATA = {
         'visible_mass': 1.0e11,
         'dark_ratio': 7.2,
         'dark_mass': 7.2e11,
-        'radius': 100000,
+        'radius': 87400,
         'velocity': 220,
-        'mass': 8.2e11
+        'mass': 2.06e11
     },
     'triangulum': {  # M33
-        'visible_mass': 3.0e10,
+        'visible_mass': 4.5e9,
         'dark_ratio': 5.5,
-        'dark_mass': 1.65e11,
+        'dark_mass': 5.05e10,
         'radius': 60000,
-        'velocity': 180,
+        'velocity': 130,
         'mass': 1.95e11
     },
     'sombrero': {    # M104
-        'visible_mass': 2.0e11,
+        'visible_mass': 2.4e11,
         'dark_ratio': 9.0,
         'dark_mass': 1.8e12,
-        'radius': 130000,
+        'radius': 50000,
         'velocity': 280,
-        'mass': 2.0e12
+        'mass': 1.5e13
     }
 }

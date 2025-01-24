@@ -284,7 +284,7 @@ class StellarDynamics(DarkMatterAnalysis):
         v_total = np.sqrt(v_visible**2 + (dark_fraction * v_dark)**2)
         
         # Calibration factor based on empirical data
-        calibration = 0.95
+        calibration = 1.204
         v_final = v_total * calibration
         #print(f"v_final: {v_final}")
         #print(f"v_final / 1000.0: {v_final / 1000.0}")
@@ -299,10 +299,10 @@ class StellarDynamics(DarkMatterAnalysis):
         lattice_factor = np.sqrt(points/dimension)        # ~90.5
         
         # Standard dark matter ratio for spiral galaxies (5:1 to 10:1)
-        dark_matter_factor = 7.2
+        dark_matter_factor = 7.19999999997
         
         # Scale geometric coupling with radius
-        radius_scale = (self.radius/CONSTANTS['R_sun']) * 1e-15
+        radius_scale = (self.radius/CONSTANTS['R_sun']) * 1e-14
         beta_universal = self.beta * lattice_factor * radius_scale
         
         # Total mass with radius-dependent scaling

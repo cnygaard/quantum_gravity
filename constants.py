@@ -58,17 +58,21 @@ GALAXY_DATA = {
     'triangulum': {  # M33
         'visible_mass': 4.5e9,
         'dark_ratio': 5.5,
-        'dark_mass': 5.05e10,
-        'radius': 60000,
+        'dark_mass': 5.0e10,
+        'radius': 55000,
         'velocity': 130,
-        'mass': 1.95e11
-    },
-    'sombrero': {    # M104
-        'visible_mass': 2.4e11,
-        'dark_ratio': 9.0,
-        'dark_mass': 1.8e12,
-        'radius': 50000,
-        'velocity': 280,
-        'mass': 1.5e13
+        'mass': 5.45e10
+        
     }
 }
+#'mass': 1.95e11
+        
+#
+#    'sombrero': {    # M104
+#        'visible_mass': 2.4e11,
+#        'dark_ratio': 9.0,
+#        'dark_mass': 1.8e12,
+#        'radius': 50000,
+#        'velocity': 280,
+#        'mass': 1.5e13
+#    }

@@ -206,14 +206,34 @@ class StellarDynamics(DarkMatterAnalysis):
         v_total = np.sqrt(v_visible**2 + (dark_fraction * v_dark)**2)
         return (v_total / 1000.0) * 1
 
+    # def calculate_universal_dark_matter(self):
+    #     # Use 128-bit precision for all calculations
+    #     dimension = np.float128(CONSTANTS['LEECH_LATTICE_DIMENSION'])
+    #     points = np.float128(CONSTANTS['LEECH_LATTICE_POINTS'])
+    #     lattice_factor = np.sqrt(points/dimension)
+        
+    #     # Precise dark matter factor
+    #     dark_matter_factor = np.float128(6.81)
+        
+    #     # Enhanced radius scaling
+    #     radius_scale = np.float128((self.radius/CONSTANTS['R_sun']) * 1e-14)
+    #     beta_universal = np.float128(self.beta * lattice_factor * radius_scale)
+        
+    #     # Get entanglement contribution
+    #     S_ent = self.compute_entanglement_entropy()
+
+    #     total_mass = np.float128(self.mass * dark_matter_factor * (1 + beta_universal + S_ent))
+    #     return total_mass    
+
     def calculate_universal_dark_matter(self):
         # Use 128-bit precision for all calculations
         dimension = np.float128(CONSTANTS['LEECH_LATTICE_DIMENSION'])
         points = np.float128(CONSTANTS['LEECH_LATTICE_POINTS'])
         lattice_factor = np.sqrt(points/dimension)
         
-        # Precise dark matter factor
-        dark_matter_factor = np.float128(6.81)
+        # Adjust dark matter factor for dwarf galaxies
+        mass_scale = np.float128(self.mass / 1e11)  # Scale relative to MW
+        dark_matter_factor = np.float128(6.81 * (1 - 0.2 * np.exp(-mass_scale)))
         
         # Enhanced radius scaling
         radius_scale = np.float128((self.radius/CONSTANTS['R_sun']) * 1e-14)
@@ -223,7 +243,8 @@ class StellarDynamics(DarkMatterAnalysis):
         S_ent = self.compute_entanglement_entropy()
 
         total_mass = np.float128(self.mass * dark_matter_factor * (1 + beta_universal + S_ent))
-        return total_mass    
+        return total_mass
+
 
     def compute_quantum_factor(self):
         r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])

@@ -202,7 +202,13 @@ class StellarDynamics(DarkMatterAnalysis):
         dampening = np.float128(1 + (0.02 * x * bulge_scale))
         
         v_dark = v_visible * np.sqrt(concentration * np.log(1 + x)/(x * dampening))
+        print(f"v_dark: {v_dark}")
         dark_fraction = np.float128((self.dark_mass / self.total_mass))
+
+        v_gas = self.compute_gas_contribution()
+        print(f"v_gas: {v_gas}")
+        #v_total = np.sqrt(v_visible**2 + (dark_fraction * v_dark)**2 + v_gas**2)
+
         v_total = np.sqrt(v_visible**2 + (dark_fraction * v_dark)**2)
         return (v_total / 1000.0) * 1
 
@@ -233,7 +239,7 @@ class StellarDynamics(DarkMatterAnalysis):
         
         # Adjust dark matter factor for dwarf galaxies
         mass_scale = np.float128(self.mass / 1e11)  # Scale relative to MW
-        dark_matter_factor = np.float128(6.81 * (1 - 0.2 * np.exp(-mass_scale)))
+        dark_matter_factor = np.float128(7.2 * (1 - 0.2 * np.exp(-mass_scale)))
         
         # Enhanced radius scaling
         radius_scale = np.float128((self.radius/CONSTANTS['R_sun']) * 1e-14)
@@ -374,3 +380,22 @@ class StellarDynamics(DarkMatterAnalysis):
         """Compute Berry phase from quantum geometry"""
         beta = self.compute_quantum_factor() - 1.0
         return 2 * np.pi * beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
+    
+    def compute_gas_contribution(self):
+        """Calculate enhanced gas contribution to rotation curve"""
+        # Gas mass is typically 10-12% of stellar mass
+        gas_mass = 0.10 * self.visible_mass  # Using 11% as middle value
+        
+        # Base gas velocity calculation
+        G = np.float128(SI_UNITS['G_si'])
+        R = np.float128(self.radius * SI_UNITS['ly_si'])
+        v_gas = np.sqrt(G * gas_mass * SI_UNITS['M_sun_si'] / R)
+        
+        # Quantum geometric enhancement for gas
+        beta_gas = self.compute_quantum_factor() - 1.0
+        gamma_eff_gas = np.float128(0.407 * beta_gas * np.sqrt(196560/24))
+        
+        # Enhanced gas velocity with quantum corrections
+        v_gas_enhanced = v_gas * np.sqrt(1 + gamma_eff_gas)
+        
+        return v_gas_enhanced

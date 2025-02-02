@@ -3,6 +3,10 @@
 Experimental artifical intelligence cocreated Quantum Physics simulator
 A numerical framework for quantum gravity simulations, focusing on black hole dynamics and quantum effects.
 
+## Important Notice
+
+This framework is an experimental exploration of quantum gravity concepts, developed by a devops through AI-assisted coding. It is intended as a computational tool for theoretical physics exploration and educational purposes, not as validated scientific research. All results should be considered preliminary and require rigorous verification.
+
 #### Core Features
 Physics Simulations
 
@@ -40,25 +44,74 @@ Physics Simulations
 - Galaxy dynamics: 16/18 tests passing (quantum corrections need refinement)  
 - Star/Cosmology: Early development stage
 
-#### Key Relationships [Experimental]
-1. Geometric-Entanglement Formula:
+### Quantum Geometric Scaling(experimental)
+The framework implements quantum geometric scaling through:
+
+1. Fundamental Scaling Relations:
 dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
 
 Where:
 - dS² represents spacetime interval measure
-- γ is the coupling constant (currently set to 0.55)
-- êᵢ(x) are entanglement operators
-- îᵢ(x) are information operators
-
+- γ is the coupling constant = 0.407 
+- êᵢ(x) = quantum geometric operators entanglement operators
+- îᵢ(x) = information operators
 
 2. Modified Friedmann Equation:
 H² = (8πG/3)ρ(1 - ρ/ρc)
 
+3. Dark Matter Profile Enhanced NFW profile with quantum geometric corrections:
 
-3. Quantum Corrections:
+ρ(r) = ρ₀(r/rs)⁻¹(1 + r/rs)⁻² × Q(r)
+Q(r) = 1 + c(M)exp(-r/rs)√(Λ/24)
+
+Quantum geometric coupling:
+β = (1/M_scale)exp(-r_scale/10.0)
+γ = 0.407β√(Λ/24)
+
+Where:
+- c(M) = 17.0exp(-M_visible/M_total)
+- rs = 20kpc (scale radius)
+- Λ = 196560 (Leech lattice points)
+- M_scale = M/10¹¹M_☉
+- r_scale = r/100kpc
+
+4. Galactic Structure:
+
+Mass-radius scaling: M(r) ∝ r³ρ(r)Q(r)
+Velocity profile: v(r) = √(GM(r)/r)
+
+## Tested Galaxy Parameters
+
+Quantum corrections across mass scales:
+- Dwarf (10⁸ M_☉): β = 0.0013759
+- Intermediate (10¹⁰ M_☉): β = 0.00689
+- Milky Way-like (10¹¹ M_☉): β = 0.0124
+- Large (10¹² M_☉): β = 0.0166
+
+4. Quantum-Classical Transition:
+γ_eff = 0.407β√(196560/24)
+
+5. Quantum Corrections:
 β = l_p/R  # Scale parameter
 γ_eff = γβ√0.407  # Effective coupling
 
+6. Energy Relations
+E = KE + PE describes total energy as sum of kinetic and potential energy
+KE = Mv²γ_eff
+hows kinetic energy with quantum geometric correction:
+
+M is the total galaxy mass
+v is orbital velocity
+γ_eff = 0.0001208√(Λ/24) is Leech lattice coupling factor
+
+PE = -GMM'α/r
+
+shows gravitational potential with dark matter coupling:
+
+G is gravitational constant
+M and M' are interacting masses
+α = 0.000008c√(Λ/24) is NFW profile enhancement
+r is radius
 
 #### Usage Examples
 #### Black Hole Simulation

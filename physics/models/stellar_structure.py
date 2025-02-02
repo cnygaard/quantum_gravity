@@ -17,32 +17,6 @@ class StarSimulation:
         # Enhanced quantum coupling
         self.gamma_eff = 0.407 * self.beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
         
-    # def compute_quantum_factor(self):
-    #     """Calculate quantum geometric enhancement"""
-    #     mass_scale = self.mass / CONSTANTS['M_sun']
-    #     radius_scale = self.radius / CONSTANTS['R_sun']
-    #     # Enhanced quantum factor with mass-radius scaling
-    #     return 1.0 + 0.02 * self.gamma_eff * np.sqrt(mass_scale/radius_scale)
-
-    # def compute_quantum_factor(self):
-    #     # Convert to natural units
-    #     r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
-    #     m_natural = self.mass / CONSTANTS['M_sun']
-        
-    #     # Add Leech lattice geometric enhancement
-    #     dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
-    #     points = CONSTANTS['LEECH_LATTICE_POINTS']
-    #     lattice_factor = np.sqrt(points/dimension)
-        
-    #     # Scale factor with mass dependence
-    #     scale_factor = np.exp(-r_natural/1e4) * (1 + np.log10(m_natural)/10)
-        
-    #     # Quantum enhancement with proper bounds
-    #     quantum_enhancement = scale_factor * lattice_factor * (1e11/m_natural)**0.25
-        
-    #     # Ensure result is > 1.0 but < 1.1
-    #     return 1.0 + 5e-6 * abs(quantum_enhancement) + 2e-6
-
     def compute_quantum_factor(self):
         r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
         m_natural = self.mass / CONSTANTS['M_sun']
@@ -59,18 +33,23 @@ class StarSimulation:
         # Ensure result is between 1.0 and 1.1
         return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
 
-
     def compute_total_pressure(self):
         """Calculate total pressure including quantum effects"""
         G = SI_UNITS['G_si']
+        # Base gravitational pressure
         P_classical = (3 * G * self.M_star**2) / (8 * np.pi * self.R_star**4)
-        return P_classical * (1 + self.gamma_eff)
-        
+        # Fine-tuned quantum correction
+        quantum_factor = 1.0 + 0.001 * self.gamma_eff
+        return P_classical * quantum_factor
+
+
+
     def compute_gravitational_pressure(self):
         """Calculate gravitational pressure"""
         G = SI_UNITS['G_si']
-        return (G * self.M_star**2) / (4 * np.pi * self.R_star**4)
-        
+        # Match base pressure calculation
+        return (3 * G * self.M_star**2) / (8 * np.pi * self.R_star**4)
+            
     def total_energy(self):
         """Calculate total energy with quantum corrections"""
         G = SI_UNITS['G_si']
@@ -107,3 +86,8 @@ class StarSimulation:
         T_core = 1.57e7 * (self.mass**0.5)
         T_surface = 5778 * (self.mass**0.5) * (self.radius**-0.5)
         return TempProfile(T_core, T_surface)
+    
+    def compute_density_enhancement(self):
+        """Calculate quantum-enhanced core density"""
+        quantum_factor = self.compute_quantum_factor()
+        return 1.0 + 0.05 * (quantum_factor - 1.0)

@@ -8,15 +8,56 @@ from constants import CONSTANTS, SI_UNITS, CONVERSIONS, PLANCK_UNITS
 
 def test_quantum_correction_scaling():
     """Test quantum corrections scale properly with mass and radius"""
-    small_galaxy = StellarDynamics(
-        orbital_velocity=150,
-        radius=1e3 * SI_UNITS['ly_si'],
-        mass=1e8 * SI_UNITS['M_sun_si'],
-        dark_mass=8e8 * SI_UNITS['M_sun_si'],
-        total_mass=9e8 * SI_UNITS['M_sun_si'],
-        visible_mass=1e8 * SI_UNITS['M_sun_si']
-    )
+    # small_galaxy = StellarDynamics(
+    #     orbital_velocity=150,
+    #     radius=1e3 * SI_UNITS['ly_si'],
+    #     mass=1e8 * SI_UNITS['M_sun_si'],
+    #     dark_mass=8e8 * SI_UNITS['M_sun_si'],
+    #     total_mass=9e8 * SI_UNITS['M_sun_si'],
+    #     visible_mass=1e8 * SI_UNITS['M_sun_si']
+    # )
     
+    # large_galaxy = StellarDynamics(
+    #     orbital_velocity=300,
+    #     radius=1e5,
+    #     mass=1e12,
+    #     dark_mass=8e12,
+    #     total_mass=9e12,
+    #     visible_mass=1e12
+    # )
+def test_quantum_correction_scaling():
+    """Test quantum corrections scale properly with mass and radius"""
+    # Dwarf galaxy (like Sculptor Dwarf)
+    dwarf_galaxy = StellarDynamics(
+        orbital_velocity=150,
+        radius=1e3,  # Light years
+        mass=1e8,    # Solar masses
+        dark_mass=8e8,
+        total_mass=9e8,
+        visible_mass=1e8
+    )
+
+    # Intermediate galaxy (like LMC)
+    intermediate_galaxy = StellarDynamics(
+        orbital_velocity=200,
+        radius=5e4,  # Light years
+        mass=1e10,   # Solar masses
+        dark_mass=8e10,
+        total_mass=9e10,
+        visible_mass=1e10
+    )
+
+    # Medium galaxy (like Milky Way)
+    medium_galaxy = StellarDynamics(
+        orbital_velocity=250,
+        radius=8e4,
+        mass=1e11,
+        dark_mass=8e11,
+        total_mass=9e11,
+        visible_mass=1e11
+    )
+
+    # Large galaxy (like Andromeda)
     large_galaxy = StellarDynamics(
         orbital_velocity=300,
         radius=1e5,
@@ -25,11 +66,18 @@ def test_quantum_correction_scaling():
         total_mass=9e12,
         visible_mass=1e12
     )
-    
-    small_correction = small_galaxy.compute_quantum_factor() - 1
+
+
+    # Calculate quantum corrections
+    dwarf_correction = dwarf_galaxy.compute_quantum_factor() - 1
+    intermediate_correction = intermediate_galaxy.compute_quantum_factor() - 1
+    medium_correction = medium_galaxy.compute_quantum_factor() - 1
     large_correction = large_galaxy.compute_quantum_factor() - 1
+    print(f"dwarf_correction, intermediate_correction, medium_correction, large_correction: {dwarf_correction, intermediate_correction, medium_correction, large_correction}")
     
-    assert small_correction > large_correction
+    #assert dwarf_correction > large_correction
+        # Verify quantum corrections decrease with increasing galaxy size
+    assert dwarf_correction > intermediate_correction > medium_correction > large_correction
 
 def test_velocity_curve_flatness():
     """Test rotation curve flatness"""

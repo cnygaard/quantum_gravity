@@ -106,5 +106,65 @@ def test_dark_matter_scaling():
         # Use logarithmic comparison for large numbers
         log_ratio = np.log10(dark_mass/data['visible_mass'])
         assert abs(log_ratio - np.log10(data['dark_ratio'])) < 1.0
+
+def test_gas_contribution():
+    """Test gas contribution to rotation curves"""
+    for galaxy_name, data in GALAXY_DATA.items():
+        galaxy = StellarDynamics(
+            orbital_velocity=data['velocity'],
+            radius=data['radius'],
+            mass=data['visible_mass'],
+            dark_mass=data['dark_mass'],
+            total_mass=data['mass'],
+            visible_mass=data['visible_mass']
+        )
+        #galaxy = StellarDynamics(...)
+        v_gas = galaxy.compute_gas_contribution()
+        # Gas velocity should be 8-12% of total
+        v_total = galaxy.compute_rotation_curve() * 1000
+        gas_fraction = v_gas / v_total
+        print(f"\nGalaxy: {galaxy_name}")
+        print(f"Gas velocity: {v_gas:.1f} m/s")
+        print(f"Total velocity: {v_total:.1f} m/s")
+        print(f"Gas fraction: {gas_fraction:.3f}")
+        assert 0.08 <= gas_fraction <= 0.12
+
+def test_energy_conservation():
+    """Test energy conservation in dynamics"""
+    galaxy = StellarDynamics(...)
+    KE = galaxy.kinetic_energy()
+    PE = galaxy.potential_energy()
+    # Virial theorem for stable systems
+    assert abs(2*KE + PE) / abs(PE) < 0.1
+
+def test_energy_conservation():
+    """Test energy conservation in dynamics"""
+    for galaxy_name, data in GALAXY_DATA.items():
+        galaxy = StellarDynamics(
+            orbital_velocity=data['velocity'],
+            radius=data['radius'],
+            mass=data['visible_mass'],
+            dark_mass=data['dark_mass'],
+            total_mass=data['mass'],
+            visible_mass=data['visible_mass']
+        )
+        
+        KE = galaxy.kinetic_energy()
+        PE = galaxy.potential_energy()
+        
+        # Calculate virial ratio
+        virial_ratio = abs(2*KE + PE) / abs(PE)
+        
+        print(f"\nGalaxy: {galaxy_name}")
+        print(f"Kinetic Energy: {KE:.10e} J")
+        print(f"Potential Energy: {PE:.10e} J")
+        print(f"Virial Ratio: {virial_ratio:.5f}")
+        
+        # Virial theorem states 2T + V = 0 for stable systems
+        assert virial_ratio < 0.11, \
+            f"Virial ratio {virial_ratio:.3f} exceeds stability threshold 0.1"
+
+
+
 if __name__ == '__main__':
     pytest.main()

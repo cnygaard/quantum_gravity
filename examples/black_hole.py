@@ -286,6 +286,24 @@ class BlackHoleSimulation:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
 
+
+    def _compute_quantum_factor(self) -> float:
+        """Compute quantum geometric enhancement factor for black holes."""
+        # Scale with horizon radius instead of stellar radius
+        r_natural = self.horizon_radius / CONSTANTS['l_p']
+        m_natural = self.qg.state.mass / CONSTANTS['m_p']
+        
+        # Leech lattice geometric factors
+        dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
+        points = CONSTANTS['LEECH_LATTICE_POINTS']
+        lattice_factor = np.sqrt(points/dimension)
+        
+        # Black hole specific quantum enhancement
+        scale_factor = np.exp(-r_natural/1e4)
+        quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
+        
+        return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
+
     def __init__(self, mass: float, quantum_gravity: 'QuantumGravity' = None, config_path: str = None):
         """Initialize black hole simulation."""
         if mass <= 0:
@@ -414,7 +432,7 @@ class BlackHoleSimulation:
         logging.info("\nLHS Components:")
         logging.info(f"Horizon Term: {geo_metrics['diagnostics']['components']['horizon_radius']:.4e}")
         logging.info(f"Area Factor: {geo_metrics['diagnostics']['components']['area_factor']:.4e}")
-        logging.info(f"Quantum Factor: {geo_metrics['diagnostics']['components']['quantum_factor']:.4e}")
+        logging.info(f"Quantum Factor: {geo_metrics['diagnostics']['components']['quantum_factor']:.24e}")
         #logging.info(f"Time Factor: {geo_metrics['diagnostics']['components']['time_factor']:.4e}")
         
         logging.info("\nRHS Components:")
@@ -469,6 +487,7 @@ class BlackHoleSimulation:
 
         # In run_simulation
         metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
+        quantum_factor = self._compute_quantum_factor()
         if int(t/dt) % 100 == 0:  # Log every 100 steps
            self.verifier._log_verification_diagnostics(self.qg.state, metrics)
 
@@ -609,6 +628,8 @@ class EntanglementGeometryHandler:
         V_horizon = (4/3) * np.pi * horizon_radius**3
         
         return np.sum(info * sqrt_g) * horizon_radius**2 / V_horizon
+
+
 
 
 def main():

@@ -283,7 +283,8 @@ class StarSimulation:
         state = QuantumState(
             self.qg.grid,
             initial_mass=self.M_star,
-            eps_cut=self.qg.config.config['numerics']['eps_cut']
+            eps_cut=self.qg.config.config['numerics']['eps_cut'],
+            simulation=self  # Pass simulation reference
         )
 
         # Add stellar properties
@@ -357,6 +358,8 @@ class StarSimulation:
 
             # Check if we've reached checkpoint
             if self.qg.state.time >= self.next_checkpoint:
+                thermo_metrics = self.verifier.verify_thermodynamics(self.qg.state)
+
                 # Update vacuum energy calculations
                 self.vacuum_energy = self._compute_leech_vacuum_energy()
                 self.cosmological_constant = self._compute_modified_lambda()
@@ -368,6 +371,10 @@ class StarSimulation:
                     normalized_scales = self._normalize_geometric_scales(metrics)
                 self.verification_results.append(metrics)
 
+                # Log results
+                logging.info("\nThermodynamic Verification:")
+                logging.info(f"Core Temperature: {thermo_metrics['temperature_verification']['core_temp_valid']}")
+                logging.info(f"Pressure Balance: {thermo_metrics['pressure_ratio']:.24f}")
 
                 # Log vacuum energy metrics
                 logging.info(f"\nVacuum Energy: {self.vacuum_energy:.2e}")

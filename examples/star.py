@@ -5,7 +5,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from typing import Dict, List, Tuple
 import numpy as np
 from scipy.integrate import solve_ivp
-from constants import CONSTANTS
+from constants import CONSTANTS, SI_UNITS
 from core.state import QuantumState
 from core.grid import LeechLattice
 from physics.verification import UnifiedTheoryVerification
@@ -114,7 +114,7 @@ class StarSimulation:
         self.mass_obs = self.qg.physics.ADMMassObservable(self.qg.grid)
         self.radius_obs = self.qg.physics.AreaObservable(self.qg.grid)
         self.temp_obs = self.qq.physics.StellarTemperatureObservable(self.qg.grid)  # Direct initialization
-        self.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
+        selfg.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
         self.pressure_obs = self.qg.physics.PressureObservable(self.qg.grid)
 
 
@@ -142,9 +142,10 @@ class StarSimulation:
             """Compute vacuum energy with Leech lattice corrections"""
             base_energy = CONSTANTS['hbar']/(CONSTANTS['c'] * CONSTANTS['l_p']**4)
             leech_correction = self.leech.compute_vacuum_energy()
-            
+            quantum_factor = self._compute_quantum_factor()
             # Combine quantum corrections with Leech lattice effects
-            return base_energy * (1 + self.gamma_eff * self.beta_universe) * leech_correction
+            return base_energy * quantum_factor * leech_correction
+            #return base_energy * (1 + self.gamma_eff * self.beta_universe) * leech_correction
 
     def _compute_modified_lambda(self) -> float:
         """Calculate modified cosmological constant"""
@@ -775,6 +776,21 @@ class StarSimulation:
         # Normalize for visualization
         return density / central_density
 
+    def _compute_quantum_factor(self):
+        """Compute quantum geometric enhancement factor"""
+        r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
+        m_natural = self.mass / CONSTANTS['M_sun']
+        
+        # Leech lattice geometric factors
+        dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
+        points = CONSTANTS['LEECH_LATTICE_POINTS']
+        lattice_factor = np.sqrt(points/dimension)
+        
+        # Normalized quantum enhancement
+        scale_factor = np.exp(-r_natural/1e4)
+        quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
+        
+        return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
 
 
     def _generate_surface_grid(self, r: float, theta: np.ndarray, phi: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:

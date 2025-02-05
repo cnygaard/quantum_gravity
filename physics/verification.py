@@ -265,6 +265,9 @@ class UnifiedTheoryVerification:
         lhs = horizon_radius**2 * area_factor * quantum_factor
         rhs = rhs_scale * dV * (ent + coupling * info) * area_factor * quantum_factor
         
+        # Access quantum factor through sim instance
+        quantum_factor = self.sim._compute_quantum_factor()
+
         # Add normalization step
         normalized = self._normalize_geometric_terms(lhs, rhs)
         

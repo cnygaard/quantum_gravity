@@ -378,6 +378,44 @@ class UnifiedTheoryVerification:
             'entanglement_error': np.max(np.abs(E - rhs/3))
         }
 
+    def verify_thermodynamics(self, state) -> Dict[str, float]:
+        """Verify thermodynamic properties and pressure balance.
+        
+        Returns:
+            Dict containing temperature and pressure verification metrics
+        """
+        # Get temperature profile from state
+        T_profile = state.compute_temperature_profile()
+        
+        # Temperature verification
+        temp_metrics = {
+            'core_temp_valid': T_profile.core > 1e7,
+            'surface_temp_valid': T_profile.surface < 1e4,
+            'temp_ratio': T_profile.core / T_profile.surface
+        }
+        
+        # Pressure balance verification
+        P_total = state.compute_total_pressure()
+        P_grav = state.compute_gravitational_pressure()
+        pressure_error = np.abs(P_total - P_grav)/P_grav
+        
+        # Quantum corrections to pressure
+        quantum_factor = state.simulation._compute_quantum_factor()
+        P_quantum = P_total * quantum_factor
+        
+        return {
+            'temperature_verification': temp_metrics,
+            'pressure_balance': pressure_error,
+            'pressure_ratio': P_total/P_grav,
+            'quantum_pressure': P_quantum,
+            'verification_passed': (
+                temp_metrics['core_temp_valid'] and 
+                temp_metrics['surface_temp_valid'] and 
+                pressure_error < 0.01
+            )
+        }
+
+
     def analyze_geometric_entanglement(state):
         # Fundamental scales
         horizon_r = 2 * CONSTANTS['G'] * state.mass

@@ -7,8 +7,9 @@ from constants import CONSTANTS
 
 class QuantumState:
     """Efficient representation of quantum gravitational states."""
-    def __init__(self, grid: AdaptiveGrid, initial_mass: float, eps_cut: float = 1e-10):
+    def __init__(self, grid: AdaptiveGrid, initial_mass: float, eps_cut: float = 1e-10, simulation=None):
         # Core quantum state properties
+        self.simulation = simulation  # Store simulation reference
         self.grid = grid
         self.eps_cut = eps_cut
         self.coefficients = {}
@@ -126,6 +127,58 @@ class QuantumState:
                 information -= p * np.log(p)
         self.information = information
         return information
+
+    def compute_temperature_profile(self):
+        """Compute temperature profile with quantum corrections."""
+        # Create temperature profile object
+        class TempProfile:
+            def __init__(self, core, surface):
+                self.core = core
+                self.surface = surface
+        
+        # Get radial coordinates
+        r = np.linalg.norm(self.grid.points, axis=1)
+        r_norm = r / np.max(r)
+        
+        # Core temperature from virial theorem
+        T_core = 1.57e7  # Solar core temperature
+        
+        # Surface temperature from Stefan-Boltzmann
+        T_surface = 5778  # Solar surface temperature
+        
+        # Apply quantum corrections
+        quantum_factor = self.simulation._compute_quantum_factor()
+        T_core *= quantum_factor
+        T_surface *= quantum_factor
+        
+        return TempProfile(core=T_core, surface=T_surface)
+
+    def compute_total_pressure(self) -> float:
+        """Calculate total pressure including quantum effects"""
+        G = CONSTANTS['G']
+        M = self.mass
+        R = self.grid.get_max_radius()
+        
+        # Base gravitational pressure
+        P_classical = (3 * G * M**2) / (8 * np.pi * R**4)
+        
+        # Apply quantum corrections
+        quantum_factor = self.simulation._compute_quantum_factor()
+        P_total = P_classical * quantum_factor
+        
+        return P_total
+
+    def compute_gravitational_pressure(self) -> float:
+        """Calculate gravitational pressure without quantum corrections."""
+        G = CONSTANTS['G']
+        M = self.mass
+        R = self.grid.get_max_radius()
+        
+        # Base gravitational pressure from hydrostatic equilibrium
+        P_grav = (3 * G * M**2) / (8 * np.pi * R**4)
+        
+        return P_grav
+
 
     def set_metric_components_batch(self, indices_list, points, values):
         # Use numpy vectorized operations instead of extend

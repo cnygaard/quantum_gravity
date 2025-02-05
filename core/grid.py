@@ -162,6 +162,19 @@ class AdaptiveGrid:
         self.qg.grid.set_points(points)
         self.qg.state = QuantumState(self.qg.grid)
 
+    def get_max_radius(self) -> float:
+        """Calculate maximum radius from grid points.
+        
+        Returns:
+            Maximum radial distance from origin
+        """
+        # Compute radial distances for all points
+        radii = np.linalg.norm(self.points, axis=1)
+        
+        # Return maximum radius, ensuring non-zero value
+        return max(np.max(radii), CONSTANTS['l_p'])
+
+
 class LeechLattice:
     def __init__(self, points=CONSTANTS['LEECH_LATTICE_POINTS']):  # Reduced from 10000
         self.n_points = points

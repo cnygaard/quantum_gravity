@@ -36,13 +36,16 @@ class StarSimulation:
     def compute_total_pressure(self):
         """Calculate total pressure including quantum effects"""
         G = SI_UNITS['G_si']
-        # Base gravitational pressure
-        P_classical = (3 * G * self.M_star**2) / (8 * np.pi * self.R_star**4)
-        # Fine-tuned quantum correction
-        quantum_factor = 1.0 + 0.001 * self.gamma_eff
+        
+        # Base pressure calculation
+        if self.radius < 0.01:  # Compact objects
+            P_classical = (CONSTANTS['c']**4 / (12*np.pi*G)) * (self.mass/1.4)**2 * (0.01/self.radius)**4
+        else:  # Normal stars
+            P_classical = (3 * G * self.M_star**2) / (8 * np.pi * self.R_star**4)
+        
+        # Quantum enhancement with proper scaling
+        quantum_factor = self.compute_quantum_factor()
         return P_classical * quantum_factor
-
-
 
     def compute_gravitational_pressure(self):
         """Calculate gravitational pressure"""
@@ -89,5 +92,39 @@ class StarSimulation:
     
     def compute_density_enhancement(self):
         """Calculate quantum-enhanced core density"""
+        T_surface = 3042 * (self.mass**0.505) * quantum_factor
         quantum_factor = self.compute_quantum_factor()
         return 1.0 + 0.05 * (quantum_factor - 1.0)
+
+    def compute_density_enhancement(self):
+        """Calculate quantum-enhanced core density"""
+        if self.radius < 0.01:  # Compact objects
+            enhancement = 1.0 + 0.2 * quantum_factor * (0.01/self.radius)**0.5
+        elif self.mass > 10:  # Massive stars
+            enhancement = 1.0 + 0.05 * quantum_factor * np.log(self.mass/10)
+        else:  # Main sequence
+            enhancement = 1.0 + 0.05 * (quantum_factor - 1.0)
+            
+        return enhancement
+
+        #return TempProfile(T_core, T_surface)
+    
+    # def compute_density_enhancement(self):
+    #     """Calculate quantum-enhanced core density"""
+    #     quantum_factor = self.compute_quantum_factor()
+    #     return 1.0 + 0.05 * (quantum_factor - 1.0)
+
+    #     quantum_factor = self.compute_quantum_factor()
+    #     T_surface = 3600 * (self.mass/10)**0.18 * quantum_factor
+    #     T_surface = 5778 * (self.mass**0.505) * quantum_factor
+            
+        
+    #      T_core = 1.57e7 * (self.mass**0.7) * quantum_factor
+    #     else:  # Main sequence
+    #     return 1.0 + 0.05 * (quantum_factor - 1.0)
+
+    #     # Enhanced density based on stellar type
+    #     if self.radius < 0.01:  # Compact objects
+        
+    #         T_core = 3.5e7 * (self.mass/16.5)**0.3 * quantum_factor
+    #     elif self.mass > 10:  # Massive stars

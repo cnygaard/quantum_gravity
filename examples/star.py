@@ -9,6 +9,8 @@ from constants import CONSTANTS, SI_UNITS
 from core.state import QuantumState
 from core.grid import LeechLattice
 from physics.verification import UnifiedTheoryVerification
+from physics.stellar.eos import RealisticEOS
+from physics.stellar.relativity import RelativityHandler
 from __init__ import QuantumGravity, configure_logging
 import logging
 from utils.io import MeasurementResult  # Add this import
@@ -84,6 +86,42 @@ class StarSimulation:
         self.quantum_corrections_history = []
         self.vacuum_energy_history = []
 
+        # Add new physics parameters
+        self.relativistic_corrections = mass > 1.4  # Enable for compact objects
+        self.degeneracy_pressure = mass < 0.5 or radius < 0.01  # For white dwarfs/low mass
+        self.nuclear_eos = True  # Use realistic nuclear EOS
+        
+        # Initialize enhanced physics handlers
+        self._setup_enhanced_physics()
+
+    def _setup_enhanced_physics(self):
+        """Setup enhanced physics models"""
+        # Add composition for degenerate matter
+        composition = {
+            'electron_fraction': 0.5,
+            'neutron_fraction': 0.0
+        }
+        
+        # Adjust for compact objects
+        if self.radius < 0.01:  # White dwarfs and neutron stars
+            composition['electron_fraction'] = 0.3
+            composition['neutron_fraction'] = 0.7
+            
+        self.composition = composition
+        
+        # Rest of existing initialization
+        self.eos_handler = RealisticEOS(
+            include_nuclear=self.nuclear_eos,
+            include_degeneracy=self.degeneracy_pressure,
+            mass=self.mass,
+            radius=self.radius
+        )
+        self.relativity_handler = RelativityHandler(
+            mass=self.M_star,
+            radius=self.R_star,
+            active=self.relativistic_corrections
+        )
+
     def _setup_grid(self):
         points = self._generate_grid_points()
         logging.debug(f"Points stats: min={np.min(points):.3e}, max={np.max(points):.3e}")
@@ -127,22 +165,26 @@ class StarSimulation:
         return CONSTANTS['G'] * self.M_star / self.galaxy_radius**2
 
     def _compute_central_pressure(self):
-        """Compute central pressure in Planck units"""
-        # Convert from SI to Planck units
-        G = 1.0  # G=1 in Planck units
-        M = self.M_star  # Already in Planck mass
-        R = self.R_star  # Already in Planck length
+        """Enhanced central pressure calculation"""
+        # Get base pressure
+        P_classical = super()._compute_central_pressure()
         
-        # Base pressure calculation in Planck units
-        if self.mass > 10:  # Massive stars
-            P_classical = (G * M**2) / (4 * np.pi * R**4)
-            radiation_factor = 1 + 0.15 * np.log(self.mass/10)
-            P_classical *= radiation_factor
-        else:
-            P_classical = (3 * G * M**2) / (8 * np.pi * R**4)
-        
-        # Return in Planck pressure units
-        return P_classical * (1 + self.gamma_eff)
+        # Add degeneracy pressure if needed
+        if self.degeneracy_pressure:
+            P_degeneracy = self.eos_handler.compute_degeneracy_pressure(
+                density=self.central_density,
+                composition=self.composition
+            )
+            P_classical += P_degeneracy
+            
+        # Add relativistic corrections
+        if self.relativistic_corrections:
+            P_classical = self.relativity_handler.correct_pressure(
+                P_classical, 
+                self.central_density
+            )
+            
+        return P_classical
 
     def _compute_leech_vacuum_energy(self) -> float:
             """Compute vacuum energy with Leech lattice corrections"""
@@ -770,83 +812,65 @@ class StarSimulation:
 
     def _compute_quantum_density(self) -> np.ndarray:
         """Compute quantum-corrected density in Planck units"""
+        # Update EOS parameters first
+        self.eos_handler.update_parameters(self.mass, self.radius)
+        
+        # Rest of the method remains the same
         points = self.qg.grid.points
         r = np.linalg.norm(points, axis=1)
+        r = np.maximum(r, CONSTANTS['l_p'])
         r_norm = r / self.R_star
-        
+
         # Convert central density to Planck units
         rho_planck = CONSTANTS['m_p'] / CONSTANTS['l_p']**3
         base_density = 1.62e5 / rho_planck  # Convert SI to Planck density
         
-        # Calculate central density in Planck units
-        if self.mass < 0.5:
-            central_density = base_density * (self.mass**-1.5)
-        elif self.mass > 10:
-            central_density = base_density * (self.mass**-2.0)
-        else:
-            central_density = base_density * (self.mass**-0.5)
-            
-        # Rest of density calculation remains the same but now in Planck units
-        # Profile shape based on stellar type
+        # Calculate base density profile
+        if self.mass < 0.5:  # Low mass stars
+            central_density = base_density * (self.mass**-1.4)
+        elif self.mass > 10:  # Massive stars
+            central_density = base_density * (self.mass**-2.2)
+        else:  # Main sequence
+            central_density = base_density * (self.mass**-0.7)
+
+        # Base density profile
         if self.radius > 100:  # Supergiants
-            density = central_density * np.exp(-r_norm**1.5)  # More extended
+            density = central_density * np.exp(-r_norm**1.3)
         else:  # Main sequence and compact
             density = central_density * np.exp(-r_norm**2)
         
-        # Enhanced quantum effects near core with proper scaling
-        beta_local = CONSTANTS['l_p'] / (self.R_star * (self.mass**0.25))
-        gamma_quantum = 0.55 * beta_local * np.sqrt(0.407)
+        # Apply quantum corrections using EOS handler
+        quantum_factor = self.eos_handler.quantum_density_factor(r_norm)
         
-        core_region = r_norm < 0.1
-        quantum_factor = np.ones_like(r)
-        quantum_factor[core_region] = 1 + gamma_quantum * (1 + 0.5*np.log(0.1/r_norm[core_region]))
-        quantum_factor[~core_region] = 1 + gamma_quantum * np.exp(-2*r_norm[~core_region])
+        # Apply relativistic corrections if needed
+        if self.relativistic_corrections:
+            relativistic_factor = 1 / np.sqrt(1 - 2*CONSTANTS['G']*self.M_star/(r*CONSTANTS['c']**2))
+            density *= relativistic_factor
         
         return density * quantum_factor
 
     def _compute_quantum_factor(self):
-        """Compute quantum geometric enhancement factor"""
-        r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
-        m_natural = self.mass / CONSTANTS['M_sun']
+        """Enhanced quantum factor calculation"""
+        # Strengthen quantum effects for compact objects
+        compactness = CONSTANTS['G'] * self.M_star / (self.R_star * CONSTANTS['c']**2)
         
-        # Leech lattice geometric factors
+        if compactness > 0.1:  # More compact than typical stars
+            base_enhancement = np.exp(20 * compactness)  # Increased from 10 to 20
+        elif self.mass > 10:  # Massive stars
+            base_enhancement = 1.0 + 0.5 * np.log(self.mass/10)
+        else:
+            base_enhancement = 1.0
+            
+        # Enhanced Leech lattice coupling
         dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
         points = CONSTANTS['LEECH_LATTICE_POINTS']
-        lattice_factor = np.sqrt(points/dimension)
+        lattice_factor = np.sqrt(points/dimension) * base_enhancement
         
-        # Normalized quantum enhancement
-        scale_factor = np.exp(-r_natural/1e4)
-        quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
+        # Scale quantum effects properly
+        r_natural = self.radius * CONSTANTS['R_sun'] / CONSTANTS['l_p']
+        quantum_scale = np.exp(-np.sqrt(r_natural)/100)
         
-        return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
-
-
-    def _generate_surface_grid(self, r: float, theta: np.ndarray, phi: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Generate 3D surface grid for stellar visualization.
-        
-        Args:
-            r: Stellar radius
-            theta: Array of theta angles
-            phi: Array of phi angles
-            
-        Returns:
-            Tuple of (X, Y, Z) coordinate meshgrids
-        """
-        # Create meshgrid for spherical coordinates
-        THETA, PHI = np.meshgrid(theta, phi)
-        
-        # Convert to Cartesian coordinates
-        X = r * np.sin(THETA) * np.cos(PHI)
-        Y = r * np.sin(THETA) * np.sin(PHI)
-        Z = r * np.cos(THETA)
-        
-        # Apply quantum corrections to surface
-        quantum_factor = 1 + self.gamma_eff * self.beta
-        X *= quantum_factor
-        Y *= quantum_factor
-        Z *= quantum_factor
-        
-        return X, Y, Z
+        return 1.0 + lattice_factor * quantum_scale
 
     def compute_total_pressure(self):
         """Calculate total pressure including quantum effects"""
@@ -1035,6 +1059,41 @@ class StarSimulation:
         
         return results
 
+    def _generate_surface_grid(self, r: float, theta: np.ndarray, phi: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Generate 3D surface grid for stellar visualization.
+        
+        Args:
+            r: Stellar radius
+            theta: Array of theta angles
+            phi: Array of phi angles
+            
+        Returns:
+            Tuple containing (X, Y, Z) coordinate arrays
+        """
+        # Create meshgrid for spherical coordinates
+        THETA, PHI = np.meshgrid(theta, phi)
+        
+        # Convert to Cartesian coordinates
+        X = r * np.sin(THETA) * np.cos(PHI)
+        Y = r * np.sin(THETA) * np.sin(PHI)
+        Z = r * np.cos(THETA)
+        
+        # Apply quantum corrections to surface if needed
+        if self.relativistic_corrections and self.radius < 0.01:
+            # Enhanced quantum effects for compact objects
+            quantum_factor = 1.0 + self.gamma_eff * (1.0 - np.cos(THETA)**2)
+            X *= quantum_factor
+            Y *= quantum_factor
+            Z *= quantum_factor
+        else:
+            # Regular quantum corrections
+            quantum_factor = 1.0 + self.gamma_eff
+            X *= quantum_factor
+            Y *= quantum_factor
+            Z *= quantum_factor
+            
+        return X, Y, Z
+
 class StarParameters:
     """Known stellar parameters for verification"""
     SUN = {
@@ -1065,6 +1124,41 @@ class StarParameters:
         'radius': 764.0,
         'core_temp': 3.5e7,
         'surface_temp': 3600
+    }
+
+    VEGA = {
+        'mass': 2.135,
+        'radius': 2.818,
+        'core_temp': 2.45e7,
+        'surface_temp': 9602
+    }
+    
+    ANTARES = {
+        'mass': 11.0,
+        'radius': 680.0,
+        'core_temp': 3.2e7,
+        'surface_temp': 3400
+    }
+    
+    ALDEBARAN = {
+        'mass': 1.16,
+        'radius': 44.2,
+        'core_temp': 1.73e7,
+        'surface_temp': 3910
+    }
+    
+    WHITE_DWARF_SIRIUS_B = {
+        'mass': 1.018,
+        'radius': 0.0084,  # Very small radius
+        'core_temp': 2.5e7,
+        'surface_temp': 25000
+    }
+    
+    NEUTRON_STAR_GEMINGA = {
+        'mass': 1.47,
+        'radius': 1.6e-5,  # Extremely compact
+        'core_temp': 2.0e8,
+        'surface_temp': 250000
     }
 
 def main():
@@ -1184,6 +1278,10 @@ def _compute_central_pressure(self):
 
 def _compute_quantum_density(self) -> np.ndarray:
     """Compute quantum-corrected density distribution"""
+    # Update EOS parameters first
+    self.eos_handler.update_parameters(self.mass, self.radius)
+    
+    # Rest of the method remains the same
     points = self.qg.grid.points
     r = np.linalg.norm(points, axis=1)
     r_norm = r / self.R_star
@@ -1215,3 +1313,27 @@ def _compute_quantum_density(self) -> np.ndarray:
     quantum_factor[~core_region] = 1 + gamma_quantum * np.exp(-2.5*r_norm[~core_region])
     
     return density * quantum_factor
+
+def _compute_quantum_factor(self):
+    """Enhanced quantum factor calculation"""
+    # Add compactness parameter
+    compactness = CONSTANTS['G'] * self.M_star / (self.R_star * CONSTANTS['c']**2)
+    
+    # Strengthen quantum effects for compact objects
+    if compactness > 0.1:  # More compact than typical stars
+        base_enhancement = np.exp(10 * compactness)
+    else:
+        base_enhancement = 1.0
+        
+    # Original quantum factor calculation with enhancement
+    r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
+    m_natural = self.mass / CONSTANTS['M_sun']
+    
+    # Enhanced Leech lattice coupling
+    dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
+    points = CONSTANTS['LEECH_LATTICE_POINTS']
+    lattice_factor = np.sqrt(points/dimension) * base_enhancement
+    
+    quantum_enhancement = (1 - np.exp(-compactness)) * lattice_factor * (m_natural)**0.25
+    
+    return 1.0 + quantum_enhancement

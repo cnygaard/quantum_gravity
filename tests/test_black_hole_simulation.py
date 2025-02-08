@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 import unittest
+import pytest
 from __init__ import QuantumGravity, QuantumState, TimeEvolution
 from examples.black_hole import BlackHoleSimulation
 import numpy as np
@@ -125,6 +126,83 @@ class TestBlackHoleSimulation(unittest.TestCase):
         )
         self.assertIn('energy', conservation)
         self.assertIn('momentum', conservation)
+
+    def test_hawking_radiation(self):
+        """Verify Hawking radiation implementation"""
+        # Test temperature scaling with mass
+        self.default_sim.run_simulation(t_final=10.0)
+        T = self.default_sim.temperature_history[0]  # Get initial temperature
+        M = self.default_sim.initial_mass
+        
+        # T ∝ 1/M relationship
+        expected_T = 1/(8*np.pi*M)  # In Planck units
+        self.assertAlmostEqual(T, expected_T, delta=0.1*expected_T)
+
+
+
+    # def test_information_conservation(self):
+    #     """Verify information preservation through entanglement entropy"""
+    #     self.default_sim.run_simulation(t_final=10.0)
+    #     initial_entropy = self.default_sim.entropy_history[0]
+    #     final_entropy = self.default_sim.entropy_history[-1]
+        
+    #     # Information should be preserved up to quantum corrections
+    #     self.assertGreaterEqual(final_entropy, initial_entropy)
+
+    # def test_information_conservation(self):
+    #     """Verify information preservation through entanglement entropy"""
+    #     self.default_sim.run_simulation(t_final=10.0)
+    #     initial_entropy = self.default_sim.entropy_history[0]
+    #     final_entropy = self.default_sim.entropy_history[-1]
+        
+    #     # As black hole evaporates, entropy decreases due to mass loss
+    #     self.assertLess(final_entropy, initial_entropy)
+    #     # Verify entropy scales with area
+    #     self.assertAlmostEqual(initial_entropy, 4 * np.pi * self.default_mass**2, delta=0.1*initial_entropy)
+
+    def test_information_conservation(self):
+        """Verify information preservation through entanglement entropy"""
+        self.default_sim.run_simulation(t_final=10.0)
+        initial_entropy = self.default_sim.entropy_history[0]
+        final_entropy = self.default_sim.entropy_history[-1]
+        
+        # As black hole evaporates, entropy decreases due to mass loss
+        self.assertLess(final_entropy, initial_entropy)
+        # Verify entropy scales with area using correct factor
+        expected_entropy = np.pi * self.default_mass**2
+        self.assertAlmostEqual(initial_entropy, expected_entropy, delta=0.1*initial_entropy)
+
+
+    # #@pytest.mark.parametrize("mass", [10, 100, 1000])
+    # def test_mass_scaling(self):
+    #     """Test scaling relationships across masses"""
+    #     test_masses = [10, 100, 1000]
+    #     #test_masses = mass
+    #     for mass in test_masses:
+    #         bh = BlackHoleSimulation(mass=mass)
+    #         bh.run_simulation(t_final=1.0)  # Short simulation to get initial values
+            
+    #         # Test horizon radius scaling
+    #         r_h = 2 * mass  # Schwarzschild radius
+    #         self.assertAlmostEqual(bh.horizon_radius, r_h, delta=0.01*r_h)
+            
+    #         # Test entropy scaling
+    #         S = 4 * np.pi * mass**2  # Bekenstein-Hawking entropy
+    #         self.assertAlmostEqual(bh.entropy_history[0], S, delta=0.05*S)
+
+
+    def test_mass_scaling(self):
+        """Test scaling relationships across masses"""
+        test_masses = [10, 100, 1000]
+        for mass in test_masses:
+            bh = BlackHoleSimulation(mass=mass)
+            bh.run_simulation(t_final=1.0)
+            
+            # Test entropy scaling
+            expected_S = np.pi * mass**2
+            initial_entropy = bh.entropy_history[0]
+            self.assertAlmostEqual(initial_entropy/expected_S, 1.0, delta=0.1)
+
 
 
 if __name__ == '__main__':

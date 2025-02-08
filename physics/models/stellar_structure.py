@@ -90,21 +90,32 @@ class StarSimulation:
         T_surface = 5778 * (self.mass**0.5) * (self.radius**-0.5)
         return TempProfile(T_core, T_surface)
     
-    def compute_density_enhancement(self):
-        """Calculate quantum-enhanced core density"""
-        T_surface = 3042 * (self.mass**0.505) * quantum_factor
-        quantum_factor = self.compute_quantum_factor()
-        return 1.0 + 0.05 * (quantum_factor - 1.0)
+    # def compute_density_enhancement(self):
+    #     """Calculate quantum-enhanced core density"""
+    #     T_surface = 3042 * (self.mass**0.505) * quantum_factor
+    #     quantum_factor = self.compute_quantum_factor()
+    #     return 1.0 + 0.05 * (quantum_factor - 1.0)
+
+    # def compute_density_enhancement(self):
+    #     """Calculate quantum-enhanced core density"""
+    #     if self.radius < 0.01:  # Compact objects
+    #         enhancement = 1.0 + 0.2 * quantum_factor * (0.01/self.radius)**0.5
+    #     elif self.mass > 10:  # Massive stars
+    #         enhancement = 1.0 + 0.05 * quantum_factor * np.log(self.mass/10)
+    #     else:  # Main sequence
+    #         enhancement = 1.0 + 0.05 * (quantum_factor - 1.0)
+            
+    #     return enhancement
 
     def compute_density_enhancement(self):
         """Calculate quantum-enhanced core density"""
+        quantum_factor = self.compute_quantum_factor()
         if self.radius < 0.01:  # Compact objects
             enhancement = 1.0 + 0.2 * quantum_factor * (0.01/self.radius)**0.5
         elif self.mass > 10:  # Massive stars
             enhancement = 1.0 + 0.05 * quantum_factor * np.log(self.mass/10)
         else:  # Main sequence
             enhancement = 1.0 + 0.05 * (quantum_factor - 1.0)
-            
         return enhancement
 
         #return TempProfile(T_core, T_surface)

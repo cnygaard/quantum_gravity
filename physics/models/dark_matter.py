@@ -19,33 +19,12 @@ class DarkMatterAnalysis:
         self.beta = self._compute_beta()
         self.gamma_eff = self._compute_gamma()
         
-    # def _compute_beta(self):
-    # # Add mass-dependent scaling factor
-    #     mass_scale = (self.total_mass/1e15)**1.0  # Reference to Coma mass
-    #     return 2.32e14 * (self.total_mass/self.observed_mass/10.0) * mass_scale
-    # def _compute_beta(self):
-    #     return 2.32e-44 * (self.radius/CONSTANTS['R_sun']) * \
-    #            np.sqrt(self.mass/CONSTANTS['M_sun'])
-
-    # def _compute_beta(self):
-    #     """Compute quantum coupling parameter"""
-    #     # Convert to Planck units
-    #     r_planck = self.radius * SI_UNITS['ly_si'] / CONSTANTS['l_p']
-    #     m_planck = self.mass * SI_UNITS['M_sun_si'] / CONSTANTS['m_p']
-        
-    #     return 2.32e-44 * np.sqrt(m_planck/r_planck)
-    # def _compute_beta(self):
-    #     """Compute quantum coupling with galactic scaling"""
-    #     r_scale = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
-    #     m_scale = self.mass / CONSTANTS['M_sun']
-        
-    #     return 2.32e-44 * np.sqrt(m_scale/r_scale) * np.exp(-r_scale/1000)
 
     def _compute_beta(self):
         """Compute quantum coupling with proper scaling"""
         # Natural units
         r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
-        m_natural = self.mass / CONSTANTS['M_sun']
+        m_natural = self.total_mass / CONSTANTS['M_sun']
         
         # Scale-dependent coupling
         beta_0 = 2.32e-44  # Base coupling
@@ -89,3 +68,7 @@ class DarkMatterAnalysis:
             'predicted_ratio': predicted_ratio,
             'discrepancy': abs(observed_ratio - predicted_ratio)/observed_ratio
         }
+
+    def compute_dark_matter_ratio(self):
+        """Compute ratio of dark matter to visible matter"""
+        return (self.total_mass - self.visible_mass) / self.visible_mass

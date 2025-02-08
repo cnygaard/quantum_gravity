@@ -304,6 +304,11 @@ class BlackHoleSimulation:
         
         return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
 
+    def quantum_correction_magnitude(self):
+        """Calculate magnitude of quantum corrections"""
+        return abs(self._compute_quantum_factor() - 1.0)
+
+
     def __init__(self, mass: float, quantum_gravity: 'QuantumGravity' = None, config_path: str = None):
         """Initialize black hole simulation."""
         if mass <= 0:
@@ -387,18 +392,33 @@ class BlackHoleSimulation:
             """Calculate mass at time t using proper Hawking evaporation."""
             if t >= state.evaporation_timescale:
                 return CONSTANTS['m_p']  # Return Planck mass as minimum
-            return state.initial_mass * (1 - t/state.evaporation_timescale)**(1/3)
+            
+            # Add regularization for horizon coordinates
+            r_min = CONSTANTS['l_p']  # Planck length minimum
+            mass = state.initial_mass * (1 - t/state.evaporation_timescale)**(1/3)
+            
+            # Update metric components with regularized radial coordinate
+            g_tt = -(1 - 2*CONSTANTS['G']*mass/max(r, r_min))
+            g_rr = 1/(1 - 2*CONSTANTS['G']*mass/max(r, r_min))
+            
+            return mass
+
+        # def mass_at_time(t):
+        #     """Calculate mass at time t using proper Hawking evaporation."""
+        #     if t >= state.evaporation_timescale:
+        #         return CONSTANTS['m_p']  # Return Planck mass as minimum
+        #     return state.initial_mass * (1 - t/state.evaporation_timescale)**(1/3)
     
-        # Update metric components with regularized radial coordinate
-        g_tt = -(1 - 2*CONSTANTS['G']*mass_at_time(state.time)/r)
-        g_rr = 1/(1 - 2*CONSTANTS['G']*mass_at_time(state.time)/r)
+        # # Update metric components with regularized radial coordinate
+        # g_tt = -(1 - 2*CONSTANTS['G']*mass_at_time(state.time)/r)
+        # g_rr = 1/(1 - 2*CONSTANTS['G']*mass_at_time(state.time)/r)
     
-        # Set components efficiently
-        state.set_metric_components_batch(
-            [(0,0)]*len(r) + [(1,1)]*len(r),
-            list(range(len(r)))*2,
-            np.concatenate([g_tt, g_rr])
-        )
+        # # Set components efficiently
+        # state.set_metric_components_batch(
+        #     [(0,0)]*len(r) + [(1,1)]*len(r),
+        #     list(range(len(r)))*2,
+        #     np.concatenate([g_tt, g_rr])
+        # )
 
     def log_physics_output(self, t: float, entropy: float, horizon_radius: float, temperature: float) -> None:
         """Log comprehensive physics parameters and formulas."""

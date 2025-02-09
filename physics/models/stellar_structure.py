@@ -74,11 +74,43 @@ class StarSimulation:
         S_classical = CONSTANTS['k_B'] * mass_scale
         return S_classical * (1 + self.gamma_eff * np.log(radius_scale))
         
+    # def compute_surface_temperature(self):
+    #     """Calculate surface temperature with quantum effects"""
+    #     T_classical = 5778 * (self.mass**0.5) * (self.radius**-0.5)
+    #     return T_classical * (1 + 0.1 * self.gamma_eff)
     def compute_surface_temperature(self):
         """Calculate surface temperature with quantum effects"""
+        # Classical surface temperature from stellar physics
         T_classical = 5778 * (self.mass**0.5) * (self.radius**-0.5)
-        return T_classical * (1 + 0.1 * self.gamma_eff)
+        
+        # Quantum enhancement with Leech lattice contribution
+        leech_factor = np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
+        quantum_correction = 1 + self.gamma_eff * self.beta * leech_factor
+        
+        return T_classical * quantum_correction
+
+    # def compute_temperature_profile(self):
+    #     """Calculate temperature structure with quantum effects"""
+    #     class TempProfile:
+    #         def __init__(self, core, surface):
+    #             self.core = core
+    #             self.surface = surface
+                
+    #     T_core = 1.57e7 * (self.mass**0.5)
+    #     T_surface = 5778 * (self.mass**0.5) * (self.radius**-0.5)
+    #     return TempProfile(T_core, T_surface)
     
+    def compute_surface_temperature(self):
+        """Calculate surface temperature with quantum effects"""
+        # Classical surface temperature from stellar physics
+        T_classical = 5778 * (self.mass**0.5) * (self.radius**-0.5)
+        
+        # Quantum enhancement with Leech lattice contribution
+        leech_factor = np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
+        quantum_correction = 1 + self.gamma_eff * self.beta * leech_factor
+        
+        return T_classical * quantum_correction
+
     def compute_temperature_profile(self):
         """Calculate temperature structure with quantum effects"""
         class TempProfile:
@@ -86,10 +118,16 @@ class StarSimulation:
                 self.core = core
                 self.surface = surface
                 
-        T_core = 1.57e7 * (self.mass**0.5)
-        T_surface = 5778 * (self.mass**0.5) * (self.radius**-0.5)
+        # Core temperature with quantum corrections
+        T_core = 1.57e7 * (self.mass**0.5) * (1 + self.gamma_eff * self.beta * np.sqrt(196560/24))
+        
+        # Surface temperature with quantum corrections 
+        T_surface = self.compute_surface_temperature()
+        
         return TempProfile(T_core, T_surface)
-    
+
+
+
     # def compute_density_enhancement(self):
     #     """Calculate quantum-enhanced core density"""
     #     T_surface = 3042 * (self.mass**0.505) * quantum_factor

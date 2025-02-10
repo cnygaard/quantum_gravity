@@ -70,7 +70,7 @@ class TestBlackHoleSimulation(unittest.TestCase):
         expected_steps = int(t_final / self.default_sim.qg.evolution.dt)
         self.assertGreaterEqual(len(self.default_sim.time_points), expected_steps)
         self.assertTrue(all(v['diagnostics']['beta'] > 0 for v in self.default_sim.verification_results))
-        self.assertTrue(all(v['diagnostics']['gamma_eff'] > 0 for v in self.default_sim.verification_results))
+        self.assertTrue(all(v['diagnostics']['gamma'] > 0 for v in self.default_sim.verification_results))
 
 
 
@@ -113,7 +113,7 @@ class TestBlackHoleSimulation(unittest.TestCase):
         first_result = self.default_sim.verification_results[0]
         self.assertIn('diagnostics', first_result)
         self.assertIn('beta', first_result['diagnostics'])
-        self.assertIn('gamma_eff', first_result['diagnostics'])
+        self.assertIn('gamma', first_result['diagnostics'])
 
     def test_conservation_laws(self):
         """Test conservation law tracking"""

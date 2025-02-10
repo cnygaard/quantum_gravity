@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from constants import CONSTANTS
 from core.grid import AdaptiveGrid, LeechLattice
 from core.state import QuantumState
+from physics.quantum_geometry import QuantumGeometry
 import logging
 
 
@@ -319,31 +320,60 @@ class ADMMassObservable:
             metadata={'time': state.time}
         )
 
-
 class BlackHoleTemperatureObservable:
     def __init__(self, grid):
         self.grid = grid
-        self.mass_obs = ADMMassObservable(grid)  # Initialize mass observable
+        self.mass_obs = ADMMassObservable(grid)
+        self.qg = QuantumGeometry()
 
     def measure(self, state):
-        """Measure black hole temperature with quantum corrections."""
+        """Measure black hole temperature with quantum geometric corrections."""
         mass_result = self.mass_obs.measure(state)
+        mass = max(mass_result.value, CONSTANTS['m_p'])
 
-        # Add Planck-scale corrections
-        mass = max(mass_result.value, CONSTANTS['m_p'])  # Planck mass cutoff
-
-        # Modified Hawking temperature with quantum corrections
+        # Enhanced quantum corrections using universal length and cosmic factor
         temp = (
             CONSTANTS['hbar'] * CONSTANTS['c']**3 /
             (8 * np.pi * CONSTANTS['G'] * mass) *
-            (1 - CONSTANTS['l_p']/(2 * CONSTANTS['G'] * mass))
-            )  # Leading quantum correction
+            (1 - self.qg.l_universal/(2 * CONSTANTS['G'] * mass)) *
+            (1 + self.qg.cosmic_factor * self.qg.l_universal/(CONSTANTS['G'] * mass))
+        )
 
         return MeasurementResult(
             value=temp,
             uncertainty=abs(temp * mass_result.uncertainty / mass),
-            metadata={'mass': mass}
+            metadata={
+                'mass': mass,
+                'quantum_factor': self.qg.cosmic_factor,
+                'phase': self.qg.phase
+            }
         )
+
+
+# class BlackHoleTemperatureObservable:
+#     def __init__(self, grid):
+#         self.grid = grid
+#         self.mass_obs = ADMMassObservable(grid)  # Initialize mass observable
+
+    # def measure(self, state):
+    #     """Measure black hole temperature with quantum corrections."""
+    #     mass_result = self.mass_obs.measure(state)
+
+    #     # Add Planck-scale corrections
+    #     mass = max(mass_result.value, CONSTANTS['m_p'])  # Planck mass cutoff
+
+    #     # Modified Hawking temperature with quantum corrections
+    #     temp = (
+    #         CONSTANTS['hbar'] * CONSTANTS['c']**3 /
+    #         (8 * np.pi * CONSTANTS['G'] * mass) *
+    #         (1 - CONSTANTS['l_p']/(2 * CONSTANTS['G'] * mass))
+    #         )  # Leading quantum correction
+
+    #     return MeasurementResult(
+    #         value=temp,
+    #         uncertainty=abs(temp * mass_result.uncertainty / mass),
+    #         metadata={'mass': mass}
+    #     )
 
 
 class HawkingFluxObservable(Observable):

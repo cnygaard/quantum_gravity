@@ -4,6 +4,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 import pytest
 import numpy as np
 from physics.models.stellar_dynamics import StellarDynamics
+from physics.quantum_geometry import QuantumGeometry
 from constants import CONSTANTS, SI_UNITS, CONVERSIONS, PLANCK_UNITS
 
 def test_quantum_correction_scaling():

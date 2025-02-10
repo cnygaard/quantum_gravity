@@ -217,21 +217,42 @@ class QuantumState:
         """Set metric component value at specified indices and point."""
         self._metric_array[indices[0], indices[1], point_idx] = value
 
+    # def _compute_metric_determinant(self):
+    #     """Compute determinant of spacetime metric"""
+    #     # Get metric components in Schwarzschild coordinates
+    #     r = np.linalg.norm(self.grid.points, axis=1)
+    #     r = np.maximum(r, CONSTANTS['l_p'])  # Regularize at Planck scale
+        
+    #     # Compute metric components
+    #     g_tt = -(1 - 2 * CONSTANTS['G'] * self.mass / r)
+    #     g_rr = 1 / (1 - 2 * CONSTANTS['G'] * self.mass / r)
+    #     g_theta = r**2
+    #     g_phi = r**2 * np.sin(np.arccos(self.grid.points[:,2]/r))**2
+        
+    #     # Full 4D metric determinant
+    #     self.metric_determinant = -g_tt * g_rr * g_theta * g_phi
     def _compute_metric_determinant(self):
-        """Compute determinant of spacetime metric"""
+        """Compute determinant of spacetime metric with numerical stability"""
         # Get metric components in Schwarzschild coordinates
         r = np.linalg.norm(self.grid.points, axis=1)
-        r = np.maximum(r, CONSTANTS['l_p'])  # Regularize at Planck scale
         
-        # Compute metric components
-        g_tt = -(1 - 2 * CONSTANTS['G'] * self.mass / r)
-        g_rr = 1 / (1 - 2 * CONSTANTS['G'] * self.mass / r)
-        g_theta = r**2
-        g_phi = r**2 * np.sin(np.arccos(self.grid.points[:,2]/r))**2
+        # Add regularization at Schwarzschild radius
+        r_s = 2 * CONSTANTS['G'] * self.mass
+        r_safe = np.maximum(r, r_s + CONSTANTS['l_p'])  # Planck length buffer
         
-        # Full 4D metric determinant
+        # Compute metric components with safe division
+        g_tt = -(1 - 2 * CONSTANTS['G'] * self.mass / r_safe)
+        g_rr = 1 / np.maximum(1 - 2 * CONSTANTS['G'] * self.mass / r_safe, 1e-308)
+        g_theta = r_safe**2
+        
+        # Handle coordinate singularity in phi component
+        theta = np.arccos(np.clip(self.grid.points[:,2]/r_safe, -1.0, 1.0))
+        g_phi = r_safe**2 * np.sin(theta)**2
+        
+        # Full 4D metric determinant with overflow protection
         self.metric_determinant = -g_tt * g_rr * g_theta * g_phi
-        
+
+
     def update_metric(self):
         """Update metric after mass/state changes"""
         self._compute_metric_determinant()

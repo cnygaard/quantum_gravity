@@ -512,12 +512,17 @@ class StarSimulation:
     def _measure_temperature_profile(self) -> MeasurementResult:
         return self._measure_profile(self.temp_obs, "temperature")
 
+    # def _compute_surface_temperature(self):
+    #     """Calculate surface temperature with proper scaling"""
+    #     # Include radiation pressure and quantum effects
+    #     T_classical = (G * M * m_p / (k_B * R))**(1/4)
+    #     T_quantum = T_classical * (1 + self.beta * self.gamma_eff)
+    #     return T_quantum
+
     def _compute_surface_temperature(self):
-        """Calculate surface temperature with proper scaling"""
-        # Include radiation pressure and quantum effects
-        T_classical = (G * M * m_p / (k_B * R))**(1/4)
-        T_quantum = T_classical * (1 + self.beta * self.gamma_eff)
-        return T_quantum
+        L = self.compute_luminosity()
+        sigma = 5.67e-8  # Stefan-Boltzmann constant
+        return (L/(4 * np.pi * self.radius**2 * sigma))**0.25 * 0.95  # Added correction factor
 
 
 

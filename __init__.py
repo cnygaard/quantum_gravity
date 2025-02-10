@@ -36,6 +36,7 @@ from core.evolution import TimeEvolution
 
 from numerics.errors import ErrorTracker
 from physics.conservation import ConservationLawTracker
+from physics.quantum_geometry import QuantumGeometry
 from utils.io import QuantumGravityIO
 
 # Package metadata
@@ -201,6 +202,14 @@ class QuantumGravity:
     def __init__(self, config_path: str = None):
         """Initialize quantum gravity framework."""
         #configure_logging()  # Set up logging first
+        # Initialize quantum geometry first
+        self.quantum_geometry = QuantumGeometry()
+
+        # Get fundamental quantum geometric scales
+        self.l_universal = self.quantum_geometry.universal_quantum_length()
+        self.cosmic_factor = self.quantum_geometry.cosmic_scale_factor()
+        self.phase = self.quantum_geometry.quantum_geometric_phase()
+
         # Load default configuration
         self.config = QuantumGravityConfig(config_path)
         

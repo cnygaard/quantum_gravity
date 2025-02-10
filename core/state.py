@@ -4,6 +4,7 @@ from .grid import AdaptiveGrid
 import numpy as np
 from scipy.sparse import csr_matrix
 from constants import CONSTANTS
+from physics.quantum_geometry import QuantumGeometry
 
 class QuantumState:
     """Efficient representation of quantum gravitational states."""
@@ -11,11 +12,16 @@ class QuantumState:
         # Core quantum state properties
         self.simulation = simulation  # Store simulation reference
         self.grid = grid
+        self.qg = QuantumGeometry()
         self.eps_cut = eps_cut
         self.coefficients = {}
         self.basis_states = {}
         self._metric_array = np.zeros((4, 4, len(self.grid.points)))
+        if initial_mass is None:
+            initial_mass = 1.0
+        self.mass = initial_mass
         self.time = 0.0
+        self._compute_metric_determinant()
 
         # Black hole properties
         if initial_mass <= 0:
@@ -210,6 +216,25 @@ class QuantumState:
     def set_metric_component(self, indices: Tuple[int, int], point_idx: int, value: float) -> None:
         """Set metric component value at specified indices and point."""
         self._metric_array[indices[0], indices[1], point_idx] = value
+
+    def _compute_metric_determinant(self):
+        """Compute determinant of spacetime metric"""
+        # Get metric components in Schwarzschild coordinates
+        r = np.linalg.norm(self.grid.points, axis=1)
+        r = np.maximum(r, CONSTANTS['l_p'])  # Regularize at Planck scale
+        
+        # Compute metric components
+        g_tt = -(1 - 2 * CONSTANTS['G'] * self.mass / r)
+        g_rr = 1 / (1 - 2 * CONSTANTS['G'] * self.mass / r)
+        g_theta = r**2
+        g_phi = r**2 * np.sin(np.arccos(self.grid.points[:,2]/r))**2
+        
+        # Full 4D metric determinant
+        self.metric_determinant = -g_tt * g_rr * g_theta * g_phi
+        
+    def update_metric(self):
+        """Update metric after mass/state changes"""
+        self._compute_metric_determinant()
 
 class CosmologicalState(QuantumState):
     """Quantum state for cosmological simulations."""

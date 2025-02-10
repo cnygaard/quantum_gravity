@@ -89,12 +89,12 @@ class BlackHoleSimulation:
         ax4.grid(True)
         
         # Gamma effective
-        ax5.plot(self.time_points, [v['diagnostics']['gamma_eff'] for v in self.verification_results], label='γ_eff Effective strength Quantum Coupling')
-        ax5.set_xlabel('Time [t_P]')
-        ax5.set_ylabel('γ_eff Effective strength Quantum Coupling')
-        ax5.set_yscale('log')
-        ax5.legend()
-        ax5.grid(True)
+        # ax5.plot(self.time_points, [v['diagnostics']['gamma_eff'] for v in self.verification_results], label='γ_eff Effective strength Quantum Coupling')
+        # ax5.set_xlabel('Time [t_P]')
+        # ax5.set_ylabel('γ_eff Effective strength Quantum Coupling')
+        # ax5.set_yscale('log')
+        # ax5.legend()
+        # ax5.grid(True)
         
         # Radiation flux
         ax6.plot(self.time_points, self.radiation_flux_history, label='Radiation Flux [P_p] Planck power')
@@ -451,15 +451,15 @@ class BlackHoleSimulation:
         logging.info("\nDetailed Geometric-Entanglement Components:")
         logging.info("\nLHS Components:")
         logging.info(f"Horizon Term: {geo_metrics['diagnostics']['components']['horizon_radius']:.4e}")
-        logging.info(f"Area Factor: {geo_metrics['diagnostics']['components']['area_factor']:.4e}")
-        logging.info(f"Quantum Factor: {geo_metrics['diagnostics']['components']['quantum_factor']:.24e}")
+        #logging.info(f"Area Factor: {geo_metrics['diagnostics']['components']['area_factor']:.4e}")
+        #logging.info(f"Quantum Factor: {geo_metrics['diagnostics']['components']['quantum_factor']:.24e}")
         #logging.info(f"Time Factor: {geo_metrics['diagnostics']['components']['time_factor']:.4e}")
         
         logging.info("\nRHS Components:")
         logging.info(f"Volume Term: {geo_metrics['diagnostics']['components']['dV']:.4e}")
-        logging.info(f"Entanglement: {geo_metrics['diagnostics']['components']['ent']:.24e}")
-        logging.info(f"Coupling: {geo_metrics['diagnostics']['components']['coupling']:.24e}")
-        logging.info(f"Information: {geo_metrics['diagnostics']['components']['info']:.24e}")
+        #logging.info(f"Entanglement: {geo_metrics['diagnostics']['components']['ent']:.24e}")
+        #logging.info(f"Coupling: {geo_metrics['diagnostics']['components']['coupling']:.24e}")
+        #logging.info(f"Information: {geo_metrics['diagnostics']['components']['info']:.24e}")
 
             
     def _setup_observables(self) -> None:
@@ -694,7 +694,7 @@ def main():
                     'geometric_ds2_lhs': sim.verification_results[i]['lhs'],
                     'geometric_ds2_rhs': sim.verification_results[i]['rhs'],
                     'beta_lp_rh': sim.verification_results[i]['diagnostics']['beta'],
-                    'gamma_eff': sim.verification_results[i]['diagnostics']['gamma_eff']
+                    #'gamma_eff': sim.verification_results[i]['diagnostics']['gamma_eff']
                 },
                 uncertainty=None,
                 metadata={

@@ -17,7 +17,24 @@ class StarSimulation:
         # Enhanced quantum coupling
         self.gamma_eff = 0.407 * self.beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
         
+    # def compute_quantum_factor(self):
+    #     r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
+    #     m_natural = self.mass / CONSTANTS['M_sun']
+        
+    #     # Leech lattice geometric factors
+    #     dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
+    #     points = CONSTANTS['LEECH_LATTICE_POINTS']
+    #     lattice_factor = np.sqrt(points/dimension)
+        
+    #     # Normalized quantum enhancement
+    #     scale_factor = np.exp(-r_natural/1e4)
+    #     quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
+        
+    #     # Ensure result is between 1.0 and 1.1
+    #     return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
+
     def compute_quantum_factor(self):
+        """Quantum geometric effects with enhanced neutron star coupling"""
         r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
         m_natural = self.mass / CONSTANTS['M_sun']
         
@@ -26,12 +43,20 @@ class StarSimulation:
         points = CONSTANTS['LEECH_LATTICE_POINTS']
         lattice_factor = np.sqrt(points/dimension)
         
-        # Normalized quantum enhancement
+        # Enhanced quantum effects for compact objects
+        # if self.radius < 1e-4:  # Neutron star regime
+        #     scale_factor = np.exp(-r_natural/1e2)  # Stronger coupling
+        #     quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.5
+        #     return 1.0 + 0.2 * np.tanh(quantum_enhancement * 1e-4)  # Larger quantum effects
+        
+        # Standard quantum enhancement for other stars
         scale_factor = np.exp(-r_natural/1e4)
         quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
-        
-        # Ensure result is between 1.0 and 1.1
-        return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
+        if self.radius < 1e-4:  # Neutron star regime
+            return 1.0 + 0.1 * (self.mass/1.4)**0.5
+        else:
+            return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
+
 
     def compute_total_pressure(self):
         """Calculate total pressure including quantum effects"""

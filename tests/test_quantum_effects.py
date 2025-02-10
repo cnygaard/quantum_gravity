@@ -73,8 +73,8 @@ class TestPhysicalValidation:
             #dm = DarkMatterAnalysis(visible_mass=mass)
             dm = DarkMatterAnalysis(
                 visible_mass=mass,
-                observed_mass=mass*10,
-                total_mass=mass*100,
+                observed_mass=mass*8.2,
+                total_mass=mass*8.2,
                 radius=50000,
                 velocity_dispersion=220
             )

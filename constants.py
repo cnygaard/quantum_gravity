@@ -18,6 +18,7 @@ CONSTANTS = {
     'LEECH_LATTICE_POINTS': 196560, # Default leech lattice size in number of points
     'LEECH_LATTICE_DIMENSION': 24,   # Leech lattice dimension
     'light_year': 9.461e15,         # Light year in meters  
+    'kpc': 3.086e19,                # Kiloparsec in Planck lengths
 }
 PLANCK_UNITS = CONSTANTS
 

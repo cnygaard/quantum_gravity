@@ -449,9 +449,6 @@ The framework includes unit tests covering black hole simulation functionality:
 
 ### Tests
 
-## Test Results
-All 43 tests passed successfully across multiple physics regimes:
-
 ### Black Hole Physics 
 - Conservation laws 
 - Hawking radiation scaling 
@@ -483,7 +480,7 @@ All 43 tests passed successfully across multiple physics regimes:
 
 
 ### Running Tests
-
+:
 Run the full test suite:
 
 ```

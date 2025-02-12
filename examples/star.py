@@ -11,6 +11,7 @@ from core.grid import LeechLattice
 from physics.verification import UnifiedTheoryVerification
 from physics.stellar.eos import RealisticEOS
 from physics.stellar.relativity import RelativityHandler
+from physics.models.stellar_structure import StellarStructure
 from __init__ import QuantumGravity, configure_logging
 import logging
 from utils.io import MeasurementResult  # Add this import
@@ -18,12 +19,22 @@ from concurrent.futures import ThreadPoolExecutor
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
-class StarSimulation:
+class StarSimulation(StellarStructure):
     """Quantum star simulation extending black hole framework."""
     def __init__(self, mass: float, radius: float, galaxy_radius: float = None, quantum_gravity=None, debug=False):
         """Initialize star simulation with galaxy-scale effects."""
+        super().__init__(mass, radius)
         # Initialize verification tracking
         self.verification_results = []
+
+        # Initialize quantum coupling constants
+        self.gamma = 0.55  # Coupling constant
+        self.beta = CONSTANTS['l_p'] / self.R_star  # Quantum scale parameter
+
+        # Galaxy scale parameters
+        self.galaxy_radius = galaxy_radius or 50000 * CONSTANTS['R_sun']
+        self.beta_galaxy = CONSTANTS['l_p'] / self.galaxy_radius
+        self.gamma_eff_galaxy = self.gamma * self.beta_galaxy * np.sqrt(0.407)
 
         self.mass = mass  # In solar masses
         self.radius = radius  # In solar radii
@@ -414,7 +425,8 @@ class StarSimulation:
 
 
                 if self.qg.state.time >= self.next_checkpoint:
-                    metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
+                    #metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
+                    metrics = self.verify_geometric_entanglement()
                     # Pass metrics to normalization function
                     normalized_scales = self._normalize_geometric_scales(metrics)
                 self.verification_results.append(metrics)
@@ -442,7 +454,7 @@ class StarSimulation:
                 logging.info(f"RHS = {metrics['rhs']:.44e}")
                 logging.info(f"LHS (normalized) = {normalized_scales['lhs_normalized']:.44e}")
                 logging.info(f"RHS (normalized) = {normalized_scales['rhs_normalized']:.44e}")
-                logging.info(f"Relative Error = {metrics['relative_error']:.6e}")
+                logging.info(f"Relative Error = {metrics['error']:.6e}")
 
                 # Log quantum parameters
                 logging.info(f"\nQuantum Parameters:")
@@ -1342,3 +1354,48 @@ def _compute_quantum_factor(self):
     quantum_enhancement = (1 - np.exp(-compactness)) * lattice_factor * (m_natural)**0.25
     
     return 1.0 + quantum_enhancement
+
+def compute_geometric_lhs(self):
+    """Override base LHS calculation with enhanced precision"""
+    base_lhs = super().compute_geometric_lhs()
+    
+    if self.qg and self.qg.state:
+        points = self.qg.grid.points
+        r = np.linalg.norm(points, axis=1)
+        r = np.maximum(r, CONSTANTS['l_p'])
+        
+        # Get metric components from current state
+        g_tt = self.qg.state.get_metric_component(0, 0)
+        g_rr = self.qg.state.get_metric_component(1, 1)
+        
+        volume = np.sqrt(abs(g_tt * g_rr)) * (4*np.pi*r**2)
+        return np.mean(volume)
+    
+    return base_lhs
+
+def compute_geometric_rhs(self):
+    """Enhanced RHS with quantum gravity effects"""
+    base_rhs = super().compute_geometric_rhs()
+    
+    if self.qg and self.qg.geometry:
+        beta = self.beta
+        gamma = self.gamma
+        leech_factor = self.qg.geometry.compute_leech_factor()
+        
+        quantum_term = 1 + (gamma * beta * leech_factor)
+        return base_rhs * quantum_term
+    
+    return base_rhs
+
+def verify_geometric_entanglement(self):
+    """Verify geometric-entanglement relationship with quantum corrections"""
+    lhs = self.compute_geometric_lhs()
+    rhs = self.compute_geometric_rhs()
+    
+    metrics = {
+        'lhs': lhs,
+        'rhs': rhs,
+        'error': abs(lhs - rhs)/max(abs(lhs), abs(rhs))
+    }
+    
+    return metrics

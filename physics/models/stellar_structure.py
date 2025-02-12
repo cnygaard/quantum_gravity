@@ -17,22 +17,6 @@ class StarSimulation:
         # Enhanced quantum coupling
         self.gamma_eff = 0.407 * self.beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
         
-    # def compute_quantum_factor(self):
-    #     r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
-    #     m_natural = self.mass / CONSTANTS['M_sun']
-        
-    #     # Leech lattice geometric factors
-    #     dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
-    #     points = CONSTANTS['LEECH_LATTICE_POINTS']
-    #     lattice_factor = np.sqrt(points/dimension)
-        
-    #     # Normalized quantum enhancement
-    #     scale_factor = np.exp(-r_natural/1e4)
-    #     quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
-        
-    #     # Ensure result is between 1.0 and 1.1
-    #     return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
-
     def compute_quantum_factor(self):
         """Quantum geometric effects with enhanced neutron star coupling"""
         r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
@@ -42,13 +26,7 @@ class StarSimulation:
         dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
         points = CONSTANTS['LEECH_LATTICE_POINTS']
         lattice_factor = np.sqrt(points/dimension)
-        
-        # Enhanced quantum effects for compact objects
-        # if self.radius < 1e-4:  # Neutron star regime
-        #     scale_factor = np.exp(-r_natural/1e2)  # Stronger coupling
-        #     quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.5
-        #     return 1.0 + 0.2 * np.tanh(quantum_enhancement * 1e-4)  # Larger quantum effects
-        
+                
         # Standard quantum enhancement for other stars
         scale_factor = np.exp(-r_natural/1e4)
         quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
@@ -99,10 +77,6 @@ class StarSimulation:
         S_classical = CONSTANTS['k_B'] * mass_scale
         return S_classical * (1 + self.gamma_eff * np.log(radius_scale))
         
-    # def compute_surface_temperature(self):
-    #     """Calculate surface temperature with quantum effects"""
-    #     T_classical = 5778 * (self.mass**0.5) * (self.radius**-0.5)
-    #     return T_classical * (1 + 0.1 * self.gamma_eff)
     def compute_surface_temperature(self):
         """Calculate surface temperature with quantum effects"""
         # Classical surface temperature from stellar physics
@@ -113,17 +87,6 @@ class StarSimulation:
         quantum_correction = 1 + self.gamma_eff * self.beta * leech_factor
         
         return T_classical * quantum_correction
-
-    # def compute_temperature_profile(self):
-    #     """Calculate temperature structure with quantum effects"""
-    #     class TempProfile:
-    #         def __init__(self, core, surface):
-    #             self.core = core
-    #             self.surface = surface
-                
-    #     T_core = 1.57e7 * (self.mass**0.5)
-    #     T_surface = 5778 * (self.mass**0.5) * (self.radius**-0.5)
-    #     return TempProfile(T_core, T_surface)
     
     def compute_surface_temperature(self):
         """Calculate surface temperature with quantum effects"""
@@ -151,25 +114,6 @@ class StarSimulation:
         
         return TempProfile(T_core, T_surface)
 
-
-
-    # def compute_density_enhancement(self):
-    #     """Calculate quantum-enhanced core density"""
-    #     T_surface = 3042 * (self.mass**0.505) * quantum_factor
-    #     quantum_factor = self.compute_quantum_factor()
-    #     return 1.0 + 0.05 * (quantum_factor - 1.0)
-
-    # def compute_density_enhancement(self):
-    #     """Calculate quantum-enhanced core density"""
-    #     if self.radius < 0.01:  # Compact objects
-    #         enhancement = 1.0 + 0.2 * quantum_factor * (0.01/self.radius)**0.5
-    #     elif self.mass > 10:  # Massive stars
-    #         enhancement = 1.0 + 0.05 * quantum_factor * np.log(self.mass/10)
-    #     else:  # Main sequence
-    #         enhancement = 1.0 + 0.05 * (quantum_factor - 1.0)
-            
-    #     return enhancement
-
     def compute_density_enhancement(self):
         """Calculate quantum-enhanced core density"""
         quantum_factor = self.compute_quantum_factor()
@@ -181,24 +125,47 @@ class StarSimulation:
             enhancement = 1.0 + 0.05 * (quantum_factor - 1.0)
         return enhancement
 
-        #return TempProfile(T_core, T_surface)
+    def compute_geometric_lhs(self):
+        """Classical geometry contribution"""
+        G = SI_UNITS['G_si']
+        c2 = SI_UNITS['c_si']**2
+        
+        # Schwarzschild-like metric components
+        g_tt = -(1 - 2*G*self.M_star/(c2*self.R_star))
+        g_rr = 1/(1 - 2*G*self.M_star/(c2*self.R_star))
+        g_angular = self.R_star**2
+        
+        # Volume element with proper measure
+        volume_element = np.sqrt(abs(g_tt * g_rr)) * g_angular
+        
+        return 4*np.pi * volume_element
+
+
+    def compute_geometric_rhs(self):
+        """Quantum geometry contribution"""
+        # Base geometric term
+        classical_term = self.compute_geometric_lhs()
+        
+        # Quantum corrections
+        quantum_factor = self.compute_quantum_factor()
+        leech_factor = np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
+        beta = CONSTANTS['l_p'] / self.R_star
+        
+        # Entanglement contribution
+        entanglement = self.compute_entanglement_entropy()
+        entropy_factor = entanglement / (CONSTANTS['k_B'] * self.mass)
+        
+        # Combined quantum geometric term
+        quantum_term = 1 + (quantum_factor * beta * leech_factor * entropy_factor)
+        
+        return classical_term * quantum_term
+
     
-    # def compute_density_enhancement(self):
-    #     """Calculate quantum-enhanced core density"""
-    #     quantum_factor = self.compute_quantum_factor()
-    #     return 1.0 + 0.05 * (quantum_factor - 1.0)
-
-    #     quantum_factor = self.compute_quantum_factor()
-    #     T_surface = 3600 * (self.mass/10)**0.18 * quantum_factor
-    #     T_surface = 5778 * (self.mass**0.505) * quantum_factor
-            
-        
-    #      T_core = 1.57e7 * (self.mass**0.7) * quantum_factor
-    #     else:  # Main sequence
-    #     return 1.0 + 0.05 * (quantum_factor - 1.0)
-
-    #     # Enhanced density based on stellar type
-    #     if self.radius < 0.01:  # Compact objects
-        
-    #         T_core = 3.5e7 * (self.mass/16.5)**0.3 * quantum_factor
-    #     elif self.mass > 10:  # Massive stars
+    def verify_geometric_entanglement(self):
+        lhs = self.compute_geometric_lhs()
+        rhs = self.compute_geometric_rhs()
+        return {
+            'lhs': lhs,
+            'rhs': rhs,
+            'error': abs(lhs - rhs)/max(abs(lhs), abs(rhs))
+        }

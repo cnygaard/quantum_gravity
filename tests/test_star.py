@@ -3,12 +3,12 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 import pytest
 import numpy as np
-from physics.models.stellar_structure import StarSimulation
+from physics.models.stellar_structure import StellarStructure
 from constants import CONSTANTS, SI_UNITS
 
 def test_star_quantum_corrections():
     """Test quantum geometric effects on stellar structure"""
-    star = StarSimulation(
+    star = StellarStructure(
         mass=1.0,  # Solar mass
         radius=1.0  # Solar radius
     )
@@ -24,7 +24,7 @@ def test_star_quantum_corrections():
 
 def test_star_thermodynamics():
     """Verify stellar thermodynamic properties"""
-    star = StarSimulation(
+    star = StellarStructure(
         mass=2.0,  # 2 solar masses
         radius=1.5  # 1.5 solar radii
     )
@@ -41,7 +41,7 @@ def test_star_thermodynamics():
 
 def test_star_conservation():
     """Test conservation laws in stellar evolution"""
-    star = StarSimulation(
+    star = StellarStructure(
         mass=1.0,
         radius=1.0
     )
@@ -54,7 +54,7 @@ def test_star_conservation():
 
 def test_star_entanglement():
     """Test quantum entanglement effects"""
-    star = StarSimulation(
+    star = StellarStructure(
         mass=1.0,
         radius=1.0
     )
@@ -71,7 +71,7 @@ def test_star_entanglement():
 ])
 def test_star_universal_scaling(mass, radius):
     """Test universal scaling relations"""
-    star = StarSimulation(mass=mass, radius=radius)
+    star = StellarStructure(mass=mass, radius=radius)
     
     # Test mass-radius relation
     quantum_factor = star.compute_quantum_factor()
@@ -93,7 +93,7 @@ def test_star_universal_scaling(mass, radius):
 ])
 def test_stellar_structure(mass, radius, star_type):
     """Test quantum effects across stellar mass spectrum"""
-    star = StarSimulation(mass=mass, radius=radius)
+    star = StellarStructure(mass=mass, radius=radius)
     
     # Verify quantum corrections
     quantum_factor = star.compute_quantum_factor()
@@ -119,7 +119,7 @@ def test_stellar_structure(mass, radius, star_type):
 
 def test_neutron_star_physics():
     """Specific tests for neutron star quantum effects"""
-    ns = StarSimulation(mass=1.4, radius=1e-5)
+    ns = StellarStructure(mass=1.4, radius=1e-5)
     
     # Use characteristic neutron star scales
     nuclear_saturation_density = 2.8e17  # kg/m³ (nuclear saturation density)
@@ -175,7 +175,7 @@ STELLAR_DATA = {
 def test_stellar_temperatures():
     """Verify temperature calculations against observed stars"""
     for star_name, data in STELLAR_DATA.items():
-        star = StarSimulation(mass=data['mass'], radius=data['radius'])
+        star = StellarStructure(mass=data['mass'], radius=data['radius'])
         
         # Calculate core temperature with refined corrections
         T_core = star.compute_temperature_profile().core
@@ -221,6 +221,6 @@ def test_stellar_temperatures():
         assert T_core_error < tolerance
 
 def test_geometric_verification():
-    star = StarSimulation(mass=1.0, radius=1.0)
+    star = StellarStructure(mass=1.0, radius=1.0)
     result = star.verify_geometric_entanglement()
     assert result['error'] < 0.1  # 10% tolerance

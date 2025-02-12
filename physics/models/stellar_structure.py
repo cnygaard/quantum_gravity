@@ -1,7 +1,7 @@
 import numpy as np
 from constants import CONSTANTS, SI_UNITS
 
-class StarSimulation:
+class StellarStructure:
     """Quantum-enhanced stellar structure simulation"""
     
     def __init__(self, mass, radius):

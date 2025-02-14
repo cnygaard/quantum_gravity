@@ -161,7 +161,7 @@ class QuantumGravityConfig:
         console.setLevel(logging.INFO)
         logging.getLogger('').addHandler(console)
 
-def configure_logging(mass: float = None, simulation_type: str = 'black_hole'):
+def configure_logging(mass: float = None, simulation_type: str = 'black_hole', log_file: str = None):
     """Configure unified logging for quantum gravity framework.
     
     Args:
@@ -184,6 +184,8 @@ def configure_logging(mass: float = None, simulation_type: str = 'black_hole'):
     # Add appropriate file handler based on simulation type
     if simulation_type == 'black_hole':
         log_file = f"simulation_M{mass:.0f}.txt"
+    elif simulation_type == 'stellar':
+        log_file = f"{log_file}.txt"
     else:
         log_file = "simulation.txt"
         

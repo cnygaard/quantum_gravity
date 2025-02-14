@@ -508,7 +508,14 @@ class StarSimulation(StellarStructure):
         result = self._measure_profile(self.density_obs, "density")
         
         # Use solar core density as minimum
-        min_density = 1.62e5  # kg/m³
+        #min_density = 1.62e5  # kg/m³
+        # Calculate minimum density based on stellar type
+        if self.mass < 0.5:  # Low mass stars
+            min_density = 1.62e5 * (self.mass**-1.4)
+        elif self.mass > 10:  # Massive stars
+            min_density = 1.62e5 * (self.mass**-2.2)
+        else:  # Main sequence
+            min_density = 1.62e5 * (self.mass**-0.7)
         density_value = np.maximum(result.value, min_density)
         
         return MeasurementResult(
@@ -1032,10 +1039,23 @@ class StarSimulation(StellarStructure):
     def verify_real_stars(self) -> Dict[str, Dict]:
         """Verify simulation against known stellar parameters"""
         results = {}
-        
         # Test each known star
         for star_name, params in StarParameters.__dict__.items():
             if isinstance(params, dict):
+                logging.getLogger().handlers.clear()  # Clear existing handlers
+                #star_type = get_star_type(params['mass'], params['radius'])
+            
+                # Configure logging for this star
+                #log_file = output_dir / f"simulation-{star_name}-{params['mass']:.1f}.txt"
+                #configure_logging(simulation_type='star', output_file=log_file)
+                configure_logging(
+                    mass=params['mass'],
+                    simulation_type='stellar',
+                    log_file=star_name
+                )
+                # Force initial logging for all stars
+                logging.info(f"\nInitializing simulation for {star_name}")
+                logging.info(f"Parameters: M={params['mass']}M☉, R={params['radius']}R☉")
                 # Create simulation for this star
                 sim = self.create_test_star(
                     mass=params['mass'],

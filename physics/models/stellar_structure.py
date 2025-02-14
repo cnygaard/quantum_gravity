@@ -1,5 +1,6 @@
 import numpy as np
 from constants import CONSTANTS, SI_UNITS
+from .stellar_core import StellarCore
 
 class StellarStructure:
     """Quantum-enhanced stellar structure simulation"""

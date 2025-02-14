@@ -49,6 +49,16 @@ class QuantumState:
         
         self.velocity = np.zeros(len(self.grid.points))  # Initialize velocity field
 
+        @property 
+        def radius(self):
+            """Get radius in solar units"""
+            if hasattr(self.simulation, 'radius'):
+                return self.simulation.radius
+            elif hasattr(self.simulation, 'R_star'):
+                return self.simulation.R_star / CONSTANTS['R_sun']
+            return 1.0  # Default to solar radius
+
+
     def compute_velocity(self) -> np.ndarray:
         """Compute velocity field with numerical stability"""
         points = self.grid.points

@@ -2,12 +2,15 @@ import numpy as np
 from constants import CONSTANTS, SI_UNITS
 from .stellar_core import StellarCore
 
-class StellarStructure:
+class StellarStructure(StellarCore):
     """Quantum-enhanced stellar structure simulation"""
     
     def __init__(self, mass, radius):
         self.mass = np.float128(mass)
         self.radius = np.float128(radius)
+        super().__init__(mass_solar=mass, radius_solar=radius, 
+                        stellar_type=self._determine_stellar_type())
+
         self.M_star = self.mass * CONSTANTS['M_sun']
         self.R_star = self.radius * CONSTANTS['R_sun']
         self.setup_quantum_parameters()
@@ -170,3 +173,79 @@ class StellarStructure:
             'rhs': rhs,
             'error': abs(lhs - rhs)/max(abs(lhs), abs(rhs))
         }
+
+    def integrate_structure(self):
+        """Integrate stellar structure equations"""
+        r_points = np.linspace(0, self.R_star, 1000)
+
+        # Structure variables
+        mass = np.zeros_like(r_points)
+        pressure = np.zeros_like(r_points)
+        temperature = np.zeros_like(r_points)
+        luminosity = np.zeros_like(r_points)
+        
+        # Initial conditions at center
+        mass[0] = 0
+        pressure[0] = self.central_pressure()
+        temperature[0] = self.core_temperature()
+        luminosity[0] = 0
+
+        for r in r_points:
+            dP = self.hydrostatic_equilibrium(r, P, M_r)
+            dM = self.mass_conservation(r, rho)
+            dL = self.energy_generation(r, T, rho)
+            dT = self.temperature_gradient(r, T, P, L)
+
+    def setup_physics(self):
+        """Initialize physics handlers"""
+        self.n_modes = 3
+        self.l_max = 2
+        self.A_n = np.zeros(self.n_modes)
+        self.B_n = np.zeros(self.n_modes)
+        self.magnetic_axis = np.array([0, 0, 1])
+        
+    def evolve_physics(self, dt):
+        """Evolve physical processes"""
+        # Update magnetic field
+        B_r, B_theta = self.calculate_magnetic_field()
+        P_mag = (B_r**2 + B_theta**2) / (8 * np.pi)
+
+        # Calculate mass loss for red giants
+        if self.type == 'red_giant':
+            dm_dt = self.calculate_mass_loss()
+            self.M_star -= dm_dt * dt
+            self.mass = self.M_star / CONSTANTS['M_sun']
+
+        # Evolve oscillations
+        omega_p, omega_g = self.calculate_oscillation_modes()
+        self.A_n *= np.cos(omega_p * dt)
+        self.B_n *= np.cos(omega_g * dt)
+        
+        return P_mag
+    
+    def _determine_stellar_type(self):
+        """Determine stellar type based on mass and radius"""
+        mass_ratio = self.mass/CONSTANTS['M_sun']
+        radius_ratio = self.radius/CONSTANTS['R_sun']
+        
+        # Compact objects
+        if radius_ratio < 0.01:
+            if mass_ratio > 1.4:
+                return 'neutron_star'
+            else:
+                return 'white_dwarf'
+                
+        # Giants and supergiants
+        elif radius_ratio > 100:
+            return 'red_giant'
+            
+        # Main sequence and others
+        elif mass_ratio < 0.08:
+            return 'brown_dwarf'
+        elif mass_ratio < 0.5:
+            return 'red_dwarf'
+        elif mass_ratio > 10:
+            return 'blue_giant'
+        else:
+            return 'main_sequence'
+

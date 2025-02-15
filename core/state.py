@@ -23,6 +23,16 @@ class QuantumState:
         self.time = 0.0
         self._compute_metric_determinant()
 
+        # Initialize pressure field
+        self.pressure = np.zeros(len(self.grid.points))
+
+        # Initialize with hydrostatic equilibrium pressure if simulation exists
+        if simulation:
+            central_pressure = simulation.compute_total_pressure()
+            r = np.linalg.norm(self.grid.points, axis=1)
+            r = np.maximum(r, CONSTANTS['l_p'])  # Avoid division by zero
+            self.pressure = central_pressure * np.exp(-r/simulation.R_star)
+
         # Black hole properties
         if initial_mass <= 0:
             raise ValueError("Initial mass must be positive")

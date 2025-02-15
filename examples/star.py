@@ -12,6 +12,7 @@ from physics.verification import UnifiedTheoryVerification
 from physics.stellar.eos import RealisticEOS
 from physics.stellar.relativity import RelativityHandler
 from physics.models.stellar_structure import StellarStructure
+from physics.models.stellar_core import StellarCore
 from __init__ import QuantumGravity, configure_logging
 import logging
 from utils.io import MeasurementResult  # Add this import
@@ -26,6 +27,23 @@ class StarSimulation(StellarStructure):
         super().__init__(mass, radius)
         # Initialize verification tracking
         self.verification_results = []
+
+        # Initialize oscillation mode amplitudes
+        self.n_modes = 3  # Number of modes to track
+        self.A_n = np.zeros(self.n_modes)  # Radial mode amplitudes 
+        self.B_n = np.zeros(self.n_modes)  # Non-radial mode amplitudes
+        
+        # Set initial amplitudes (can be adjusted based on stellar type)
+        self.A_n[0] = 0.01  # Fundamental mode
+        self.A_n[1] = 0.005  # First overtone
+        self.A_n[2] = 0.002  # Second overtone
+
+        # Add stellar_core initialization
+        self.stellar_core = StellarCore(
+            mass_solar=mass,
+            radius_solar=radius,
+            stellar_type=self._determine_stellar_type()
+        )
 
         # Initialize quantum coupling constants
         self.gamma = 0.55  # Coupling constant
@@ -166,6 +184,19 @@ class StarSimulation(StellarStructure):
         selfg.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
         self.pressure_obs = self.qg.physics.PressureObservable(self.qg.grid)
 
+    def _determine_stellar_type(self):
+        """Determine stellar type based on mass and radius"""
+        if self.radius < 0.01:  # Very compact
+            if self.mass > 1.4:
+                return 'neutron_star'
+            else:
+                return 'white_dwarf'
+        elif self.radius > 100:  # Very large
+            return 'red_giant'
+        elif self.mass < 0.5:
+            return 'low_mass'
+        else:
+            return 'main_sequence'
 
     def _compute_effective_force(self) -> float:
         """Compute force with quantum gravity corrections."""
@@ -384,7 +415,11 @@ class StarSimulation(StellarStructure):
         while self.qg.state.time < t_final:
             dt = self._compute_timestep()
             self.qg.state.evolve(dt)
-            
+            # Evolve physical processes
+            P_mag = self.evolve_physics(dt)
+            # Update state with magnetic and oscillation effects
+            self.qg.state.pressure += P_mag
+            self._update_grid_with_oscillations()
             # Get measurements
             density_result = self._measure_density_profile()
             pressure_result = self._measure_pressure_profile()
@@ -447,6 +482,7 @@ class StarSimulation(StellarStructure):
                 logging.info(f"Central Density: {np.max(density_value):.26e}")
                 logging.info(f"Central Pressure: {np.max(pressure_value):.26e}")
                 logging.info(f"Core Temperature: {np.mean(temp_value):.26e}")
+                logging.info(f"Surface Temperature: {self.compute_surface_temperature():.26e}")
 
                 # Log geometric verification
                 logging.info(f"\nGeometric-Entanglement Formula:")
@@ -470,6 +506,23 @@ class StarSimulation(StellarStructure):
 
             self.current_size += 1
 
+    def _update_grid_with_oscillations(self):
+        """Update grid points with oscillation displacements"""
+        r = np.linalg.norm(self.qg.grid.points, axis=1)
+        theta = np.arccos(self.qg.grid.points[:,2] / r)
+        phi = np.arctan2(self.qg.grid.points[:,1], self.qg.grid.points[:,0])
+        
+        # Calculate displacements from modes
+        xi_r = np.sum([self.A_n[n] * np.sin((n+1) * np.pi * r/self.R) 
+                    for n in range(self.n_modes)], axis=0)
+        
+        # Update grid positions
+        displacement = np.column_stack((
+            xi_r * np.sin(theta) * np.cos(phi),
+            xi_r * np.sin(theta) * np.sin(phi),
+            xi_r * np.cos(theta)
+        ))
+        self.qg.grid.points += displacement
 
     def _measure_profile(self, observable, name: str) -> MeasurementResult:
         """Base method for measuring physical profiles with consistent handling.
@@ -575,6 +628,12 @@ class StarSimulation(StellarStructure):
         # Setup and evolve stellar structure
         self._setup_stellar_structure()
         
+        """Evolution with full physics"""
+        self.integrate_structure()
+        self.update_nuclear_rates()
+        self.check_convection()
+        self.update_energy_transport()
+
         # Track quantum geometric evolution
         self.geometric_coupling = self._compute_geometric_coupling()
         self.vacuum_fluctuations = self._compute_vacuum_fluctuations()
@@ -989,7 +1048,7 @@ class StarSimulation(StellarStructure):
             output += f"M={result['mass']}M☉, R={result['radius']}R☉:\n"
             output += f"Temperature valid: {result['temperature_valid']}\n"
             output += f"Pressure balance: {result['pressure_balance']}\n"
-            output += f"Quantum factor: {result['quantum_factor']:.3f}\n"
+            output += f"Quantum factor: {result['quantum_factor']:.24f}\n"
             output += f"Core temp: {result.get('core_temp', 0):.3e} K\n"
             output += f"Surface temp: {result.get('surface_temp', 0):.3e} K\n"
             output += f"Pressure ratio: {result.get('pressure_ratio', 0):.24f}\n"
@@ -1036,46 +1095,44 @@ class StarSimulation(StellarStructure):
             
         return verification_results
 
+        
+    #     return results
     def verify_real_stars(self) -> Dict[str, Dict]:
         """Verify simulation against known stellar parameters"""
         results = {}
-        # Test each known star
+        
         for star_name, params in StarParameters.__dict__.items():
             if isinstance(params, dict):
-                logging.getLogger().handlers.clear()  # Clear existing handlers
-                #star_type = get_star_type(params['mass'], params['radius'])
-            
-                # Configure logging for this star
-                #log_file = output_dir / f"simulation-{star_name}-{params['mass']:.1f}.txt"
-                #configure_logging(simulation_type='star', output_file=log_file)
+                logging.getLogger().handlers.clear()
+                
                 configure_logging(
                     mass=params['mass'],
                     simulation_type='stellar',
                     log_file=star_name
                 )
-                # Force initial logging for all stars
+                
                 logging.info(f"\nInitializing simulation for {star_name}")
                 logging.info(f"Parameters: M={params['mass']}M☉, R={params['radius']}R☉")
-                # Create simulation for this star
+                
                 sim = self.create_test_star(
                     mass=params['mass'],
                     radius=params['radius'],
-                    qg=self.qg  # Reuse framework
+                    qg=self.qg
                 )
                 
                 # Run mini-simulation
                 sim.run_simulation(t_final=1.0)
                 
-                # Get final state
-                T_profile = sim.compute_temperature_profile()
+                # Use statistical temperature calculation
+                T_core, T_surface = sim.stellar_core.calculate_statistical_temperatures()
+                
                 density = np.max(sim.density_profile[-1]) if len(sim.density_profile) > 0 else 0
                 pressure = np.max(sim.pressure_profile[-1]) if len(sim.pressure_profile) > 0 else 0
                 
-                # Calculate relative errors
-                temp_error = abs(T_profile.core - params['core_temp'])/params['core_temp']
-                surface_temp_error = abs(T_profile.surface - params['surface_temp'])/params['surface_temp']
+                # Calculate relative errors using statistical temperatures
+                temp_error = abs(T_core - params['core_temp'])/params['core_temp']
+                surface_temp_error = abs(T_surface - params['surface_temp'])/params['surface_temp']
                 
-                # Additional checks if available
                 density_error = None
                 pressure_error = None
                 if 'central_density' in params:
@@ -1086,15 +1143,20 @@ class StarSimulation(StellarStructure):
                 results[star_name] = {
                     'mass': params['mass'],
                     'radius': params['radius'],
+                    'core_temperature': T_core,
+                    'surface_temperature': T_surface,
+                    'real_core_temperature': params['core_temp'],
+                    'real_surface_temperature': params['surface_temp'],
                     'core_temp_error': temp_error,
                     'surface_temp_error': surface_temp_error,
                     'density_error': density_error,
                     'pressure_error': pressure_error,
                     'quantum_factor': sim._compute_quantum_factor(),
-                    'passed': (temp_error < 0.1 and surface_temp_error < 0.1)  # 10% tolerance
+                    'passed': (temp_error < 0.1 and surface_temp_error < 0.1)
                 }
         
         return results
+
 
     def _generate_surface_grid(self, r: float, theta: np.ndarray, phi: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate 3D surface grid for stellar visualization.
@@ -1226,13 +1288,17 @@ def main():
     for star_name, results in real_star_results.items():
         logging.info(f"\n{star_name}:")
         logging.info(f"Mass: {results['mass']}M☉, Radius: {results['radius']}R☉")
+        logging.info(f"Real Core Temperature: {results['real_core_temperature']}")
+        logging.info(f"Core Temperature: {results['core_temperature']}")
         logging.info(f"Core Temperature Error: {results['core_temp_error']*100:.1f}%")
+        logging.info(f"Real Surface Temperature: {results['real_surface_temperature']}")
+        logging.info(f"Surface Temperature: {results['surface_temperature']:.2e} K")
         logging.info(f"Surface Temperature Error: {results['surface_temp_error']*100:.1f}%")
         if results['density_error'] is not None:
             logging.info(f"Central Density Error: {results['density_error']*100:.1f}%")
         if results['pressure_error'] is not None:
             logging.info(f"Central Pressure Error: {results['pressure_error']*100:.1f}%")
-        logging.info(f"Quantum Factor: {results['quantum_factor']:.3e}")
+        logging.info(f"Quantum Factor: {results['quantum_factor']:.24e}")
         logging.info(f"Verification Passed: {results['passed']}")
 
 if __name__ == "__main__":

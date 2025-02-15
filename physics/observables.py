@@ -671,101 +671,45 @@ from physics.models.stellar_core import StellarCore
 class StellarTemperatureObservable:
     def __init__(self, grid):
         self.grid = grid
-        self.gamma = 0.55  # Coupling constant
-        self.T_core = 1.57e7  # Core temperature in K
-        self.T_surface = 5778  # Surface temperature in K
+        #self.gamma = 0.55  # Coupling constant
+        #self.T_core = 1.57e7  # Core temperature in K
+        #self.T_surface = 5778  # Surface temperature in K
 
     def measure(self, state):
-        try:
-            stellar_type = self._get_stellar_type(state)
-            star = StellarCore(
-                mass_solar=state.mass/CONSTANTS['M_sun'],
-                radius_solar=state.R_star/CONSTANTS['R_sun'],
-                stellar_type=stellar_type
-            )
-            
-            # Calculate temperature profile
-            r = np.linalg.norm(self.grid.points, axis=1)
-            r_norm = r/np.max(r)
-            
-            if stellar_type == 'neutron_star':
-                T_core = 1e11
-                T_surface = 1e6
-            elif stellar_type == 'white_dwarf':
-                T_core = 1e8
-                T_surface = 2.5e4
-            else:
-                T_core = 1.57e7 * (state.mass/CONSTANTS['M_sun'])**0.7
-                T_surface = 5778 * (state.mass/CONSTANTS['M_sun'])**0.5
-            
-            T = T_core * (1 - 0.9*r_norm**0.25) + T_surface * r_norm**0.25
-            
-            return MeasurementResult(
-                value=T,
-                uncertainty=0.05 * T,
-                metadata={
-                    'T_core': T_core,
-                    'T_surface': T_surface,
-                    'stellar_type': stellar_type
-                }
-            )
-            
-        except Exception as e:
-            logging.error(f"Error measuring temperature: {str(e)}")
-            return MeasurementResult(
-                value=np.zeros(len(self.grid.points)),
-                uncertainty=0.0
-            )
-            
-    def _get_stellar_type(self, state):
+        # Create StellarCore instance with proper parameters
         mass_solar = state.mass/CONSTANTS['M_sun']
         radius_solar = state.R_star/CONSTANTS['R_sun']
+        stellar_type = self._determine_stellar_type(mass_solar, radius_solar)
         
-        if radius_solar < 0.01:
-            return 'neutron_star' if mass_solar > 1.4 else 'white_dwarf'
-        elif mass_solar > 10:
-            return 'red_giant' if radius_solar > 100 else 'massive_star'
+        core = StellarCore(
+            mass_solar=mass_solar,
+            radius_solar=radius_solar,
+            stellar_type=stellar_type
+        )
+        
+        # Get temperatures using statistical mechanics
+        T_core, T_surface = core.calculate_statistical_temperatures()
+        
+        # Create temperature profile
+        r = np.linalg.norm(self.grid.points, axis=1)
+        r_norm = r/np.max(r)
+        T = T_core * (1 - 0.9*r_norm**0.25) + T_surface * r_norm**0.25
+        
+        return MeasurementResult(
+            value=T,
+            uncertainty=0.05 * T,
+            metadata={'T_core': T_core, 'T_surface': T_surface}
+        )
+        
+    def _determine_stellar_type(self, mass, radius):
+        """Determine stellar type based on mass and radius"""
+        if radius < 0.01:
+            return 'neutron_star' if mass > 1.4 else 'white_dwarf'
+        elif radius > 100:
+            return 'red_giant'
+        elif mass > 10:
+            return 'massive_star'
         return 'main_sequence'
-
-    # def measure(self, state):
-    #     try:
-    #         r = np.linalg.norm(self.grid.points, axis=1)
-    #         r_max = np.max(r)
-
-    #         mass_solar = state.mass / CONSTANTS['M_sun']
-    #         radius_solar = state.R_star / CONSTANTS['R_sun']
-
-    #         # Mass-dependent core temperature in Kelvin
-    #         if mass_solar < 0.5:  # Low mass stars
-    #             T_core = 3.84e6 * (mass_solar**0.35)
-    #             T_surface = 3042 * (mass_solar**0.51) * (radius_solar/0.154)**-0.12
-    #         elif mass_solar > 10:  # Massive stars
-    #             T_core = 3.5e7 * (mass_solar/16.5)**0.31 * (1 + 0.25*np.log(mass_solar/10))
-    #             T_surface = 3600 * (radius_solar/764.0)**-0.12
-    #         else:  # Main sequence
-    #             T_core = 1.57e7 * (mass_solar**0.7)
-    #             T_surface = 5778 * (mass_solar**0.5) * (radius_solar/1.0)**-0.5
-
-
-    #         # Combine core and surface contributions
-    #         T = T_core * (r_max/r)**0.25 * np.exp(-r/r_max) + T_surface
-            
-    #         # Add quantum corrections with proper bounds
-    #         beta = CONSTANTS['l_p'] / r_max
-    #         gamma_eff = self.gamma * beta * np.sqrt(0.407)
-    #         T *= (1 + min(gamma_eff, 0.1))  # Limit quantum effects
-            
-    #         return MeasurementResult(
-    #             value=T,
-    #             uncertainty=0.05 * T,  # 5% uncertainty
-    #             metadata={'r_max': r_max, 'T_core': T_core}
-    #         )
-    #     except Exception as e:
-    #         logging.error(f"Temperature measurement error: {str(e)}")
-    #         return MeasurementResult(
-    #             value=np.full(len(self.grid.points), 5778.0),
-    #             uncertainty=0.0
-    #         )
 
 class PressureObservable(Observable):
     def __init__(self, grid):

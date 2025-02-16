@@ -227,7 +227,11 @@ class StellarStructure(StellarCore):
         """Determine stellar type based on mass and radius"""
         mass_ratio = self.mass/CONSTANTS['M_sun']
         radius_ratio = self.radius/CONSTANTS['R_sun']
-        
+
+        # Check for pulsars first by name
+        if hasattr(self, 'name') and 'PULSAR' in self.name.upper():
+            return 'pulsar'
+
         # Compact objects
         if radius_ratio < 0.01:
             if mass_ratio > 1.4:

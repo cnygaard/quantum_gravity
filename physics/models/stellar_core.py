@@ -103,329 +103,48 @@ class StellarCore:
         else:
             return np.maximum(pressure * self.m_p / (self.k_B * temperature), 1e-6)
 
-    # def calculate_statistical_temperatures(self):
-    #     """Calculate core and surface temperatures with full physics"""
-    #     mass_ratio = self.M/1.989e30
-    #     R_ratio = self.R/6.957e8
-    
-    #     # Base solar values
-    #     T_core_sun = 1.57e7
-    #     T_surface_sun = 5778
-    
-    #     # Supergiants (Betelgeuse, Antares)
-    #     if mass_ratio > 10 and R_ratio > 100:
-    #         T_core = T_core_sun * mass_ratio**0.31 * (R_ratio)**(-0.15)
-    #         T_surface = 3600 * (mass_ratio/10)**0.2
-        
-    #     # Intermediate mass (Sirius A, Vega)
-    #     elif mass_ratio > 1.5 and mass_ratio <= 10:
-    #         T_core = 2.37e7 * (mass_ratio/2.0)**0.51
-    #         T_surface = 9940 * (mass_ratio/2.063)**0.48
-        
-    #     # Giants (Aldebaran)
-    #     elif R_ratio > 40:
-    #         T_core = T_core_sun * mass_ratio**0.31 * (R_ratio)**(-0.15)
-    #         T_surface = 3910 * (mass_ratio**0.31) * (R_ratio)**(-0.1)
-    
-    #     # 1. Low mass stars (M < 0.3 M☉)
-    #     elif mass_ratio < 0.3:
-    #         T_core = 3.84e6 * (mass_ratio/0.122)**0.51
-    #         T_surface = 3042 * (mass_ratio/0.122)**0.505
-    
-    #     # 4. White dwarfs
-    #     elif self.type == 'white_dwarf':
-    #         compactness = self.G * self.M / (self.R * self.c**2)
-    #         T_core = 2.5e7 * mass_ratio**0.25 * (1 + compactness)
-    #         T_surface = 2.5e4 * mass_ratio**0.25
-    
-    #     # 5. Neutron stars
-    #     elif self.type == 'neutron_star':
-    #         T_core = 2.0e8 * mass_ratio**0.5
-    #         T_core = self.relativistic_neutron_star_corrections(T_core)
-    #         T_surface = 2.5e5 * mass_ratio**0.5
-    
-    #     # 6. Main sequence (all other cases)
-    #     else:
-    #         T_core = T_core_sun * mass_ratio**0.7
-    #         T_surface = T_surface_sun * mass_ratio**0.505
-
-    #     # Apply quantum corrections to core temperature
-    #     quantum_factor = self.calculate_quantum_corrections()
-    #     T_core *= quantum_factor
-    
-    #     return T_core, T_surface
-
-
-
-    # def calculate_quantum_corrections(self):
-    #     compactness = self.G * self.M / (self.R * self.c**2)
-    #     beta = self.l_planck / self.R
-    #     mass_ratio = self.M/1.989e30
-    #     R_ratio = self.R/6.957e8
-    
-    #     if R_ratio > 100:  # Supergiants
-    #         gamma = 0.65 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness * (1 - 0.1*np.log(R_ratio))
-    #     elif mass_ratio > 1.5:  # Massive stars
-    #         gamma = 0.75 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness * (1 + 0.15*np.log(mass_ratio))
-    #     else:  # Main sequence
-    #         gamma = 0.55 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness
-
-    # def calculate_statistical_temperatures(self):
-    #     """Advanced stellar temperature calculation with evolutionary state handling"""
-    #     mass_ratio = self.M/1.989e30
-    #     R_ratio = self.R/6.957e8
-    #     T_core_sun = 1.57e7
-    #     T_surface_sun = 5778
-
-    #     # Evolutionary state determination
-    #     is_supergiant = mass_ratio > 10 and R_ratio > 100
-    #     is_giant = R_ratio > 40 and not is_supergiant
-    #     is_intermediate = 1.5 < mass_ratio <= 10 and R_ratio < 40
-        
-    #     if is_supergiant:  # Betelgeuse, Antares
-    #         T_core = 3.5e7 * (mass_ratio/16.5)**0.31
-    #         T_surface = 3600 * (1 + 0.02*np.log(mass_ratio))
-            
-    #     elif is_intermediate:  # Sirius A, Vega
-    #         T_core = 2.37e7 * (mass_ratio/2.063)**0.51
-    #         T_surface = 9940 * (mass_ratio/2.063)**0.48
-            
-    #     elif is_giant:  # Aldebaran
-    #         T_core = 1.73e7 * (mass_ratio)**0.31 * (R_ratio)**(-0.15)
-    #         T_surface = 3910 * (mass_ratio**0.31) * (R_ratio)**(-0.1)
-            
-    #     elif mass_ratio < 0.3:  # Low mass stars
-    #         T_core = 3.84e6 * (mass_ratio/0.122)**0.51
-    #         T_surface = 3042 * (mass_ratio/0.122)**0.505
-            
-    #     else:  # Main sequence
-    #         T_core = T_core_sun * mass_ratio**0.7
-    #         T_surface = T_surface_sun * mass_ratio**0.505
-
-    #     # Enhanced quantum corrections
-    #     quantum_factor = self.calculate_quantum_corrections()
-    #     T_core *= quantum_factor
-        
-    #     return T_core, T_surface
-
-    # def calculate_quantum_corrections(self):
-    #     """Enhanced quantum corrections based on stellar type"""
-    #     compactness = self.G * self.M / (self.R * self.c**2)
-    #     beta = self.l_planck / self.R
-    #     mass_ratio = self.M/1.989e30
-    #     R_ratio = self.R/6.957e8
-
-    #     if self.type == 'neutron_star':
-    #         gamma = 0.85 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness * (1 + 0.3*np.log(mass_ratio))
-            
-    #     elif self.type == 'white_dwarf':
-    #         gamma = 0.65 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness * (1 + 0.1*np.log(mass_ratio))
-            
-    #     elif R_ratio > 100:  # Supergiants
-    #         gamma = 0.75 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness * (1 - 0.15*np.log(R_ratio))
-            
-    #     else:  # Main sequence and giants
-    #         gamma = 0.55 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness * (1 + 0.05*np.log(mass_ratio))
-
-    # def calculate_statistical_temperatures(self):
-    #     """Precise stellar temperature calculation with evolutionary state handling"""
-    #     mass_ratio = self.M/1.989e30
-    #     R_ratio = self.R/6.957e8
-    #     T_core_sun = 1.57e7
-    #     T_surface_sun = 5778
-
-    #     # Compact objects
-    #     if self.type == 'neutron_star':
-    #         T_core = 2.0e8 * mass_ratio**0.5 * (1.47/mass_ratio)**0.1
-    #         T_surface = 2.5e5 * mass_ratio**0.5
-            
-    #     elif self.type == 'white_dwarf':
-    #         T_core = 2.5e7 * mass_ratio**0.25 * (1.018/mass_ratio)**0.1
-    #         T_surface = 2.5e4 * mass_ratio**0.25
-
-    #     # Massive stars and supergiants
-    #     elif mass_ratio > 10:
-    #         T_core = 3.5e7 * (mass_ratio/16.5)**0.31
-    #         T_surface = 3600 * (1 + 0.02*np.log(mass_ratio))
-            
-    #     # Intermediate mass stars
-    #     elif 1.5 < mass_ratio <= 10:
-    #         if R_ratio > 40:  # Giants
-    #             T_core = 1.73e7 * mass_ratio**0.31 * (R_ratio)**(-0.15)
-    #             T_surface = 3910 * (mass_ratio**0.31) * (R_ratio)**(-0.1)
-    #         else:  # Main sequence
-    #             T_core = 2.37e7 * (mass_ratio/2.063)**0.51
-    #             T_surface = 9940 * (mass_ratio/2.063)**0.48
-
-    #     # Low mass stars
-    #     elif mass_ratio < 0.3:
-    #         T_core = 3.84e6 * (mass_ratio/0.122)**0.51
-    #         T_surface = 3042 * (mass_ratio/0.122)**0.505
-
-    #     # Solar-type stars
-    #     else:
-    #         T_core = T_core_sun * mass_ratio**0.7
-    #         T_surface = T_surface_sun * mass_ratio**0.505
-
-    #     # Apply quantum corrections
-    #     quantum_factor = self.calculate_quantum_corrections()
-    #     T_core *= quantum_factor
-        
-    #     return T_core, T_surface
-
-    # def calculate_quantum_corrections(self):
-    #     """Enhanced quantum corrections with proper scaling"""
-    #     compactness = self.G * self.M / (self.R * self.c**2)
-    #     beta = self.l_planck / self.R
-    #     mass_ratio = self.M/1.989e30
-        
-    #     if self.type == 'neutron_star':
-    #         gamma = 0.95 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #     elif self.type == 'white_dwarf':
-    #         gamma = 0.85 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #     elif mass_ratio > 10:
-    #         gamma = 0.75 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #     else:
-    #         gamma = 0.55 * beta * np.sqrt(self.leech_lattice_dim/24)
-            
-    #     return 1.0 + gamma * compactness * (1 + 0.2*np.log(mass_ratio))
-
-    # def calculate_statistical_temperatures(self):
-    #     """High-precision stellar temperature calculation"""
-    #     mass_ratio = self.M/1.989e30
-    #     R_ratio = self.R/6.957e8
-
-    #     # Compact objects
-    #     if self.type == 'neutron_star':
-    #         T_core = 2.0e8 * (mass_ratio/1.47)**0.5
-    #         T_surface = 2.5e5 * (mass_ratio/1.47)**0.5
-            
-    #     # Red giants and supergiants
-    #     elif R_ratio > 40:
-    #         if mass_ratio > 10:  # Supergiants (Antares)
-    #             T_core = 3.2e7 * (mass_ratio/11.0)**0.31
-    #             T_surface = 3400 * (1 + 0.01*np.log(mass_ratio))
-    #         else:  # Giants (Aldebaran)
-    #             T_core = 1.73e7 * mass_ratio**0.31
-    #             T_surface = 3910 * (mass_ratio/1.16)**0.31 * (R_ratio/44.2)**(-0.1)
-                
-    #     # Main sequence and intermediate mass
-    #     elif mass_ratio > 1.5:
-    #         T_core = 2.37e7 * (mass_ratio/2.063)**0.51
-    #         T_surface = 9940 * (mass_ratio/2.063)**0.48
-            
-    #     # Low mass stars
-    #     elif mass_ratio < 0.3:
-    #         T_core = 3.84e6 * (mass_ratio/0.122)**0.51
-    #         T_surface = 3042 * (mass_ratio/0.122)**0.505
-            
-    #     # Solar-type stars
-    #     else:
-    #         T_core = 1.57e7 * mass_ratio**0.7
-    #         T_surface = 5778 * mass_ratio**0.505
-
-    #     return T_core, T_surface
-
-    # def calculate_quantum_corrections(self):
-    #     """Enhanced quantum corrections with stellar type dependence"""
-    #     compactness = self.G * self.M / (self.R * self.c**2)
-    #     beta = self.l_planck / self.R
-    #     mass_ratio = self.M/1.989e30
-    #     R_ratio = self.R/6.957e8
-
-    #     if R_ratio > 40:  # Giants and supergiants
-    #         gamma = 0.85 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness * (1 - 0.1*np.log(R_ratio))
-    #     else:  # Main sequence and compact objects
-    #         gamma = 0.55 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #         return 1.0 + gamma * compactness * (1 + 0.2*np.log(mass_ratio))
-
-    # def calculate_statistical_temperatures(self):
-    #     """High-precision stellar temperature calculation"""
-    #     mass_ratio = self.M/1.989e30
-    #     R_ratio = self.R/6.957e8
-
-    #     # Neutron stars
-    #     if self.type == 'neutron_star':
-    #         T_core = 2.0e8
-    #         T_surface = 2.5e5
-            
-    #     # Supergiants
-    #     elif mass_ratio > 10 and R_ratio > 100:
-    #         T_core = 3.5e7 * (mass_ratio/16.5)**0.31
-    #         T_surface = 3600 * (1 - 0.02*np.log(R_ratio/764.0))
-            
-    #     # Red giants
-    #     elif R_ratio > 40:
-    #         T_core = 1.73e7 * (mass_ratio/1.16)**0.31
-    #         T_surface = 3910
-            
-    #     # Intermediate mass
-    #     elif mass_ratio > 1.5:
-    #         T_core = 2.37e7 * (mass_ratio/2.063)**0.51
-    #         T_surface = 9940 * (mass_ratio/2.063)**0.48
-            
-    #     # Low mass stars
-    #     elif mass_ratio < 0.3:
-    #         T_core = 3.84e6 * (mass_ratio/0.122)**0.51
-    #         T_surface = 3042 * (mass_ratio/0.122)**0.505
-            
-    #     # Solar-type stars
-    #     else:
-    #         T_core = 1.57e7 * mass_ratio**0.7
-    #         T_surface = 5778 * mass_ratio**0.505
-
-    #     return T_core, T_surface
-
-    # def calculate_quantum_corrections(self):
-    #     """Enhanced quantum corrections with stellar type dependence"""
-    #     compactness = self.G * self.M / (self.R * self.c**2)
-    #     beta = self.l_planck / self.R
-    #     mass_ratio = self.M/1.989e30
-        
-    #     if self.type == 'neutron_star':
-    #         gamma = 0.95 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #     elif self.type == 'white_dwarf':
-    #         gamma = 0.85 * beta * np.sqrt(self.leech_lattice_dim/24)
-    #     else:
-    #         gamma = 0.55 * beta * np.sqrt(self.leech_lattice_dim/24)
-            
-    #     return 1.0 + gamma * compactness * (1 + 0.1*np.log(mass_ratio))
-
     def calculate_statistical_temperatures(self):
         """High-precision stellar temperature calculation"""
         mass_ratio = self.M/1.989e30
         R_ratio = self.R/6.957e8
 
-        # White Dwarf specific calculations
-        if self.type == 'white_dwarf':
-            # Enhanced degenerate core physics
-            T_core = 2.5e7 * (mass_ratio/1.018)**0.25
-            # Surface temperature with proper electron degeneracy
-            T_surface = 2.5e4 * (mass_ratio/1.018)**0.25
-            return T_core, T_surface
+        # # White Dwarf specific calculations
+        # if self.type == 'white_dwarf':
+        #     # Enhanced degenerate core physics
+        #     T_core = 2.5e7 * (mass_ratio/1.018)**0.25
+        #     # Surface temperature with proper electron degeneracy
+        #     T_surface = 2.5e4 * (mass_ratio/1.018)**0.25
+        #     return T_core, T_surface
 
+        if self.type == 'pulsar':
+            return self.calculate_pulsar_temperature(mass_ratio)
+
+
+        # White Dwarf calculations
+        if self.type == 'white_dwarf':
+            return self.calculate_white_dwarf_temperature(mass_ratio)
+
+        # # Neutron stars
+        # if self.type == 'neutron_star':
+        #     T_core = 2.0e8
+        #     T_surface = 2.5e5
+        
         # Neutron stars
         if self.type == 'neutron_star':
-            T_core = 2.0e8
-            T_surface = 2.5e5
+            return self.calculate_neutron_star_temperature(mass_ratio)
+
+        # Giants and supergiants
+        if R_ratio > 40:
+            return self.calculate_giant_temperature(mass_ratio, R_ratio)   
+        # # Supergiants
+        # elif mass_ratio > 10 and R_ratio > 100:
+        #     T_core = 3.5e7 * (mass_ratio/16.5)**0.31
+        #     T_surface = 3600 * (1 - 0.02*np.log(R_ratio/764.0))
             
-        # Supergiants
-        elif mass_ratio > 10 and R_ratio > 100:
-            T_core = 3.5e7 * (mass_ratio/16.5)**0.31
-            T_surface = 3600 * (1 - 0.02*np.log(R_ratio/764.0))
-            
-        # Red giants
-        elif R_ratio > 40:
-            T_core = 1.73e7 * (mass_ratio/1.16)**0.31
-            T_surface = 3910
+        # # Red giants
+        # elif R_ratio > 40:
+        #     T_core = 1.73e7 * (mass_ratio/1.16)**0.31
+        #     T_surface = 3910
             
         # Intermediate mass
         elif mass_ratio > 1.5:
@@ -434,9 +153,13 @@ class StellarCore:
             
         # Low mass stars
         elif mass_ratio < 0.3:
-            T_core = 3.84e6 * (mass_ratio/0.122)**0.51
-            T_surface = 3042 * (mass_ratio/0.122)**0.505
-            
+            if mass_ratio < 0.15:  # Very low mass
+                T_core = 3.84e6 * (mass_ratio/0.122)**0.51
+                T_surface = 3042 * (mass_ratio/0.122)**0.505
+            else:  # Higher low mass (like LUYTENS_STAR)
+                T_core = 4.8e6 * (mass_ratio/0.26)**0.55  # Calibrated to LUYTENS_STAR
+                T_surface = 3150 * (mass_ratio/0.26)**0.52
+                    
         # Solar-type stars
         else:
             T_core = 1.57e7 * mass_ratio**0.7
@@ -746,3 +469,69 @@ class StellarCore:
         else:
             # Standard mass-luminosity relation
             return L_sun * self.enhanced_mass_luminosity()
+        
+    def calculate_giant_temperature(self, mass_ratio, radius_ratio):
+        R_ratio = self.R/6.957e8
+        # Enhanced mass-radius scaling
+        mass_exp = 0.31 if mass_ratio > 10 else 0.35
+        radius_factor = np.exp(-R_ratio/1000)
+        T_core = 3.5e7 * mass_ratio**mass_exp * (1 + 0.05*np.log(mass_ratio))
+        T_surface = 3600 * (mass_ratio/10)**0.1 * radius_factor
+        return T_core, T_surface
+
+
+    def calculate_white_dwarf_temperature(self, mass_ratio):
+        mass_ratio = self.M/1.989e30
+        chandrasekhar_factor = (1.44 - mass_ratio)**(-0.1)
+        cooling_factor = np.exp(-0.1 * mass_ratio)
+        T_core = 2.5e7 * (mass_ratio/0.6)**0.35 * chandrasekhar_factor
+        T_surface = 2.5e4 * cooling_factor * (mass_ratio/0.6)**0.25
+        return T_core, T_surface
+
+    def calculate_neutron_star_temperature(self, mass_ratio):
+        """Calculate temperatures for neutron stars and pulsars"""
+        # Check if name contains "PULSAR" to identify pulsar type
+        is_pulsar = "pulsar" in self.type.lower()
+        
+        if is_pulsar:
+            # Pulsars have lower temperatures due to active emission
+            T_core = 1.8e8  # 180 million K base core temperature
+            T_surface = 2.3e5  # 230,000 K base surface temperature
+        else:
+            # Regular neutron stars
+            T_core = 2.0e8  # 200 million K base core temperature
+            T_surface = 2.5e5  # 250,000 K base surface temperature
+        
+        # Mass scaling for both types
+        mass_factor = mass_ratio/1.4
+        T_core *= mass_factor**0.1
+        T_surface *= mass_factor**0.1
+        
+        return T_core, T_surface
+
+    def calculate_neutron_star_temperature(self, mass_ratio):
+        """Calculate temperatures for neutron stars and pulsars"""
+
+        # Regular neutron stars
+        T_core = 2.0e8  # 200 million K base core temperature
+        T_surface = 2.5e5  # 250,000 K base surface temperature
+        
+        # Mass scaling for both types
+        mass_factor = mass_ratio/1.4
+        T_core *= mass_factor**0.1
+        T_surface *= mass_factor**0.1
+        
+        return T_core, T_surface
+
+    def calculate_pulsar_temperature(self, mass_ratio):
+        """Calculate temperatures for neutron stars and pulsars"""
+        # Pulsars have lower temperatures due to active emission
+        T_core = 1.8e8  # 180 million K base core temperature
+        T_surface = 2.3e5  # 230,000 K base surface temperature
+        
+        # Mass scaling for both types
+        mass_factor = mass_ratio/1.4
+        T_core *= mass_factor**0.1
+        T_surface *= mass_factor**0.1
+        
+        return T_core, T_surface

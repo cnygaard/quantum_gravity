@@ -5,11 +5,11 @@ from .stellar_core import StellarCore
 class StellarStructure(StellarCore):
     """Quantum-enhanced stellar structure simulation"""
     
-    def __init__(self, mass, radius):
+    def __init__(self, mass, radius, stellar_type):
         self.mass = np.float128(mass)
         self.radius = np.float128(radius)
         super().__init__(mass_solar=mass, radius_solar=radius, 
-                        stellar_type=self._determine_stellar_type())
+                        stellar_type=stellar_type)
 
         self.M_star = self.mass * CONSTANTS['M_sun']
         self.R_star = self.radius * CONSTANTS['R_sun']
@@ -107,12 +107,17 @@ class StellarStructure(StellarCore):
         """Calculate temperature structure with quantum effects"""
         class TempProfile:
             def __init__(self, core, surface):
-                self.core = core
-                self.surface = surface
+                # Extract the core temperature from the tuple
+                if isinstance(core, tuple):
+                    self.core = float(core[0])  # Take first value for core temp
+                else:
+                    self.core = float(core)
+                self.surface = float(surface)
+
                 
         # Core temperature with quantum corrections
-        T_core = 1.57e7 * (self.mass**0.5) * (1 + self.gamma_eff * self.beta * np.sqrt(196560/24))
-        
+        #T_core = 1.57e7 * (self.mass**0.5) * (1 + self.gamma_eff * self.beta * np.sqrt(196560/24))
+        T_core = self.calculate_statistical_temperatures()
         # Surface temperature with quantum corrections 
         T_surface = self.compute_surface_temperature()
         
@@ -205,16 +210,17 @@ class StellarStructure(StellarCore):
         self.magnetic_axis = np.array([0, 0, 1])
         
     def evolve_physics(self, dt):
-        """Evolve physical processes"""
-        # Update magnetic field
+        """Evolve physical processes with proper mass loss handling"""
+        # Calculate magnetic field
         B_r, B_theta = self.calculate_magnetic_field()
         P_mag = (B_r**2 + B_theta**2) / (8 * np.pi)
 
-        # Calculate mass loss for red giants
-        if self.type == 'red_giant':
+        # Calculate and apply mass loss for giants
+        if self.type in ['red_giant', 'red_supergiant']:
             dm_dt = self.calculate_mass_loss()
-            self.M_star -= dm_dt * dt
-            self.mass = self.M_star / CONSTANTS['M_sun']
+            if dm_dt is not None:
+                self.M_star -= dm_dt * dt
+                self.mass = self.M_star / CONSTANTS['M_sun']
 
         # Evolve oscillations
         omega_p, omega_g = self.calculate_oscillation_modes()
@@ -222,6 +228,7 @@ class StellarStructure(StellarCore):
         self.B_n *= np.cos(omega_g * dt)
         
         return P_mag
+
     
     def _determine_stellar_type(self):
         """Determine stellar type based on mass and radius"""

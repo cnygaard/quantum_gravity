@@ -25,7 +25,9 @@ class StarSimulation(StellarStructure):
     def __init__(self, mass: float, radius: float, name: str, galaxy_radius: float = None, quantum_gravity=None, debug=False):
         """Initialize star simulation with galaxy-scale effects."""
         self.name = name
-        super().__init__(mass, radius)
+        stellar_type = StarParameters.__dict__[name]['type']
+
+        super().__init__(mass, radius, stellar_type=stellar_type)
         # Initialize verification tracking
         self.verification_results = []
 
@@ -43,7 +45,7 @@ class StarSimulation(StellarStructure):
         self.stellar_core = StellarCore(
             mass_solar=mass,
             radius_solar=radius,
-            stellar_type=self._determine_stellar_type()
+            stellar_type=stellar_type
         )
 
         # Initialize quantum coupling constants
@@ -185,25 +187,6 @@ class StarSimulation(StellarStructure):
         selfg.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
         self.pressure_obs = self.qg.physics.PressureObservable(self.qg.grid)
 
-    def _determine_stellar_type(self):
-        """Determine stellar type based on mass and radius"""
-        # First check if name contains "PULSAR" for pulsar identification
-        print(f"Debug determine stellar type: {self.name}")
-        if hasattr(self, 'name'):
-            if 'PULSAR' in str(self.name).upper():
-                return 'pulsar'
-    
-        if self.radius < 0.01:  # Very compact
-            if self.mass > 1.4:
-                return 'neutron_star'
-            else:
-                return 'white_dwarf'
-        elif self.radius > 100:  # Very large
-            return 'red_giant'
-        elif self.mass < 0.5:
-            return 'low_mass'
-        else:
-            return 'main_sequence'
 
     def _compute_effective_force(self) -> float:
         """Compute force with quantum gravity corrections."""
@@ -465,7 +448,6 @@ class StarSimulation(StellarStructure):
                 # Update vacuum energy calculations
                 self.vacuum_energy = self._compute_leech_vacuum_energy()
                 self.cosmological_constant = self._compute_modified_lambda()
-
 
                 if self.qg.state.time >= self.next_checkpoint:
                     #metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
@@ -1134,7 +1116,7 @@ class StarSimulation(StellarStructure):
                 
                 # Use statistical temperature calculation
                 T_core, T_surface = sim.stellar_core.calculate_statistical_temperatures()
-                
+                print(f"Received temps: {T_core}, {T_surface}")
                 density = np.max(sim.density_profile[-1]) if len(sim.density_profile) > 0 else 0
                 pressure = np.max(sim.pressure_profile[-1]) if len(sim.pressure_profile) > 0 else 0
                 
@@ -1203,203 +1185,231 @@ class StarSimulation(StellarStructure):
         return X, Y, Z
 
 class StarParameters:
-    """Known stellar parameters for verification"""
     SUN = {
-        'mass': 1.0,  # Solar masses
-        'radius': 1.0,  # Solar radii
-        'core_temp': 1.57e7,  # Kelvin
-        'surface_temp': 5778,  # Kelvin
-        'central_density': 1.62e5,  # kg/m³
-        'central_pressure': 2.477e16  # Pascal
+        'mass': 1.0,
+        'radius': 1.0,
+        'core_temp': 1.57e7,
+        'surface_temp': 5778,
+        'central_density': 1.62e5,
+        'central_pressure': 2.477e16,
+        'type': 'main_sequence'
     }
-    
+
+    # Main Sequence Stars
     SIRIUS_A = {
         'mass': 2.063,
         'radius': 1.711,
         'core_temp': 2.37e7,
-        'surface_temp': 9940
-    }
-    
-    PROXIMA_CENTAURI = {
-        'mass': 0.122,
-        'radius': 0.154,
-        'core_temp': 3.84e6,
-        'surface_temp': 3042
-    }
-    
-    BETELGEUSE = {
-        'mass': 16.5,
-        'radius': 764.0,
-        'core_temp': 3.5e7,
-        'surface_temp': 3600
+        'surface_temp': 9940,
+        'type': 'main_sequence'
     }
 
     VEGA = {
         'mass': 2.135,
         'radius': 2.818,
         'core_temp': 2.45e7,
-        'surface_temp': 9602
+        'surface_temp': 9602,
+        'type': 'main_sequence'
     }
-    
-    ANTARES = {
-        'mass': 11.0,
-        'radius': 680.0,
-        'core_temp': 3.2e7,
-        'surface_temp': 3400
+
+    # Low Mass Stars
+    PROXIMA_CENTAURI = {
+        'mass': 0.122,
+        'radius': 0.154,
+        'core_temp': 3.84e6,
+        'surface_temp': 3042,
+        'type': 'red_dwarf'
     }
-    
+
+    BARNARDS_STAR = {
+        'mass': 0.144,
+        'radius': 0.196,
+        'core_temp': 4.1e6,
+        'surface_temp': 3134,
+        'type': 'red_dwarf'
+    }
+
+    WOLF_359 = {
+        'mass': 0.09,
+        'radius': 0.16,
+        'core_temp': 3.2e6,
+        'surface_temp': 2800,
+        'type': 'red_dwarf'
+    }
+
+    LUYTENS_STAR = {
+        'mass': 0.26,
+        'radius': 0.30,
+        'core_temp': 4.8e6,
+        'surface_temp': 3150,
+        'type': 'red_dwarf'
+    }
+
+    # Red Giants
     ALDEBARAN = {
         'mass': 1.16,
         'radius': 44.2,
         'core_temp': 1.73e7,
-        'surface_temp': 3910
-    }
-    
-    WHITE_DWARF_SIRIUS_B = {
-        'mass': 1.018,
-        'radius': 0.0084,  # Very small radius
-        'core_temp': 2.5e7,
-        'surface_temp': 25000
-    }
-    
-    NEUTRON_STAR_GEMINGA = {
-        'mass': 1.47,
-        'radius': 1.6e-5,  # Extremely compact
-        'core_temp': 2.0e8,
-        'surface_temp': 250000
+        'surface_temp': 3910,
+        'type': 'red_giant'
     }
 
-    # White Dwarfs
-    PROCYON_B = {
-        'mass': 0.602,
-        'radius': 0.0096,
-        'core_temp': 2.3e7,
-        'surface_temp': 7740
-    }
-    
-    ERIDANI_B = {
-        'mass': 0.573,
-        'radius': 0.0136,
-        'core_temp': 2.1e7,
-        'surface_temp': 16500
-    }
-    
-    VAN_MAANEN = {
-        'mass': 0.68,
-        'radius': 0.0111,
-        'core_temp': 2.4e7,
-        'surface_temp': 6220
-    }
-    
-    # Neutron Stars
-    VELA_PULSAR = {
-        'mass': 1.35,
-        'radius': 1.4e-5,
-        'core_temp': 1.8e8,
-        'surface_temp': 230000
-    }
-    
-    CRAB_PULSAR = {
-        'mass': 1.4,
-        'radius': 1.5e-5,
-        'core_temp': 1.9e8,
-        'surface_temp': 240000
-    }
-    
-    PSR_J0348 = {
-        'mass': 2.01,
-        'radius': 1.3e-5,
-        'core_temp': 2.2e8,
-        'surface_temp': 280000
-    }
-    
-    # Red Giants
     ARCTURUS = {
         'mass': 1.08,
         'radius': 25.4,
         'core_temp': 1.73e7,
-        'surface_temp': 4286
+        'surface_temp': 4286,
+        'type': 'red_giant'
     }
-    
+
     POLLUX = {
         'mass': 1.91,
         'radius': 8.8,
         'core_temp': 1.89e7,
-        'surface_temp': 4666
+        'surface_temp': 4666,
+        'type': 'red_giant'
     }
-    
+
+    # Supergiants
+    BETELGEUSE = {
+        'mass': 16.5,
+        'radius': 764.0,
+        'core_temp': 3.5e7,
+        'surface_temp': 3600,
+        'type': 'red_supergiant'
+    }
+
+    ANTARES = {
+        'mass': 11.0,
+        'radius': 680.0,
+        'core_temp': 3.2e7,
+        'surface_temp': 3400,
+        'type': 'red_supergiant'
+    }
+
     MU_CEPHEI = {
         'mass': 17.5,
         'radius': 972.0,
         'core_temp': 3.6e7,
-        'surface_temp': 3450
+        'surface_temp': 3450,
+        'type': 'red_supergiant'
     }
-    
-    # Supergiants
+
     VY_CANIS_MAJORIS = {
         'mass': 17.0,
         'radius': 1420.0,
         'core_temp': 3.5e7,
-        'surface_temp': 3490
+        'surface_temp': 3490,
+        'type': 'red_supergiant'
     }
-    
+
     UY_SCUTI = {
         'mass': 8.5,
         'radius': 1708.0,
         'core_temp': 3.2e7,
-        'surface_temp': 3365
+        'surface_temp': 3365,
+        'type': 'red_supergiant'
     }
-    
+
     NML_CYGNI = {
         'mass': 40.0,
         'radius': 1640.0,
         'core_temp': 3.8e7,
-        'surface_temp': 3550
+        'surface_temp': 3550,
+        'type': 'red_supergiant'
     }
-    
+
+    DENEB = {
+        'mass': 19.0,
+        'radius': 203.0,
+        'core_temp': 3.6e7,
+        'surface_temp': 8525,
+        'type': 'blue_supergiant'
+    }
+
+    # White Dwarfs
+    WHITE_DWARF_SIRIUS_B = {
+        'mass': 1.018,
+        'radius': 0.0084,
+        'core_temp': 2.5e7,
+        'surface_temp': 25000,
+        'type': 'white_dwarf'
+    }
+
+    PROCYON_B = {
+        'mass': 0.602,
+        'radius': 0.0096,
+        'core_temp': 2.3e7,
+        'surface_temp': 7740,
+        'type': 'white_dwarf'
+    }
+
+    ERIDANI_B = {
+        'mass': 0.573,
+        'radius': 0.0136,
+        'core_temp': 2.1e7,
+        'surface_temp': 16500,
+        'type': 'white_dwarf'
+    }
+
+    VAN_MAANEN = {
+        'mass': 0.68,
+        'radius': 0.0111,
+        'core_temp': 2.4e7,
+        'surface_temp': 6220,
+        'type': 'white_dwarf'
+    }
+
+    # Neutron Stars
+    NEUTRON_STAR_GEMINGA = {
+        'mass': 1.47,
+        'radius': 1.6e-5,
+        'core_temp': 2.0e8,
+        'surface_temp': 250000,
+        'type': 'neutron_star'
+    }
+
+    VELA_PULSAR = {
+        'mass': 1.35,
+        'radius': 1.4e-5,
+        'core_temp': 1.8e8,
+        'surface_temp': 230000,
+        'type': 'pulsar'
+    }
+
+    CRAB_PULSAR = {
+        'mass': 1.4,
+        'radius': 1.5e-5,
+        'core_temp': 1.9e8,
+        'surface_temp': 240000,
+        'type': 'pulsar'
+    }
+
+    PSR_J0348 = {
+        'mass': 2.01,
+        'radius': 1.3e-5,
+        'core_temp': 2.2e8,
+        'surface_temp': 280000,
+        'type': 'pulsar'
+    }
+
     # Intermediate Mass
     ALTAIR = {
         'mass': 1.79,
         'radius': 1.63,
         'core_temp': 2.2e7,
-        'surface_temp': 7550
+        'surface_temp': 7550,
+        'type': 'main_sequence'
     }
-    
+
     FOMALHAUT = {
         'mass': 1.92,
         'radius': 1.84,
         'core_temp': 2.3e7,
-        'surface_temp': 8590
+        'surface_temp': 8590,
+        'type': 'main_sequence'
     }
-    
-    DENEB = {
-        'mass': 19.0,
-        'radius': 203.0,
-        'core_temp': 3.6e7,
-        'surface_temp': 8525
-    }
-    
-    # Low Mass
-    BARNARDS_STAR = {
-        'mass': 0.144,
-        'radius': 0.196,
-        'core_temp': 4.1e6,
-        'surface_temp': 3134
-    }
-    
-    WOLF_359 = {
-        'mass': 0.09,
-        'radius': 0.16,
-        'core_temp': 3.2e6,
-        'surface_temp': 2800
-    }
-    
-    LUYTENS_STAR = {
-        'mass': 0.26,
-        'radius': 0.30,
-        'core_temp': 4.8e6,
-        'surface_temp': 3150
-    }
+
 
 def main():
     """Run star simulation with real star verification."""
@@ -1409,10 +1419,10 @@ def main():
     qg = QuantumGravity()
     
     # Create main simulation with shared framework
-    sim = StarSimulation(mass=1.0, radius=1.0, name="MAIN_SEQUENCE_STAR", quantum_gravity=qg)
+    sim = StarSimulation(mass=1.0, radius=1.0, name="SUN", quantum_gravity=qg)
     
     # Run standard simulation
-    sim.run_simulation(t_final=5.0)
+    #sim.run_simulation(t_final=1.0)
     
     # Run real star verification
     real_star_results = sim.verify_real_stars()

@@ -690,11 +690,10 @@ class StellarTemperatureObservable:
         # Get temperatures using statistical mechanics
         T_core, T_surface = core.calculate_statistical_temperatures()
         
-        # Create temperature profile
         r = np.linalg.norm(self.grid.points, axis=1)
         r_norm = r/np.max(r)
         T = T_core * (1 - 0.9*r_norm**0.25) + T_surface * r_norm**0.25
-        
+    
         return MeasurementResult(
             value=T,
             uncertainty=0.05 * T,

@@ -530,7 +530,10 @@ class CosmologySimulation:
         ax10 = fig.add_subplot(gs[4, 1])
         hubble_lhs = np.array(self.hubble_squared_lhs[:min_length])
         hubble_rhs = np.array(self.hubble_squared_rhs[:min_length])
-        friedmann_error = np.abs(hubble_lhs - hubble_rhs) / hubble_lhs
+        #friedmann_error = np.abs(hubble_lhs - hubble_rhs) / hubble_lhs
+        # In plot_results method
+        friedmann_error = np.abs(hubble_lhs - hubble_rhs) / np.maximum(hubble_lhs, 1e-30)
+
         ax10.plot(time_array, friedmann_error)
         ax10.set_yscale('log')
         ax10.set_xlabel('Time [t_P]')

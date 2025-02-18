@@ -341,3 +341,12 @@ class CosmologicalState(QuantumState):
         
         # Update scale factor with inflation
         self.scale_factor *= np.exp(self.hubble_parameter * dt)
+
+class CosmologicalState(QuantumState):
+    def __init__(self, grid, initial_scale=1.0, hubble_parameter=0.0):
+        super().__init__(grid, initial_mass=1.0)
+        self.scale_factor = initial_scale
+        self.initial_scale = initial_scale
+        self.initial_mass = self.initial_mass
+        self.hubble_parameter = 0.0
+        self.energy_density = 0.0

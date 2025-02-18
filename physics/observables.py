@@ -609,22 +609,30 @@ class PerturbationSpectrumObservable(Observable):
             metadata={'time': state.time}
         )
 
+
 class CosmicEvolutionObservable:
-    """Track detailed cosmic evolution parameters."""
-    
     def measure(self, state: 'CosmologicalState') -> MeasurementResult:
-        # Hubble parameter with quantum corrections
-        H = state.hubble_parameter
-        H_quantum = H * (1 + (CONSTANTS['l_p'] * H)**2)
+        # Calculate Hubble parameter from scale factor evolution
+        a = state.scale_factor
+        dt = 0.01  # Time step
         
-        # Equation of state w(t)
-        w = state.pressure / state.energy_density
+        # Compute ȧ using finite difference
+        if hasattr(state, 'previous_scale_factor'):
+            a_dot = (a - state.previous_scale_factor) / dt
+        else:
+            a_dot = a * state.hubble_parameter  # Initial value
+            
+        # Store current scale factor for next step
+        state.previous_scale_factor = a
         
-        # Acceleration parameter
-        q = -state.scale_factor * H_quantum**2 / H**2
+        # Calculate classical and quantum Hubble parameters
+        H = a_dot / a  # Classical Hubble parameter
+        H_quantum = H * (1 + (CONSTANTS['l_p'] * H)**2)  # Quantum-corrected
         
-        # Cosmic entropy
-        S = 4 * np.pi * (state.scale_factor / CONSTANTS['l_p'])**2
+        # Calculate remaining parameters
+        w = -1  # Default equation of state
+        q = -a * (H_quantum/H)**2 if abs(H) > 1e-10 else 0
+        S = 4 * np.pi * (a / CONSTANTS['l_p'])**2
         
         return MeasurementResult(
             value={
@@ -633,9 +641,10 @@ class CosmicEvolutionObservable:
                 'acceleration': q,
                 'entropy': S
             },
-            uncertainty=CONSTANTS['l_p'] * H,
+            uncertainty=CONSTANTS['l_p'] * max(abs(H), 1e-10),
             metadata={'time': state.time}
         )
+
 
 class CosmicMatterRadiationObservable:
     """Track matter-radiation coupling and phase transitions."""

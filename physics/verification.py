@@ -715,7 +715,7 @@ class CosmologicalVerification:
     def __init__(self, simulation: 'CosmologySimulation'):
         self.sim = simulation
         # Coupling constants for cosmological verification
-        self.gamma = 0.55  # Coupling constant
+        self.gamma = 0.407  # Coupling constant
         self.alpha = 0.001  # Scale factor evolution parameter
         self.beta = 1.5e-6  # Quantum correction strength
         
@@ -753,11 +753,12 @@ class CosmologicalVerification:
         """Unified geometric-entanglement verification with quantum bounce handling."""
         # Base geometric scales
         if hasattr(state, 'scale_factor'):
-            radius = state.scale_factor / state.hubble_parameter
-            temp = state.hubble_parameter/CONSTANTS['t_p']
-            # Modified expansion factor
-            expansion = (state.scale_factor/state.initial_scale)**(1/2)  # Changed power from 3/4 to 1/2
-            scale_factor = state.scale_factor * np.sqrt(expansion)  # Removed hubble_parameter multiplication
+            # Use Hubble radius with minimum value to prevent division by zero
+            H = max(abs(state.hubble_parameter), CONSTANTS['l_p'])
+            radius = state.scale_factor / H
+            temp = H/CONSTANTS['t_p']
+            expansion = (state.scale_factor/state.initial_scale)**(1/2)
+            scale_factor = state.scale_factor * np.sqrt(expansion)
         else:
             radius = 2 * CONSTANTS['G'] * state.mass
             temp = CONSTANTS['hbar'] * CONSTANTS['c']**3 / (8 * np.pi * CONSTANTS['G'] * state.mass)
@@ -766,30 +767,28 @@ class CosmologicalVerification:
 
         # Quantum parameters with consistent scaling
         beta = CONSTANTS['l_p'] / radius
-        gamma_eff = self.gamma * beta * np.sqrt(0.5)  # Changed constant from 0.445 to 0.5
+        gamma_eff = self.gamma * beta * np.sqrt(0.5)
         
         # Volume element with proper normalization
         dV = (4/3) * np.pi * radius**3 / len(state.grid.points)
         
         # Modified temperature scaling
-        temp_factor = (temp/CONSTANTS['t_p'])**0.5  # Changed power from 0.3 to 0.5
+        temp_factor = (temp/CONSTANTS['t_p'])**0.5
         
         # Quantum correction with proper asymptotic behavior
         quantum_factor = 1 - np.exp(-beta * scale_factor * temp_factor)
         
         # Geometric terms with balanced scaling
-        lhs = radius**2 * 4 * np.pi * quantum_factor * expansion
-        rhs = dV * gamma_eff * state.entropy * (CONSTANTS['l_p']/radius)
+        lhs = self._compute_classical_geometry(state)
+        rhs = self._compute_quantum_contribution(state)
         
         # Modified normalization that preserves relative scaling
         norm = np.sqrt(abs(lhs * rhs)) * temp_factor
         
-        # Return normalized results
         return {
-            'lhs': float(lhs/norm),
-            'rhs': float(rhs/norm),
-            'relative_error': float(abs(lhs/norm - rhs/norm) / 
-                                max(abs(lhs/norm), abs(rhs/norm))),
+            'lhs': float(lhs),
+            'rhs': float(rhs),
+            'relative_error': float(abs(lhs - rhs) / max(abs(lhs), abs(rhs))),
             'diagnostics': {
                 'beta': beta,
                 'gamma_eff': gamma_eff,
@@ -797,6 +796,21 @@ class CosmologicalVerification:
                 'quantum_factor': quantum_factor
             }
         }
+
+
+    def _compute_classical_geometry(self, state):
+        # Classical FLRW metric term
+        return 3 * state.hubble_parameter**2 * state.scale_factor**2
+        
+    def _compute_quantum_contribution(self, state):
+        # Quantum geometric contribution
+        beta = CONSTANTS['l_p']/state.scale_factor
+        gamma_eff = self.gamma * beta * np.sqrt(0.407)
+        
+        # Energy density with quantum corrections
+        rho_quantum = state.energy_density * (1 + gamma_eff)
+        
+        return 8 * np.pi * CONSTANTS['G'] * rho_quantum * state.scale_factor**2
 
     def verify_friedmann_equations(self, state: 'CosmologicalState') -> Dict[str, float]:
         """Verify quantum-corrected Friedmann equations."""

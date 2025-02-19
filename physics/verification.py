@@ -813,22 +813,27 @@ class CosmologicalVerification:
         return 8 * np.pi * CONSTANTS['G'] * rho_quantum * state.scale_factor**2
 
     def verify_friedmann_equations(self, state: 'CosmologicalState') -> Dict[str, float]:
-        """Verify quantum-corrected Friedmann equations."""
+        """Verify quantum-corrected Friedmann equations with geometric coupling."""
+        # Fundamental constants
+        phi = (1 + np.sqrt(5)) / 2  # Golden ratio
+        Lambda = CONSTANTS['LEECH_LATTICE_POINTS']
+        dim = CONSTANTS['LEECH_LATTICE_DIMENSION']
+        
+        # Scale parameters
         a = state.scale_factor
         H = state.hubble_parameter
+        beta = CONSTANTS['l_p'] / a  # Proper length scale ratio
         
-        # Classical terms
-        H2_classical = (8 * np.pi * CONSTANTS['G'] / 3) * state.energy_density
+        # Enhanced quantum corrections with geometric coupling
+        gamma = phi**(-1) * beta * np.sqrt(Lambda/dim)
+        quantum_factor = np.exp(-beta**2) * (1 - beta**4/phi)
         
-        # Quantum corrections
-        beta = CONSTANTS['l_p'] * H
-        quantum_factor = np.exp(-beta**2) * (1 - beta**4/5.5)
-        
-        # Loop quantum gravity correction
-        rho_critical = 0.41 * CONSTANTS['rho_planck']
+        # Critical density with Leech lattice contribution
+        rho_critical = 0.41 * CONSTANTS['rho_planck'] * (1 + gamma)
         bounce_term = state.energy_density / rho_critical
         
-        # Modified Friedmann equation
+        # Modified Friedmann terms
+        H2_classical = (8 * np.pi * CONSTANTS['G'] / 3) * state.energy_density
         H2_quantum = H2_classical * (1 - bounce_term) * quantum_factor
         
         # Compute verification metrics
@@ -842,6 +847,7 @@ class CosmologicalVerification:
             'energy_density': float(state.energy_density),
             'relative_error': float(abs(lhs - rhs) / max(abs(lhs), abs(rhs)))
         }
+
 
     def verify_inflation_dynamics(self, state: 'CosmologicalState') -> Dict[str, float]:
         """Verify inflation field evolution and perturbations."""
@@ -929,7 +935,7 @@ class UniversalQuantumEffects:
         # Dark Energy (Quantum Vacuum) 
         self.beta_universe = CONSTANTS['l_p']/R_universe  # Cosmic scale ratio
         self.vacuum_energy = CONSTANTS['hbar']/(CONSTANTS['c']*CONSTANTS['l_p']**4)  # Base vacuum energy
-        
+
     def calculate_effects(self, r: float) -> Tuple[float, float]:
         """Calculate quantum gravity effects at given radius.
         

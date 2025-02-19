@@ -59,8 +59,9 @@ class CosmologySimulation:
         self.leech_lattice = LeechLattice(points=CONSTANTS['LEECH_LATTICE_POINTS'])
         
         # Add vacuum energy from Leech lattice
-        self.vacuum_energy = self.leech_lattice.compute_vacuum_energy()
-
+        #self.vacuum_energy = self.leech_lattice.compute_vacuum_energy()
+        self.vacuum_energy = self.leech_lattice.compute_vacuum_energy() * \
+        (initial_scale/CONSTANTS['l_p'])**(-CONSTANTS['LEECH_LATTICE_DIMENSION'])
 
         self.qg.state = CosmologicalState(
             grid=self.qg.grid,
@@ -212,7 +213,7 @@ class CosmologySimulation:
             self._last_bounce_time = -float('inf')
         
         # Minimum time between bounces (in Planck times)
-        bounce_cooldown = 1.0
+        bounce_cooldown = 10.0
     
         # Check bounce conditions with proper timing
         bounce_condition = (state.energy_density >= bounce_threshold and 
@@ -272,6 +273,8 @@ class CosmologySimulation:
         }
         
         while t < t_final:
+            self.vacuum_energy = self.leech_lattice.compute_vacuum_energy() * \
+                (self.qg.state.scale_factor/CONSTANTS['l_p'])**(-CONSTANTS['LEECH_LATTICE_DIMENSION'])
             # Evolution step
             evolution = TimeEvolution(
                 grid=self.qg.grid,

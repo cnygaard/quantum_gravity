@@ -823,7 +823,6 @@ class CosmologicalVerification:
         # Quantum corrections
         beta = CONSTANTS['l_p'] * H
         quantum_factor = np.exp(-beta**2) * (1 - beta**4/5.5)
-        
         # Loop quantum gravity correction
         rho_critical = 0.41 * CONSTANTS['rho_planck']
         bounce_term = state.energy_density / rho_critical

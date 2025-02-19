@@ -125,6 +125,11 @@ class CosmologySimulation:
         state.scale_factor = self.initial_scale
         #state.energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
         base_energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
+
+        # Enhanced vacuum energy with proper scaling
+        vacuum_energy = self.leech_lattice.compute_vacuum_energy() * \
+            (self.initial_scale/CONSTANTS['l_p'])**(-CONSTANTS['LEECH_LATTICE_DIMENSION'])
+
         state.energy_density = base_energy_density + self.vacuum_energy
 
         # Set up FLRW metric with quantum corrections
@@ -272,9 +277,15 @@ class CosmologySimulation:
             'error_tolerance': 1e-6
         }
         
+        # Get reference to quantum state
+        state = self.qg.state
         while t < t_final:
+            base_energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
             self.vacuum_energy = self.leech_lattice.compute_vacuum_energy() * \
                 (self.qg.state.scale_factor/CONSTANTS['l_p'])**(-CONSTANTS['LEECH_LATTICE_DIMENSION'])
+        
+            # Update state
+            state.energy_density = base_energy_density + self.vacuum_energy
             # Evolution step
             evolution = TimeEvolution(
                 grid=self.qg.grid,

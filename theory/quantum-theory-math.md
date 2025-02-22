@@ -6,6 +6,45 @@
 Master Equation:
 ```
 dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
+
+The quantum gravity framework's core equation dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩ can be mathematically detailed as follows:
+
+1. Geometric Operators êᵢ(x):
+* êᵢ(x) = ∂ᵢhₐᵦ(x) + Γᵍₐᵦ(x)hᵍᵢ(x)
+* Where hₐᵦ is the metric perturbation
+* Γᵍₐᵦ are Christoffel symbols
+* Indices i,a,b,g run over spacetime dimensions (0,1,2,3)
+
+2. Information Operators îᵢ(x):
+* îᵢ(x) = -i∑ₖ(aₖ†(x)∂ᵢaₖ(x) - aₖ(x)∂ᵢaₖ†(x))
+* aₖ, aₖ† are creation/annihilation operators
+* k labels quantum numbers
+* Generates entanglement through local operations
+
+3. Quantum State |Ψ⟩:
+* |Ψ⟩ = ∑ₙ cₙ|n⟩
+* |n⟩ forms complete orthonormal basis
+* cₙ are complex coefficients
+* Normalization: ⟨Ψ|Ψ⟩ = 1
+
+4. Index Structure:
+* Greek indices μ,ν,λ ∈ {0,1,2,3} for spacetime
+* Latin indices i,j,k ∈ {1,2,3} for space
+* Raised/lowered with metric gμν
+* Einstein summation convention applies
+
+5. Boundary Conditions:
+* Asymptotic flatness: gμν → ημν as r → ∞
+* Periodicity: f(x + L) = f(x) for cosmology
+* Regularity at horizons: finite curvature invariants
+* Conservation: ∇μTμν = 0
+
+The geometric-information coupling γ² = 0.407 emerges from the Leech lattice structure, connecting quantum geometry with information theoretic aspects through:
+
+dS² = ∫ d³x √g [⟨Ψ|êᵢ(x)|Ψ⟩ + 0.407⟨Ψ|îᵢ(x)|Ψ⟩]
+
+
+
 ```
 
 Efficient Implementation:

@@ -831,56 +831,486 @@ class StarSimulation(StellarStructure):
             plt.savefig(save_path)
         plt.show()
 
+    # def plot_star_geometry(self, save_path: str = None):
+    #     fig = plt.figure(figsize=(15, 12))
+
+    # # Add main title with key parameters
+    #     #central_pressure = np.max(self.pressure_profile[-1])
+    #     #central_pressure = np.max(self.pressure_profile[-1])
+    #     valid_pressures = self.pressure_profile[self.pressure_profile != 0]
+    #     central_pressure = valid_pressures[0] if len(valid_pressures) > 0 else 0
+    #     core_temperature = np.mean(self.temperature_profile[-1])
+    #     fig.suptitle(f'Quantum Star Structure (M={self.M_star/CONSTANTS["M_sun"]:.1f} M☉, R={self.R_star/CONSTANTS["R_sun"]:.1f} R☉)\n' + 
+    #                 f'T_core={self.qg.state.temperature:.2e} K, P_c={central_pressure:.2e} Pa', 
+    #                 fontsize=14)
+        
+
+
+    #     ax1 = fig.add_subplot(121, projection='3d')
+
+    #     # Add quantum parameters text box
+    #     ax1.text2D(0.05, 0.95, 
+    #             f'Quantum Parameters:\n' +
+    #             f'β (l_p/R): {self.beta:.2e}\n' +
+    #             f'γ_eff: {self.gamma_eff:.2e}\n' +
+    #             f'Vacuum Energy: {self.vacuum_energy:.2e}',
+    #             transform=ax1.transAxes,
+    #             bbox=dict(facecolor='white', alpha=0.8))
+
+    #     # Generate proper grid size
+    #     n_points = 50  # Define grid resolution
+    #     theta = np.linspace(0, np.pi, n_points)
+    #     phi = np.linspace(0, 2*np.pi, n_points)
+        
+    #     # Normalize radius to solar radius
+    #     R_normalized = self.R_star/CONSTANTS["R_sun"]
+    
+    #     X, Y, Z = self._generate_surface_grid(R_normalized, theta, phi)
+    #     #X, Y, Z = self._generate_surface_grid(self.R_star, theta, phi)
+    #     quantum_density = self._compute_quantum_density()
+        
+    #     # Interpolate quantum density onto visualization grid
+    #     r_grid = np.sqrt(X**2 + Y**2 + Z**2)
+    #     density_grid = np.interp(r_grid.flatten(), 
+    #                             np.linalg.norm(self.qg.grid.points, axis=1),
+    #                             quantum_density).reshape(X.shape)
+        
+    #     surf = ax1.plot_surface(X, Y, Z, 
+    #                         facecolors=plt.cm.plasma(density_grid),
+    #                         alpha=0.8)
+        
+    #     if save_path:
+    #         plt.savefig(save_path)
+
+    # def plot_star_geometry(self, save_path: str = None):
+    #     """Plot comprehensive stellar structure with quantum effects."""
+    #     fig = plt.figure(figsize=(15, 12))
+
+    #     # Enhanced title with stellar classification and parameters
+    #     fig.suptitle(f'{self.name} Quantum Structure\n' + 
+    #                 f'Type: {self.type}, M={self.M_star/CONSTANTS["M_sun"]:.2f} M☉, R={self.R_star/CONSTANTS["R_sun"]:.2f} R☉\n' +
+    #                 f'T_core={self.core_temperature_history[-1]:.2e} K, T_surface={self.compute_surface_temperature():.2e} K',
+    #                 fontsize=14, y=0.95)
+
+    #     # 3D structure plot
+    #     ax1 = fig.add_subplot(121, projection='3d')
+
+    #     # Enhanced quantum parameters display
+    #     ax1.text2D(0.05, 0.95,
+    #         f'Quantum Parameters ({self.name}):\n' +
+    #         f'β (l_p/R): {self.beta:.2e}\n' +
+    #         f'γ_eff: {self.gamma_eff:.2e}\n' +
+    #         f'Vacuum Energy: {self.vacuum_energy:.2e}\n' +
+    #         f'Quantum Factor: {self._compute_quantum_factor():.2e}',
+    #         transform=ax1.transAxes,
+    #         bbox=dict(facecolor='white', alpha=0.8))
+
+    #     # Grid setup for visualization
+    #     n_points = 50
+    #     theta = np.linspace(0, np.pi, n_points)
+    #     phi = np.linspace(0, 2*np.pi, n_points)
+    #     R_normalized = self.R_star/CONSTANTS["R_sun"]
+        
+    #     # Generate surface grid
+    #     X, Y, Z = self._generate_surface_grid(R_normalized, theta, phi)
+    #     quantum_density = self._compute_quantum_density()
+        
+    #     # Compute density grid with proper normalization
+    #     r_grid = np.sqrt(X**2 + Y**2 + Z**2)
+    #     density_grid = np.interp(r_grid.flatten(),
+    #                         np.linalg.norm(self.qg.grid.points, axis=1),
+    #                         quantum_density).reshape(X.shape)
+        
+    #     # Plot 3D structure with quantum effects
+    #     surf = ax1.plot_surface(X, Y, Z,
+    #                         facecolors=plt.cm.plasma(density_grid),
+    #                         alpha=0.8)
+        
+    #     # Add colorbar for quantum density
+    #     cbar = plt.colorbar(surf, ax=ax1)
+    #     cbar.set_label('Normalized Quantum Density', size=10)
+        
+    #     # Add 2D cross-section
+    #     ax2 = fig.add_subplot(122)
+        
+    #     # Plot density profile in 2D
+    #     r_slice = np.linspace(0, R_normalized, 100)
+    #     density_slice = np.interp(r_slice, 
+    #                             np.linalg.norm(self.qg.grid.points, axis=1),
+    #                             quantum_density)
+        
+    #     ax2.plot(r_slice, density_slice, 'b-', label='Quantum Density Profile')
+    #     ax2.set_xlabel('r/R_☉')
+    #     ax2.set_ylabel('ρ/ρ_c')
+    #     ax2.set_title('Radial Density Structure')
+    #     ax2.grid(True)
+    #     ax2.legend()
+
+    #     plt.tight_layout()
+        
+    #     if save_path:
+    #         plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    #     plt.close()
+
+    # def plot_star_geometry(self, save_path: str = None):
+    #     """Plot comprehensive stellar structure with quantum effects."""
+    #     fig = plt.figure(figsize=(15, 12))
+
+    #     # Enhanced title with stellar classification and parameters
+    #     fig.suptitle(f'{self.name} Quantum Structure\n' + 
+    #                 f'Type: {self.type}, M={self.M_star/CONSTANTS["M_sun"]:.2f} M☉, R={self.R_star/CONSTANTS["R_sun"]:.2f} R☉\n' +
+    #                 f'T_core={self.core_temperature_history[-1]:.2e} K, T_surface={self.compute_surface_temperature():.2e} K',
+    #                 fontsize=14, y=0.95)
+
+    #     # 3D structure plot
+    #     ax1 = fig.add_subplot(121, projection='3d')
+
+    #     # Enhanced quantum parameters display
+    #     ax1.text2D(0.05, 0.95,
+    #         f'Quantum Parameters ({self.name}):\n' +
+    #         f'β (l_p/R): {self.beta:.2e}\n' +
+    #         f'γ_eff: {self.gamma_eff:.2e}\n' +
+    #         f'Vacuum Energy: {self.vacuum_energy:.2e}\n' +
+    #         f'Quantum Factor: {self._compute_quantum_factor():.2e}',
+    #         transform=ax1.transAxes,
+    #         bbox=dict(facecolor='white', alpha=0.8))
+
+    #     # Grid setup for visualization
+    #     n_points = 50
+    #     theta = np.linspace(0, np.pi, n_points)
+    #     phi = np.linspace(0, 2*np.pi, n_points)
+    #     R_normalized = self.R_star/CONSTANTS["R_sun"]
+        
+    #     # Generate surface grid
+    #     X, Y, Z = self._generate_surface_grid(R_normalized, theta, phi)
+    #     quantum_density = self._compute_quantum_density()
+        
+    #     # Compute density grid with proper normalization
+    #     r_grid = np.sqrt(X**2 + Y**2 + Z**2)
+    #     density_grid = np.interp(r_grid.flatten(),
+    #                         np.linalg.norm(self.qg.grid.points, axis=1),
+    #                         quantum_density).reshape(X.shape)
+        
+    #     # Plot 3D structure with quantum effects
+    #     surf = ax1.plot_surface(X, Y, Z,
+    #                         facecolors=plt.cm.plasma(density_grid),
+    #                         alpha=0.8)
+        
+    #     # Add colorbar for quantum density
+    #     cbar = plt.colorbar(surf, ax=ax1)
+    #     cbar.set_label('Normalized Quantum Density', size=10)
+        
+    #     # Add 2D cross-section
+    #     ax2 = fig.add_subplot(122)
+        
+    #     # Plot density profile in 2D
+    #     r_slice = np.linspace(0, R_normalized, 100)
+    #     density_slice = np.interp(r_slice, 
+    #                             np.linalg.norm(self.qg.grid.points, axis=1),
+    #                             quantum_density)
+        
+    #     ax2.plot(r_slice, density_slice, 'b-', label='Quantum Density Profile')
+    #     ax2.set_xlabel('r/R_☉')
+    #     ax2.set_ylabel('ρ/ρ_c')
+    #     ax2.set_title('Radial Density Structure')
+    #     ax2.grid(True)
+    #     ax2.legend()
+
+    #     plt.tight_layout()
+        
+    #     if save_path:
+    #         plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    #     plt.close()
+
+    # def plot_star_geometry(self, save_path: str = None):
+    #     """Plot comprehensive stellar structure with transparent quantum effects visualization."""
+    #     fig = plt.figure(figsize=(15, 12))
+
+    #     # Enhanced title with stellar classification and parameters
+    #     fig.suptitle(f'{self.name} Quantum Structure\n' + 
+    #                 f'Type: {self.type}, M={self.M_star/CONSTANTS["M_sun"]:.2f} M☉, R={self.R_star/CONSTANTS["R_sun"]:.2f} R☉\n' +
+    #                 f'T_core={self.core_temperature_history[-1]:.2e} K, T_surface={self.compute_surface_temperature():.2e} K',
+    #                 fontsize=14, y=0.95)
+
+    #     # 3D structure plot
+    #     ax1 = fig.add_subplot(121, projection='3d')
+
+    #     # Enhanced quantum parameters display
+    #     ax1.text2D(0.05, 0.95,
+    #         f'Quantum Parameters ({self.name}):\n' +
+    #         f'β (l_p/R): {self.beta:.2e}\n' +
+    #         f'γ_eff: {self.gamma_eff:.2e}\n' +
+    #         f'Vacuum Energy: {self.vacuum_energy:.2e}\n' +
+    #         f'Quantum Factor: {self._compute_quantum_factor():.2e}',
+    #         transform=ax1.transAxes,
+    #         bbox=dict(facecolor='white', alpha=0.8))
+
+    #     # Generate layered structure points
+    #     n_radial = 25
+    #     n_theta = 20
+    #     n_phi = 40
+        
+    #     # Create radial layers with proper spacing
+    #     radial_factor = 2.5
+    #     R_normalized = self.R_star/CONSTANTS["R_sun"]
+    #     radii = R_normalized + (np.exp(np.linspace(0, np.log(2*R_normalized), n_radial)) - 1) / radial_factor
+    #     thetas = np.linspace(0, np.pi, n_theta)
+    #     phis = np.linspace(0, 2*np.pi, n_phi)
+        
+    #     R, T, P = np.meshgrid(radii, thetas, phis)
+        
+    #     X = R * np.sin(T) * np.cos(P)
+    #     Y = R * np.sin(T) * np.sin(P)
+    #     Z = R * np.cos(T)
+        
+    #     points = np.column_stack((X.flatten(), Y.flatten(), Z.flatten()))
+    #     radial_distances = np.linalg.norm(points, axis=1)
+        
+    #     # Calculate quantum effects distribution
+    #     quantum_density = self._compute_quantum_density()
+        
+    #     # Define regions of quantum effects
+    #     core_region = np.exp(-(radial_distances - 0.1*R_normalized)/(0.05*R_normalized))
+    #     surface_layer = np.exp(-(radial_distances - 0.95*R_normalized)/(0.05*R_normalized))
+    #     quantum_corrected = np.exp(-((radial_distances - 0.5*R_normalized)/(0.2*R_normalized))**2)
+
+    #     # Calculate quantum effects distribution
+    #     r_points = np.linalg.norm(self.qg.grid.points, axis=1)
+    #     quantum_density = self._compute_quantum_density()
+        
+    #     # Interpolate quantum_density to match the new points array size
+    #     quantum_density_interp = np.interp(
+    #         radial_distances,  # New radial points
+    #         r_points,         # Original radial points
+    #         quantum_density   # Original quantum density
+    #     )
+
+    #     # Combine effects with proper weighting
+    #     quantum_density = quantum_density_interp * (
+    #         2.0 * core_region +  # Strong core effects
+    #         0.5 * surface_layer +  # Surface effects
+    #         0.3 * quantum_corrected  # Background effects
+    #     )
+        
+    #     quantum_density = quantum_density / np.max(quantum_density)
+
+    #     # Separate core and outer regions
+    #     core_mask = radial_distances < (0.2 * R_normalized)
+    #     outer_mask = ~core_mask
+
+    #     # Plot outer region with high transparency
+    #     scatter_outer = ax1.scatter(points[outer_mask,0], 
+    #                             points[outer_mask,1], 
+    #                             points[outer_mask,2],
+    #                             c=quantum_density[outer_mask],
+    #                             cmap='plasma',
+    #                             alpha=0.3,
+    #                             s=6)
+
+    #     # Plot core region with less transparency
+    #     scatter_core = ax1.scatter(points[core_mask,0], 
+    #                             points[core_mask,1], 
+    #                             points[core_mask,2],
+    #                             c=quantum_density[core_mask],
+    #                             cmap='plasma',
+    #                             alpha=0.8,
+    #                             s=10)
+
+    #     # Add stellar surface outline
+    #     phi_surf = np.linspace(0, 2*np.pi, 100)
+    #     theta_surf = np.linspace(0, np.pi, 50)
+    #     phi_surf, theta_surf = np.meshgrid(phi_surf, theta_surf)
+        
+    #     x_surf = R_normalized * np.sin(theta_surf) * np.cos(phi_surf)
+    #     y_surf = R_normalized * np.sin(theta_surf) * np.sin(phi_surf)
+    #     z_surf = R_normalized * np.cos(theta_surf)
+        
+    #     surf = ax1.plot_surface(x_surf, y_surf, z_surf,
+    #                         color='white',
+    #                         alpha=0.2,
+    #                         antialiased=True)
+
+    #     # Add colorbar and labels
+    #     cbar = plt.colorbar(scatter_outer)
+    #     cbar.set_label('Normalized Quantum Effects Intensity', size=10)
+        
+    #     ax1.set_xlabel('x [R_☉]')
+    #     ax1.set_ylabel('y [R_☉]')
+    #     ax1.set_zlabel('z [R_☉]')
+
+    #     # 2D cross-section
+    #     ax2 = fig.add_subplot(122)
+    #     r_slice = np.linspace(0, R_normalized, 100)
+    #     density_slice = np.interp(r_slice,
+    #                             np.linalg.norm(self.qg.grid.points, axis=1),
+    #                             quantum_density)
+        
+    #     ax2.plot(r_slice, density_slice, 'b-', label='Quantum Density Profile')
+    #     ax2.set_xlabel('r/R_☉')
+    #     ax2.set_ylabel('ρ/ρ_c')
+    #     ax2.set_title('Radial Density Structure')
+    #     ax2.grid(True)
+    #     ax2.legend()
+
+    #     plt.tight_layout()
+        
+    #     if save_path:
+    #         plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    #     plt.close()
+
     def plot_star_geometry(self, save_path: str = None):
+        """Plot comprehensive stellar structure with transparent quantum effects visualization."""
         fig = plt.figure(figsize=(15, 12))
 
-    # Add main title with key parameters
-        #central_pressure = np.max(self.pressure_profile[-1])
-        #central_pressure = np.max(self.pressure_profile[-1])
-        valid_pressures = self.pressure_profile[self.pressure_profile != 0]
-        central_pressure = valid_pressures[0] if len(valid_pressures) > 0 else 0
-        core_temperature = np.mean(self.temperature_profile[-1])
-        fig.suptitle(f'Quantum Star Structure (M={self.M_star/CONSTANTS["M_sun"]:.1f} M☉, R={self.R_star/CONSTANTS["R_sun"]:.1f} R☉)\n' + 
-                    f'T_core={self.qg.state.temperature:.2e} K, P_c={central_pressure:.2e} Pa', 
-                    fontsize=14)
-        
+        # Enhanced title with stellar classification and parameters
+        fig.suptitle(f'{self.name} Quantum Structure\n' + 
+                    f'Type: {self.type}, M={self.M_star/CONSTANTS["M_sun"]:.2f} M☉, R={self.R_star/CONSTANTS["R_sun"]:.2f} R☉\n' +
+                    f'T_core={self.core_temperature_history[-1]:.2e} K, T_surface={self.compute_surface_temperature():.2e} K',
+                    fontsize=14, y=0.95)
 
-
+        # 3D structure plot
         ax1 = fig.add_subplot(121, projection='3d')
 
-        # Add quantum parameters text box
-        ax1.text2D(0.05, 0.95, 
-                f'Quantum Parameters:\n' +
-                f'β (l_p/R): {self.beta:.2e}\n' +
-                f'γ_eff: {self.gamma_eff:.2e}\n' +
-                f'Vacuum Energy: {self.vacuum_energy:.2e}',
-                transform=ax1.transAxes,
-                bbox=dict(facecolor='white', alpha=0.8))
+        # Enhanced quantum parameters display
+        ax1.text2D(0.05, 0.95,
+            f'Quantum Parameters ({self.name}):\n' +
+            f'β (l_p/R): {self.beta:.2e}\n' +
+            f'γ_eff: {self.gamma_eff:.2e}\n' +
+            f'Vacuum Energy: {self.vacuum_energy:.2e}\n' +
+            f'Quantum Factor: {self._compute_quantum_factor():.2e}',
+            transform=ax1.transAxes,
+            bbox=dict(facecolor='white', alpha=0.8))
 
-        # Generate proper grid size
-        n_points = 50  # Define grid resolution
-        theta = np.linspace(0, np.pi, n_points)
-        phi = np.linspace(0, 2*np.pi, n_points)
+        # Generate layered structure points
+        n_radial = 25
+        n_theta = 20
+        n_phi = 40
         
-        # Normalize radius to solar radius
+        # Create radial layers with proper spacing
+        radial_factor = 2.5
         R_normalized = self.R_star/CONSTANTS["R_sun"]
-    
-        X, Y, Z = self._generate_surface_grid(R_normalized, theta, phi)
-        #X, Y, Z = self._generate_surface_grid(self.R_star, theta, phi)
-        quantum_density = self._compute_quantum_density()
+        radii = R_normalized + (np.exp(np.linspace(0, np.log(2*R_normalized), n_radial)) - 1) / radial_factor
+        thetas = np.linspace(0, np.pi, n_theta)
+        phis = np.linspace(0, 2*np.pi, n_phi)
         
-        # Interpolate quantum density onto visualization grid
-        r_grid = np.sqrt(X**2 + Y**2 + Z**2)
-        density_grid = np.interp(r_grid.flatten(), 
-                                np.linalg.norm(self.qg.grid.points, axis=1),
-                                quantum_density).reshape(X.shape)
+        R, T, P = np.meshgrid(radii, thetas, phis)
         
-        surf = ax1.plot_surface(X, Y, Z, 
-                            facecolors=plt.cm.plasma(density_grid),
-                            alpha=0.8)
+        X = R * np.sin(T) * np.cos(P)
+        Y = R * np.sin(T) * np.sin(P)
+        Z = R * np.cos(T)
+        
+        points = np.column_stack((X.flatten(), Y.flatten(), Z.flatten()))
+        radial_distances = np.linalg.norm(points, axis=1)
+
+        # Add adaptive radial scaling
+        scale_factor = 1.0
+        if self.radius > 100:  # For supergiants
+            scale_factor = np.log10(self.radius)
+        elif self.radius < 0.01:  # For compact objects
+            scale_factor = 1/np.log10(1/self.radius)
+
+        # Modify radii calculation
+        radii = (R_normalized/scale_factor) + (np.exp(np.linspace(0, np.log(2*R_normalized/scale_factor), n_radial)) - 1) / radial_factor
+
+        # Calculate base quantum density
+        r_points = np.linalg.norm(self.qg.grid.points, axis=1)
+        base_quantum_density = self._compute_quantum_density()
+        
+        r_points_scaled = r_points / (R_normalized * scale_factor)
+        quantum_density_interp = np.interp(
+            radial_distances/(R_normalized * scale_factor),
+            r_points_scaled,
+            base_quantum_density
+        )
+
+        # Define quantum effect regions
+        core_region = np.exp(-(radial_distances - 0.1*R_normalized)/(0.05*R_normalized))
+        surface_layer = np.exp(-(radial_distances - 0.95*R_normalized)/(0.05*R_normalized))
+        quantum_corrected = np.exp(-((radial_distances - 0.5*R_normalized)/(0.2*R_normalized))**2)
+
+        # Combine effects for 3D visualization
+        quantum_density_3d = quantum_density_interp * (
+            2.0 * core_region +
+            0.5 * surface_layer +
+            0.3 * quantum_corrected
+        )
+        quantum_density_3d = quantum_density_3d / np.max(quantum_density_3d)
+
+        # Separate core and outer regions
+        core_mask = radial_distances < (0.2 * R_normalized)
+        outer_mask = ~core_mask
+
+        # Plot outer region with high transparency
+        scatter_outer = ax1.scatter(points[outer_mask,0], 
+                                points[outer_mask,1], 
+                                points[outer_mask,2],
+                                c=quantum_density_3d[outer_mask],
+                                cmap='plasma',
+                                alpha=0.3,
+                                s=6)
+
+        # Plot core region with less transparency
+        scatter_core = ax1.scatter(points[core_mask,0], 
+                                points[core_mask,1], 
+                                points[core_mask,2],
+                                c=quantum_density_3d[core_mask],
+                                cmap='plasma',
+                                alpha=0.8,
+                                s=10)
+
+        # Add stellar surface outline
+        phi_surf = np.linspace(0, 2*np.pi, 100)
+        theta_surf = np.linspace(0, np.pi, 50)
+        phi_surf, theta_surf = np.meshgrid(phi_surf, theta_surf)
+        
+        x_surf = R_normalized * np.sin(theta_surf) * np.cos(phi_surf)
+        y_surf = R_normalized * np.sin(theta_surf) * np.sin(phi_surf)
+        z_surf = R_normalized * np.cos(theta_surf)
+        
+        surf = ax1.plot_surface(x_surf, y_surf, z_surf,
+                            color='white',
+                            alpha=0.2,
+                            antialiased=True)
+
+        # Add colorbar and labels
+        cbar = plt.colorbar(scatter_outer)
+        cbar.set_label('Normalized Quantum Effects Intensity', size=10)
+        
+        ax1.set_xlabel('x [R_☉]')
+        ax1.set_ylabel('y [R_☉]')
+        ax1.set_zlabel('z [R_☉]')
+
+        # 2D cross-section with proper interpolation
+        ax2 = fig.add_subplot(122)
+        r_slice = np.linspace(0, R_normalized, 100)
+        
+        # Create 2D profile with consistent weighting
+        r_points_norm = r_points / R_normalized
+        density_slice = np.interp(r_slice, r_points_norm, base_quantum_density)
+        
+        slice_core = np.exp(-(r_slice - 0.1)/(0.05))
+        slice_surface = np.exp(-(r_slice - 0.95)/(0.05))
+        slice_quantum = np.exp(-((r_slice - 0.5)/0.2)**2)
+        
+        density_slice = density_slice * (
+            2.0 * slice_core +
+            0.5 * slice_surface +
+            0.3 * slice_quantum
+        )
+        density_slice = density_slice / np.max(density_slice)
+
+        ax2.plot(r_slice, density_slice, 'b-', label='Quantum Density Profile')
+        ax2.set_xlabel('r/R_☉')
+        ax2.set_ylabel('ρ/ρ_c')
+        ax2.set_title('Radial Density Structure')
+        ax2.grid(True)
+        ax2.legend()
+
+        plt.tight_layout()
         
         if save_path:
-            plt.savefig(save_path)
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
 
 
     def _compute_quantum_density(self) -> np.ndarray:
@@ -1411,6 +1841,45 @@ class StarParameters:
     }
 
 
+# def main():
+#     """Run star simulation with real star verification."""
+#     configure_logging(simulation_type='star_simulation')
+    
+#     # Create single framework instance
+#     qg = QuantumGravity()
+    
+#     # Create main simulation with shared framework
+#     sim = StarSimulation(mass=1.0, radius=1.0, name="SUN", quantum_gravity=qg)
+    
+#     # Run standard simulation
+#     #sim.run_simulation(t_final=1.0)
+    
+#     # Run real star verification
+#     real_star_results = sim.verify_real_stars()
+    
+#     # Plot results
+#     output_dir = Path("results/stellar")
+#     output_dir.mkdir(parents=True, exist_ok=True)
+    
+    
+#     # Log verification results
+#     logging.info("\nReal Star Verification Results:")
+#     for star_name, results in real_star_results.items():
+#         logging.info(f"\n{star_name}:")
+#         logging.info(f"Mass: {results['mass']}M☉, Radius: {results['radius']}R☉")
+#         logging.info(f"Real Core Temperature: {results['real_core_temperature']}")
+#         logging.info(f"Core Temperature: {results['core_temperature']}")
+#         logging.info(f"Core Temperature Error: {results['core_temp_error']*100:.1f}%")
+#         logging.info(f"Real Surface Temperature: {results['real_surface_temperature']}")
+#         logging.info(f"Surface Temperature: {results['surface_temperature']:.2e} K")
+#         logging.info(f"Surface Temperature Error: {results['surface_temp_error']*100:.1f}%")
+#         if results['density_error'] is not None:
+#             logging.info(f"Central Density Error: {results['density_error']*100:.1f}%")
+#         if results['pressure_error'] is not None:
+#             logging.info(f"Central Pressure Error: {results['pressure_error']*100:.1f}%")
+#         logging.info(f"Quantum Factor: {results['quantum_factor']:.24e}")
+#         logging.info(f"Verification Passed: {results['passed']}")
+
 def main():
     """Run star simulation with real star verification."""
     configure_logging(simulation_type='star_simulation')
@@ -1418,22 +1887,35 @@ def main():
     # Create single framework instance
     qg = QuantumGravity()
     
+    # Create output directories
+    output_dir = Path("results/stellar")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     # Create main simulation with shared framework
     sim = StarSimulation(mass=1.0, radius=1.0, name="SUN", quantum_gravity=qg)
-    
-    # Run standard simulation
-    #sim.run_simulation(t_final=1.0)
     
     # Run real star verification
     real_star_results = sim.verify_real_stars()
     
-    # Plot results
-    output_dir = Path("results/star")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    sim.plot_results(str(output_dir / "star_evolution.png"))
-    sim.plot_star_geometry(str(output_dir / "star_geometry.png"))
-    
+    # Generate geometry plots for each verified star
+    for star_name, params in StarParameters.__dict__.items():
+        if isinstance(params, dict):
+            # Create simulation for this specific star
+            star_sim = StarSimulation(
+                mass=params['mass'],
+                radius=params['radius'],
+                name=star_name,
+                quantum_gravity=qg
+            )
+            
+            # Run mini-simulation to get state
+            star_sim.run_simulation(t_final=0.1)
+            
+            # Generate and save geometry plot
+            star_sim.plot_star_geometry(str(output_dir / f"{star_name}_geometry.png"))
+            
+            logging.info(f"Generated geometry plot for {star_name}")
+
     # Log verification results
     logging.info("\nReal Star Verification Results:")
     for star_name, results in real_star_results.items():

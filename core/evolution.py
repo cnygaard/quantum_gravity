@@ -35,34 +35,70 @@ class TimeEvolution:
         # Set Hubble parameter from state
         self.hubble_parameter = getattr(self.state, 'hubble_parameter', None)
 
-    def _evolve_state(self, dt: float):
-        """Single evolution step with full cosmological dynamics."""
-        if self.state is None:
-            raise ValueError("State not properly initialized")
+    # def _evolve_state(self, dt: float):
+    #     """Single evolution step with full cosmological dynamics."""
+    #     if self.state is None:
+    #         raise ValueError("State not properly initialized")
             
-        # Store initial values
-        a_old = self.state.scale_factor
-        H = self.state.hubble_parameter
+    #     # Store initial values
+    #     a_old = self.state.scale_factor
+    #     H = self.state.hubble_parameter
+        
+    #     # Scale factor evolution
+    #     self.state.scale_factor *= (1 + H * dt)
+        
+    #     # Energy density evolution with proper dilution
+    #     w = self.state.equation_of_state
+    #     scale_ratio = self.state.scale_factor / a_old
+        
+    #     # Include both classical dilution and quantum effects
+    #     classical_dilution = scale_ratio**(-3*(1+w))
+    #     quantum_factor = 1 + (CONSTANTS['l_p']/self.state.scale_factor)**2
+        
+    #     self.state.energy_density *= classical_dilution * quantum_factor
+        
+    #     # Update Hubble parameter based on Friedmann equation
+    #     G = CONSTANTS['G']
+    #     self.state.hubble_parameter = np.sqrt(8*np.pi*G*self.state.energy_density/3)
+        
+    #     # Evolve quantum state
+    #     self.state.evolve(dt)
+
+    def _evolve_state(self, dt: float):
+        """Evolution following Ashtekar et al. LQC equations."""
+        # Parameters from paper
+        gamma = 0.2375  # Barbero-Immirzi parameter
+        beta = CONSTANTS['l_p']/self.state.scale_factor
+        mu_0 = np.sqrt(3/(16*np.pi*gamma)) * CONSTANTS['l_p']
+        
+        # Get state variables
+        a = self.state.scale_factor
+        rho = self.state.energy_density
+        rho_crit = 0.41 * CONSTANTS['rho_planck']
+        
+        # Modified Friedmann equation with quantum corrections
+        quantum_factor = 1 - rho/rho_crit  # Key quantum correction
+        H = self._compute_hubble(self.state)
+        #H = np.sqrt((8*np.pi*CONSTANTS['G']/3) * rho * quantum_factor)
         
         # Scale factor evolution
-        self.state.scale_factor *= (1 + H * dt)
+        a_new = a * np.exp(H * dt)
         
-        # Energy density evolution with proper dilution
+        # Energy density evolution with quantum corrections
         w = self.state.equation_of_state
-        scale_ratio = self.state.scale_factor / a_old
+        rho_new = rho * (a/a_new)**(3*(1 + w))
         
-        # Include both classical dilution and quantum effects
-        classical_dilution = scale_ratio**(-3*(1+w))
-        quantum_factor = 1 + (CONSTANTS['l_p']/self.state.scale_factor)**2
+        # Update state
+        self.state.scale_factor = a_new
+        self.state.energy_density = rho_new
+        self.state.hubble_parameter = H * quantum_factor
         
-        self.state.energy_density *= classical_dilution * quantum_factor
-        
-        # Update Hubble parameter based on Friedmann equation
-        G = CONSTANTS['G']
-        self.state.hubble_parameter = np.sqrt(8*np.pi*G*self.state.energy_density/3)
-        
-        # Evolve quantum state
-        self.state.evolve(dt)
+        # Update metric with quantum corrections
+        for i in range(len(self.grid.points)):
+            for mu in range(1, 4):
+                g_old = self.state.get_metric_component((mu, mu), i)
+                g_new = g_old * (1 + quantum_factor * (beta**2))
+                self.state.set_metric_component((mu, mu), i, g_new)
 
     def step(self, state):
         """Evolve quantum state forward by one timestep."""
@@ -184,37 +220,67 @@ class TimeEvolution:
         dt_next = self._adjust_timestep(dt, error)
         
         return new_state, dt_next
+    
+    # def _compute_derivative(self, state: 'QuantumState') -> 'QuantumState':
+    #     """Compute time derivative of state."""
+    #     # Get current values
+    #     H = state.hubble_parameter  # Use state's hubble parameter
+    #     a = state.scale_factor
+    #     rho = state.energy_density
+    
+    #     # Scale factor evolution with quantum corrections
+    #     quantum_factor = 1 + (CONSTANTS['l_p']/a)**2
+    #     da_dt = H * a * quantum_factor
+    
+    #     # Modified energy density evolution including quantum effects
+    #     w = state.equation_of_state  # Get from state
+    #     quantum_pressure = CONSTANTS['hbar'] * H**2 / (2 * a**3)
+    #     drho_dt = -3 * H * (rho + w*rho + quantum_pressure)
+    
+    #     # Update metric components with proper time evolution
+    #     for i in range(len(self.grid.points)):
+    #         for mu in range(1, 4):
+    #             current = state.get_metric_component((mu, mu), i)
+    #             # Include both classical and quantum terms
+    #             new_value = current * (1 + da_dt * self.dt) + \
+    #                    quantum_factor * CONSTANTS['l_p']**2 / a**3
+    #             state.set_metric_component((mu, mu), i, new_value)
+    
+    #     # Compute power spectrum evolution
+    #     k_modes = 2 * np.pi * np.fft.fftfreq(len(self.grid.points))
+    #     delta_k = np.fft.fftn(state._metric_array[1:, 1:, :] - 
+    #                      np.mean(state._metric_array[1:, 1:, :]))
+    
+    #     return da_dt, drho_dt, (k_modes, np.abs(delta_k)**2)
+    
     def _compute_derivative(self, state: 'QuantumState') -> 'QuantumState':
-        """Compute time derivative of state."""
-        # Get current values
-        H = state.hubble_parameter  # Use state's hubble parameter
-        a = state.scale_factor
-        rho = state.energy_density
-    
-        # Scale factor evolution with quantum corrections
-        quantum_factor = 1 + (CONSTANTS['l_p']/a)**2
-        da_dt = H * a * quantum_factor
-    
-        # Modified energy density evolution including quantum effects
-        w = state.equation_of_state  # Get from state
-        quantum_pressure = CONSTANTS['hbar'] * H**2 / (2 * a**3)
-        drho_dt = -3 * H * (rho + w*rho + quantum_pressure)
-    
-        # Update metric components with proper time evolution
-        for i in range(len(self.grid.points)):
-            for mu in range(1, 4):
-                current = state.get_metric_component((mu, mu), i)
-                # Include both classical and quantum terms
-                new_value = current * (1 + da_dt * self.dt) + \
-                       quantum_factor * CONSTANTS['l_p']**2 / a**3
-                state.set_metric_component((mu, mu), i, new_value)
-    
-        # Compute power spectrum evolution
-        k_modes = 2 * np.pi * np.fft.fftfreq(len(self.grid.points))
-        delta_k = np.fft.fftn(state._metric_array[1:, 1:, :] - 
-                         np.mean(state._metric_array[1:, 1:, :]))
-    
-        return da_dt, drho_dt, (k_modes, np.abs(delta_k)**2)
+        """Compute derivatives with improved stability."""
+        rho_crit = 0.41 * CONSTANTS['rho_planck']
+        
+        # Get state variables with regularization
+        a = max(state.scale_factor, CONSTANTS['l_p'])  # Avoid division by zero
+        rho = min(state.energy_density, rho_crit)  # Bound energy density
+        
+        # Quantum-corrected Friedmann equation
+        #quantum_factor = 1 - rho/rho_crit
+        #H = state.hubble_parameter * quantum_factor
+        # Modified Friedmann equation with quantum corrections
+        H_classical = self.hubble_parameter * (self.initial_scale/a)**(3/2)
+        quantum_bounce = np.sqrt(1 - rho/rho_crit)
+        quantum_geometry = 1 + (CONSTANTS['l_p']/a)**2
+        
+        H = H_classical * quantum_bounce * quantum_geometry
+        
+        # Compute derivatives with quantum corrections
+        da_dt = H * a
+        drho_dt = -3 * H * rho * (1 + state.equation_of_state)
+        
+        # Include quantum geometric effects
+        beta = CONSTANTS['l_p']/a
+        quantum_correction = 1 + beta**2
+        
+        return da_dt * quantum_correction, drho_dt * quantum_correction
+
     def _estimate_error(self,
                        old_state: 'QuantumState',
                        new_state: 'QuantumState') -> float:
@@ -281,31 +347,66 @@ class TimeEvolution:
         
         return new_state
 
+    # def _evolve_state(self, dt: float):
+    #     """Single evolution step with full cosmological dynamics."""
+    #     # Store initial values
+    #     a_old = self.state.scale_factor
+    #     H = self.state.hubble_parameter
+        
+    #     # Scale factor evolution
+    #     self.state.scale_factor *= (1 + H * dt)
+        
+    #     # Energy density evolution with proper dilution
+    #     w = self.state.equation_of_state
+    #     scale_ratio = self.state.scale_factor / a_old
+        
+    #     # Include both classical dilution and quantum effects
+    #     classical_dilution = scale_ratio**(-3*(1+w))
+    #     quantum_factor = 1 + (CONSTANTS['l_p']/self.state.scale_factor)**2
+        
+    #     self.state.energy_density *= classical_dilution * quantum_factor
+        
+    #     # Update Hubble parameter based on Friedmann equation
+    #     G = CONSTANTS['G']
+    #     self.state.hubble_parameter = np.sqrt(8*np.pi*G*self.state.energy_density/3)
+        
+    #     # Evolve quantum state
+    #     self.state.evolve(dt)
+
     def _evolve_state(self, dt: float):
-        """Single evolution step with full cosmological dynamics."""
-        # Store initial values
-        a_old = self.state.scale_factor
-        H = self.state.hubble_parameter
+        """Evolution following Ashtekar et al. LQC equations."""
+        # Parameters from paper
+        gamma = 0.2375  # Barbero-Immirzi parameter
+        beta = CONSTANTS['l_p']/self.state.scale_factor
+        mu_0 = np.sqrt(3/(16*np.pi*gamma)) * CONSTANTS['l_p']
+        
+        # Get state variables
+        a = self.state.scale_factor
+        rho = self.state.energy_density
+        rho_crit = 0.41 * CONSTANTS['rho_planck']
+        
+        # Modified Friedmann equation with quantum corrections
+        quantum_factor = 1 - rho/rho_crit  # Key quantum correction
+        H = np.sqrt((8*np.pi*CONSTANTS['G']/3) * rho * quantum_factor)
         
         # Scale factor evolution
-        self.state.scale_factor *= (1 + H * dt)
+        a_new = a * np.exp(H * dt)
         
-        # Energy density evolution with proper dilution
+        # Energy density evolution with quantum corrections
         w = self.state.equation_of_state
-        scale_ratio = self.state.scale_factor / a_old
+        rho_new = rho * (a/a_new)**(3*(1 + w))
         
-        # Include both classical dilution and quantum effects
-        classical_dilution = scale_ratio**(-3*(1+w))
-        quantum_factor = 1 + (CONSTANTS['l_p']/self.state.scale_factor)**2
+        # Update state
+        self.state.scale_factor = a_new
+        self.state.energy_density = rho_new
+        self.state.hubble_parameter = H * quantum_factor
         
-        self.state.energy_density *= classical_dilution * quantum_factor
-        
-        # Update Hubble parameter based on Friedmann equation
-        G = CONSTANTS['G']
-        self.state.hubble_parameter = np.sqrt(8*np.pi*G*self.state.energy_density/3)
-        
-        # Evolve quantum state
-        self.state.evolve(dt)
+        # Update metric with quantum corrections
+        for i in range(len(self.grid.points)):
+            for mu in range(1, 4):
+                g_old = self.state.get_metric_component((mu, mu), i)
+                g_new = g_old * (1 + quantum_factor * (beta**2))
+                self.state.set_metric_component((mu, mu), i, g_new)
 
 
     def _estimate_splitting_error(self,
@@ -326,3 +427,23 @@ class TimeEvolution:
         """Compute commutator of two operators."""
         # Sparse matrix multiplication for efficiency
         return op1.matrix @ op2.matrix - op2.matrix @ op1.matrix
+
+    def _compute_hubble(self, state):
+        """Standardized Hubble calculation for all code paths"""
+        rho_crit = 0.41 * CONSTANTS['rho_planck']
+        H_classical = self.hubble_parameter * (self.initial_scale/state.scale_factor)**(3/2)
+        quantum_bounce = np.sqrt(1 - state.energy_density/rho_crit)
+        quantum_geometry = 1 + (CONSTANTS['l_p']/state.scale_factor)**2
+        return H_classical * quantum_bounce * quantum_geometry
+
+
+    def compute_hubble_from_friedmann(self, state):
+        """Calculate Hubble parameter from modified Friedmann equation"""
+        G = CONSTANTS['G']
+        rho = state.energy_density
+        rho_crit = 0.41 * CONSTANTS['rho_planck']
+        
+        # Modified Friedmann equation
+        H = np.sqrt((8*np.pi*G/3) * rho * (1 - rho/rho_crit))
+        
+        return H

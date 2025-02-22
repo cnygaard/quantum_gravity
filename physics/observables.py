@@ -626,7 +626,9 @@ class CosmicEvolutionObservable:
         state.previous_scale_factor = a
         
         # Calculate classical and quantum Hubble parameters
-        H = a_dot / a  # Classical Hubble parameter
+        #H = a_dot / a  # Classical Hubble parameter
+        #H = self._compute_hubble(state)
+        H = state.hubble_parameter
         H_quantum = H * (1 + (CONSTANTS['l_p'] * H)**2)  # Quantum-corrected
         
         # Calculate remaining parameters

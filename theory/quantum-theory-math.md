@@ -1201,6 +1201,14 @@ Verification criterion:
 3. Information preservation:
    S(t) ≥ S(0)
 
+## C. Modified Friedmann equation
+
+H² = (8πG/3)ρ(1 - ρ/ρc)  # Modified Friedmann
+
+Classical term: (8πG/3)ρ from standard cosmology
+Quantum correction: (1 - ρ/ρc) prevents singularity
+ρc = critical density where quantum effects dominate
+
 ## Implementation Notes
 
 1. Numerical Integration:

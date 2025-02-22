@@ -204,47 +204,117 @@ class CosmologySimulation:
         self.acceleration_history = []
         self.entropy_history = []
 
+    # def _check_quantum_bounce(self, state: 'QuantumState') -> bool:
+    #     """Detect quantum bounce conditions."""
+    #     # Planck density threshold with proper scaling
+    #     rho_planck = CONSTANTS['c']**5 / (CONSTANTS['hbar'] * CONSTANTS['G']**2)
+    
+    #     # Enhanced quantum correction terms
+    #     quantum_factor = (CONSTANTS['l_p'] / state.scale_factor)**2
+    #     bounce_threshold = rho_planck * quantum_factor
+    
+    #     # Add hysteresis to prevent rapid oscillations
+    #     if not hasattr(self, '_last_bounce_time'):
+    #         self._last_bounce_time = -float('inf')
+        
+    #     # Minimum time between bounces (in Planck times)
+    #     bounce_cooldown = 10.0
+    
+    #     # Check bounce conditions with proper timing
+    #     bounce_condition = (state.energy_density >= bounce_threshold and 
+    #                    state.time - self._last_bounce_time > bounce_cooldown)
+    
+    #     if bounce_condition:
+    #         self._last_bounce_time = state.time
+        
+    #     return bounce_condition
+
     def _check_quantum_bounce(self, state: 'QuantumState') -> bool:
-        """Detect quantum bounce conditions."""
-        # Planck density threshold with proper scaling
-        rho_planck = CONSTANTS['c']**5 / (CONSTANTS['hbar'] * CONSTANTS['G']**2)
-    
-        # Enhanced quantum correction terms
-        quantum_factor = (CONSTANTS['l_p'] / state.scale_factor)**2
-        bounce_threshold = rho_planck * quantum_factor
-    
-        # Add hysteresis to prevent rapid oscillations
-        if not hasattr(self, '_last_bounce_time'):
-            self._last_bounce_time = -float('inf')
+        """Check for quantum bounce following paper criteria."""
+        rho_crit = 0.41 * CONSTANTS['rho_planck']
+        rho = state.energy_density
         
-        # Minimum time between bounces (in Planck times)
-        bounce_cooldown = 10.0
-    
-        # Check bounce conditions with proper timing
-        bounce_condition = (state.energy_density >= bounce_threshold and 
-                       state.time - self._last_bounce_time > bounce_cooldown)
-    
-        if bounce_condition:
-            self._last_bounce_time = state.time
+        # Smooth transition function near bounce
+        def transition(x):
+            x0 = 0.95 * rho_crit  # Transition point
+            width = 0.1 * rho_crit  # Transition width
+            return 0.5 * (1 + np.tanh((x - x0)/width))
         
-        return bounce_condition
+        bounce_factor = transition(rho)
+        return bounce_factor > 0.5
+
+    # def _handle_bounce(self, state):
+    #     """Handle quantum bounce transition with proper dynamics."""
+    #     rho_crit = 0.41 * CONSTANTS['rho_planck']
+        
+    #     if state.energy_density >= rho_crit:
+    #         # Reverse contraction to expansion
+    #         self.hubble_parameter = abs(self.hubble_parameter)
+    #         # Update state parameters
+    #         quantum_factor = 1 - state.energy_density/rho_crit
+    #         state.scale_factor *= quantum_factor
+    #         # Update hubble parameter in state
+    #         state.hubble_parameter = self.hubble_parameter
+
     def _handle_bounce(self, state):
-        """Handle quantum bounce transition with proper dynamics."""
+        """Handle quantum bounce with smooth transition following Ashtekar et al."""
         rho_crit = 0.41 * CONSTANTS['rho_planck']
         
-        if state.energy_density >= rho_crit:
-            # Reverse contraction to expansion
-            self.hubble_parameter = abs(self.hubble_parameter)
-            # Update state parameters
-            quantum_factor = 1 - state.energy_density/rho_crit
-            state.scale_factor *= quantum_factor
-            # Update hubble parameter in state
+        # Smooth transition function
+        def transition(x):
+            return 0.5 * (1 + np.tanh((rho_crit - x)/(0.1 * rho_crit)))
+        
+        if state.energy_density >= 0.1 * rho_crit:
+            # Smooth reversal of Hubble parameter
+            quantum_factor = transition(state.energy_density)
+            self.hubble_parameter = (
+                quantum_factor * abs(self.hubble_parameter) - 
+                (1 - quantum_factor) * self.hubble_parameter
+            )
+            
+            # Update state parameters smoothly
+            state.scale_factor *= (1 - state.energy_density/rho_crit * quantum_factor)
             state.hubble_parameter = self.hubble_parameter
+
+    def _validate_hubble(self, H: float, state: 'QuantumState') -> Dict[str, float]:
+        """Validate Hubble parameter with detailed diagnostics"""
+        # 1. Unit consistency check
+        H_planck = H * CONSTANTS['l_p']/CONSTANTS['t_p']  # Convert to Planck units
+        
+        # 2. Calculate derivative - handle both single points and history
+        a = state.scale_factor
+        if len(self.time_points) > 1:
+            # Use history if available
+            da_dt = np.gradient(self.scale_factor_history, self.time_points)[-1]
+            H_direct = da_dt/a
+        else:
+            # For single timestep, use current H
+            H_direct = H
+        
+        # 3. Physical bounds validation
+        H_max = np.sqrt(0.41 * CONSTANTS['rho_planck']/3)  # Maximum allowed H
+        H_classical = self.hubble_parameter * (self.initial_scale/a)**(3/2)
+        
+        # 4. Classical vs quantum monitoring
+        quantum_correction = 1 + (CONSTANTS['l_p']/a)**2
+        H_quantum = H_classical * quantum_correction
+        
+        return {
+            'H_planck': H_planck,
+            'H_direct': H_direct,
+            'H_max': H_max, 
+            'H_classical': H_classical,
+            'H_quantum': H_quantum,
+            'quantum_correction': quantum_correction
+        }
+
 
     def run_simulation(self, t_final: float, dt_save: float = None) -> None:
         """Run simulation with synchronized data collection and full logging."""
         # Initialize simulation parameters
         dt = 0.01
+        dt_save = 0.1 if dt_save is None else dt_save  # Save every 0.1 time units
+        next_save = 0.0
         t = 0.0
         step_count = 0
         
@@ -262,12 +332,6 @@ class CosmologySimulation:
         initial_metrics = self.verifier.verify_geometric_entanglement(self.qg.state)
         initial_friedmann = self.verifier.verify_friedmann_equations(self.qg.state)
         
-        self.verification_results.append({
-            'time': t,
-            'scale_factor': self.qg.state.scale_factor,
-            'lhs': initial_metrics['lhs'],
-            'rhs': initial_metrics['rhs']
-        })
         self.hubble_squared_lhs.append(initial_friedmann['lhs'])
         self.hubble_squared_rhs.append(initial_friedmann['rhs'])
         
@@ -312,7 +376,9 @@ class CosmologySimulation:
             })
             self.hubble_squared_lhs.append(friedmann['lhs'])
             self.hubble_squared_rhs.append(friedmann['rhs'])
-            
+            H = state.hubble_parameter
+            diagnostics = self._validate_hubble(H, state)
+
             # Detailed logging every 100 steps
             if step_count % 100 == 0:
                 # Log inflation dynamics
@@ -322,7 +388,15 @@ class CosmologySimulation:
                     f"\nSlow-roll parameter ε = {inflation_metrics['slow_roll']:.6e}"
                     f"\nPerturbation spectrum = {inflation_metrics['spectrum']:.6e}"
                 )
-                
+
+                logging.info(f"""
+                Hubble Diagnostics:
+                H (computed): {H:.6e}
+                H (direct): {diagnostics['H_direct']:.6e}
+                H (classical): {diagnostics['H_classical']:.6e}
+                Quantum correction: {diagnostics['quantum_correction']:.6e}
+                """)
+
                 # Log cosmic evolution
                 cosmic = self.cosmic_obs.measure(self.qg.state)
                 logging.info(
@@ -385,7 +459,18 @@ class CosmologySimulation:
                     self.qg.state.set_metric_component((mu, mu), i, current * quantum_factor)
             
             # Record measurements
-            self._record_measurements(t)
+            if t >= next_save:
+                self.verification_results.append({
+                    'time': t,
+                    'scale_factor': self.qg.state.scale_factor,
+                    'lhs': initial_metrics['lhs'],
+                    'rhs': initial_metrics['rhs']
+                })
+                self._record_measurements(t)
+                next_save += dt_save
+
+
+            #self._record_measurements(t)
         
         logging.info(f"Simulation completed: {step_count} steps")
 
@@ -529,9 +614,13 @@ class CosmologySimulation:
         
         # Verification plots with synchronized data
         ax9 = fig.add_subplot(gs[4, 0])
-        ax9.plot(verification_times[:min_length], lhs_values[:min_length], 
+        #ax9.plot(verification_times[:min_length], lhs_values[:min_length], 
+        #        label='LHS', color='blue')
+        #ax9.plot(verification_times[:min_length], rhs_values[:min_length], 
+        #        label='RHS', color='red')
+        ax9.plot(time_array, lhs_values[:min_length], 
                 label='LHS', color='blue')
-        ax9.plot(verification_times[:min_length], rhs_values[:min_length], 
+        ax9.plot(time_array, rhs_values[:min_length], 
                 label='RHS', color='red')
         ax9.set_yscale('log')
         ax9.set_xlabel('Time [t_P]')
@@ -561,23 +650,78 @@ class CosmologySimulation:
         plt.show()
 
 
-    def compute_derived_quantities(self) -> Dict[str, np.ndarray]:
-        """Compute derived cosmological quantities."""
-        # Hubble parameter
-        H = np.gradient(self.scale_factor_history, self.time_points)
-        H = H / np.maximum(self.scale_factor_history, CONSTANTS['l_p'])
+    # def compute_derived_quantities(self) -> Dict[str, np.ndarray]:
+    #     """Compute derived cosmological quantities."""
+    #     # Hubble parameter
+    #     H = np.gradient(self.scale_factor_history, self.time_points)
+    #     H = H / np.maximum(self.scale_factor_history, CONSTANTS['l_p'])
     
-        # Deceleration parameter with regularization
-        a = np.array(self.scale_factor_history)
-        a_dot = np.gradient(a, self.time_points)
-        a_dot = np.maximum(a_dot, CONSTANTS['l_p'])
-        q = -a * np.gradient(a_dot, self.time_points) / a_dot**2
+    #     # Deceleration parameter with regularization
+    #     a = np.array(self.scale_factor_history)
+    #     a_dot = np.gradient(a, self.time_points)
+    #     a_dot = np.maximum(a_dot, CONSTANTS['l_p'])
+    #     q = -a * np.gradient(a_dot, self.time_points) / a_dot**2
             
+    #     return {
+    #         'hubble_parameter': H,
+    #         'deceleration_parameter': q
+    #     }
+
+    # def compute_derived_quantities(self) -> Dict[str, np.ndarray]:
+    #     # Use Savitzky-Golay filter for smooth derivatives
+    #     from scipy.signal import savgol_filter
+        
+    #     # Smooth the scale factor data first
+    #     window = 31  # Must be odd
+    #     poly_order = 4
+    #     a_smooth = savgol_filter(self.scale_factor_history, window, poly_order)
+        
+    #     # Calculate smoothed derivatives
+    #     dt = np.mean(np.diff(self.time_points))
+    #     a_dot = savgol_filter(a_smooth, window, poly_order, deriv=1, delta=dt)
+    #     a_ddot = savgol_filter(a_smooth, window, poly_order, deriv=2, delta=dt)
+        
+    #     # Compute Hubble parameter
+    #     H = a_dot / np.maximum(a_smooth, CONSTANTS['l_p'])
+        
+    #     # Compute deceleration parameter
+    #     q = -a_smooth * a_ddot / (a_dot**2)
+        
+    #     # Apply additional smoothing to remove any remaining artifacts
+    #     H = savgol_filter(H, window, poly_order)
+    #     q = savgol_filter(q, window, poly_order)
+        
+    #     return {
+    #         'hubble_parameter': H,
+    #         'deceleration_parameter': q
+    #     }
+
+    def compute_derived_quantities(self) -> Dict[str, np.ndarray]:
+        from scipy.signal import savgol_filter
+        
+        # Adjust window size based on data length
+        n_points = len(self.scale_factor_history)
+        window = min(15, n_points if n_points % 2 != 0 else n_points - 1)
+        poly_order = min(3, window - 1)
+        
+        # Smooth the scale factor data
+        a_smooth = savgol_filter(self.scale_factor_history, window, poly_order)
+        
+        # Calculate derivatives with proper timestep
+        dt = self.time_points[1] - self.time_points[0]  # Use actual time intervals
+        a_dot = savgol_filter(a_smooth, window, poly_order, deriv=1, delta=dt)
+        a_ddot = savgol_filter(a_smooth, window, poly_order, deriv=2, delta=dt)
+        
+        # Compute parameters with smoothed derivatives
+        H = a_dot / np.maximum(a_smooth, CONSTANTS['l_p'])
+        q = -a_smooth * a_ddot / (a_dot**2)
+        
         return {
             'hubble_parameter': H,
             'deceleration_parameter': q
         }
-        
+
+
 def main():
     """Run cosmology simulation example."""
     # Setup logging
@@ -597,7 +741,7 @@ def main():
     
     # Run until significant expansion
     t_final = 20.0  # in Planck times
-    sim.run_simulation(t_final)
+    sim.run_simulation(t_final, dt_save=0.5)
     
     # Plot and save results
     sim.plot_results(str(output_dir / "evolution.png"))

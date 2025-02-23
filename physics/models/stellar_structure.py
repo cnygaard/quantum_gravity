@@ -11,16 +11,40 @@ class StellarStructure(StellarCore):
         super().__init__(mass_solar=mass, radius_solar=radius, 
                         stellar_type=stellar_type)
 
+        # Add Leech lattice parameters
+        self.N_min = np.float128(196560)  # Leech lattice points
+        self.dim = np.float128(24)  
         self.M_star = self.mass * CONSTANTS['M_sun']
         self.R_star = self.radius * CONSTANTS['R_sun']
         self.setup_quantum_parameters()
+
+    def compute_gamma_squared(self):
+        N_min = np.float128(self.N_min)
+        dim = np.float128(self.dim)
+        pi = np.float128(np.pi)
         
+        lattice_factor = np.sqrt(N_min/dim)
+        geometric_norm = lattice_factor/(2*pi)
+        quantum_norm = geometric_norm/(2*pi)
+        gamma_squared = quantum_norm/(2*pi)
+        
+        return gamma_squared  # = 0.364840
+
+
+    # def setup_quantum_parameters(self):
+    #     """Initialize quantum geometric parameters"""
+    #     self.beta = CONSTANTS['l_p'] / self.R_star
+    #     # Enhanced quantum coupling
+    #     self.gamma_eff = 0.407 * self.beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
+    #     print(f"Effective coupling: {self.gamma_eff}")
+
     def setup_quantum_parameters(self):
-        """Initialize quantum geometric parameters"""
         self.beta = CONSTANTS['l_p'] / self.R_star
-        # Enhanced quantum coupling
-        self.gamma_eff = 0.407 * self.beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
-        
+        gamma_squared = self.compute_gamma_squared()
+        self.gamma_eff = np.sqrt(gamma_squared) * self.beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
+        print(f"Effective coupling: {self.gamma_eff}")
+
+
     def compute_quantum_factor(self):
         """Quantum geometric effects with enhanced neutron star coupling"""
         r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])

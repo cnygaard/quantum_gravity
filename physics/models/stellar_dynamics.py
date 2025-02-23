@@ -101,7 +101,7 @@ class StellarDynamics(DarkMatterAnalysis):
         # Enhanced quantum coupling for small galaxies
         beta = m_scale * r_scale
         print(f"beta: {beta}")
-        gamma = np.float128(0.407) * beta * lattice_factor
+        gamma = np.float128(0.364840 ) * beta * lattice_factor
         print(f"gamma: {gamma}")
         print(f"return 1.0 + gamma * 1e-3: {1.0 + gamma * 1e-3}")
         return np.float128(1.0) + gamma * np.float128(1e-3)
@@ -133,7 +133,7 @@ class StellarDynamics(DarkMatterAnalysis):
         
         # Scale-dependent entanglement
         beta = np.float128(1e-6 * np.sqrt(m_natural/r_natural))
-        gamma = np.float128(0.407 * beta)
+        gamma = np.float128(0.364840  * beta)
         
         # Leech lattice contribution
         lattice_factor = np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/CONSTANTS['LEECH_LATTICE_DIMENSION'])
@@ -155,7 +155,7 @@ class StellarDynamics(DarkMatterAnalysis):
         
         # Quantum geometric factor
         beta = self.compute_quantum_factor() - 1.0
-        gamma_eff = np.float128(0.407 * beta * np.sqrt(196560/24))
+        gamma_eff = np.float128(0.364840  * beta * np.sqrt(196560/24))
         
         # Enhanced NFW profile
         rho_correction = 1.0 + gamma_eff * np.log(1 + x)/(1 + 0.047*x)

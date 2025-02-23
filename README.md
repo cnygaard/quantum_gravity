@@ -119,7 +119,7 @@ dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
 
 Where:
 - dS² represents spacetime interval measure
-- γ is the coupling constant = 0.407 
+- γ is the coupling constant = 0.364840  
 - êᵢ(x) = quantum geometric operators entanglement operators
 - îᵢ(x) = information operators
 
@@ -133,7 +133,7 @@ Q(r) = 1 + c(M)exp(-r/rs)√(Λ/24)
 
 Quantum geometric coupling:
 β = (1/M_scale)exp(-r_scale/10.0)
-γ = 0.407β√(Λ/24)
+γ = 0.364840 β√(Λ/24)
 
 Where:
 - c(M) = 17.0exp(-M_visible/M_total)
@@ -161,11 +161,11 @@ Quantum corrections across mass scales:
 - Large (10¹² M_☉): β = 0.0166
 
 4. Quantum-Classical Transition:
-γ_eff = 0.407β√(196560/24)
+γ_eff = 0.364840 β√(196560/24)
 
 5. Quantum Corrections:
 β = l_p/R  # Scale parameter
-γ_eff = γβ√0.407  # Effective coupling
+γ_eff = γβ√0.364840   # Effective coupling
 
 6. Energy Relations
 E = KE + PE describes total energy as sum of kinetic and potential energy
@@ -572,7 +572,7 @@ The framework implements quantum gravity corrections that manifest as dark matte
 
 Dark Matter as Quantum Gravity:
 - β_galaxy = ℓ_P/R_galaxy (quantum/classical scale ratio)
-- γ_eff = 2β√0.407 (effective coupling)
+- γ_eff = 2β√0.364840  (effective coupling)
 - Force enhancement: F_eff/F_classical ≈ 1 + γ_eff
 
 Dark Energy as Modified Vacuum:

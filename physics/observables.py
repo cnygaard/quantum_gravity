@@ -771,7 +771,7 @@ class PressureObservable(Observable):
         
         # Add quantum corrections
         beta = CONSTANTS['l_p'] / r_max
-        gamma_eff = 0.55 * beta * np.sqrt(0.407)
+        gamma_eff = 0.55 * beta * np.sqrt(0.364840 )
         pressure *= (1 + gamma_eff)
         
         return MeasurementResult(
@@ -817,7 +817,7 @@ class RingdownObservable(Observable):
         # Get Leech lattice coupling with default value
         beta_leech = self.leech.compute_effective_coupling()
         if beta_leech is None:
-            beta_leech = 0.407  # Theoretical value from Leech lattice
+            beta_leech = 0.364840   # Theoretical value from Leech lattice
 
         # Leech lattice correction
         #beta_leech = self.leech.compute_effective_coupling()

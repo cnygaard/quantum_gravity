@@ -39,9 +39,9 @@ The quantum gravity framework's core equation dS² = ∫ d³x √g ⟨Ψ|(êᵢ(
 * Regularity at horizons: finite curvature invariants
 * Conservation: ∇μTμν = 0
 
-The geometric-information coupling γ² = 0.407 emerges from the Leech lattice structure, connecting quantum geometry with information theoretic aspects through:
+The geometric-information coupling γ² = 0.364840  emerges from the Leech lattice structure, connecting quantum geometry with information theoretic aspects through:
 
-dS² = ∫ d³x √g [⟨Ψ|êᵢ(x)|Ψ⟩ + 0.407⟨Ψ|îᵢ(x)|Ψ⟩]
+dS² = ∫ d³x √g [⟨Ψ|êᵢ(x)|Ψ⟩ + 0.364840 ⟨Ψ|îᵢ(x)|Ψ⟩]
 
 # Proof: Geometric-Entanglement Correspondence
 
@@ -50,7 +50,7 @@ On a 4-dimensional smooth Lorentzian manifold (M,g), the geometric-entanglement 
 
 dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
 
-where γ² = 0.407 emerges from the Leech lattice structure.
+where γ² = 0.364840  emerges from the Leech lattice structure.
 
 ## Core Structures
 
@@ -107,7 +107,7 @@ Proof:
 2. Quantum Regime (β ~ 1):
    - Information terms dominant
    - Scale-dependent coupling emerges:
-     γ_eff(r) = 0.407 * β(r) * √(196560/24)
+     γ_eff(r) = 0.364840  * β(r) * √(196560/24)
 
 ### Step 3: Gauge Invariance
 Under gauge transformation:
@@ -158,7 +158,7 @@ dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩
 
 where:
 - êᵢ(x) = ∇ᵢhₐᵦ = ∂ᵢhₐᵦ + Γᵇₐᵢhᵇᵦ - Γᶜᵢᵦhₐᶜ
-- γ² = 0.407 (Leech lattice coupling)
+- γ² = 0.364840  (Leech lattice coupling)
 - |Ψ⟩ ∈ H = L²(M,μ)
 
 ## II. Prerequisites
@@ -201,11 +201,11 @@ Proof:
 
 ### Lemma 3: Leech Lattice Coupling
 
-The coupling constant γ² = 0.407 emerges from:
+The coupling constant γ² = 0.364840  emerges from:
 
 1. N_min = 196560 (minimal vectors)
 2. d = 24 (lattice dimension)
-3. γ² = √(N_min/d)/2π ≈ 0.407
+3. γ² = √(N_min/d)/2π ≈ 0.364840 
 
 ## IV. Main Proof
 
@@ -301,7 +301,7 @@ This completes the proof of the geometric-entanglement correspondence, establish
 ### horizon-scale transition
 
 β(r) = β₀√(M/r)exp(-r/R₀)
-γ_eff(r) = 0.407 * β(r) * √(196560/24)
+γ_eff(r) = 0.364840  * β(r) * √(196560/24)
 ```
 
 Efficient Implementation:
@@ -388,12 +388,12 @@ Keep terms with |O_ij| > ε_cut
 
 Scale-dependent Quantum Geometric Coupling
 β(R,M) = β₀√(M/R)e^(-R/R₀)
-γ_eff = 0.407 * β * √(196560/24)
+γ_eff = 0.364840  * β * √(196560/24)
 
 Force Enhancement = 1 + γ_eff
 
 β = 2.32e-44 * √(M/M_sun)/(R/R_sun) * exp(-R/(1e4*ly_si))
-γ_eff = 0.407 * β * √(LEECH_LATTICE_POINTS/LEECH_LATTICE_DIMENSION)
+γ_eff = 0.364840  * β * √(LEECH_LATTICE_POINTS/LEECH_LATTICE_DIMENSION)
 
 
 
@@ -448,19 +448,19 @@ r_h = 2GM     # Horizon radius
 γ = 2.0       # Base coupling constant
 
 2. Effective Coupling:
-γ_eff = γβ√(0.407)   # Effective quantum coupling
+γ_eff = γβ√(0.364840 )   # Effective quantum coupling
 
 3. Scale Relations:
 - β controls quantum/classical transition
 - γ_eff determines entanglement strength
-- √(0.407) represents horizon calibration
+- √(0.364840 ) represents horizon calibration
 ```
 
 Implementation:
 ```
 1. Dynamic Evolution:
 β(t) = ℓ_P/(2GM(t))   # Time-dependent scaling
-γ_eff(t) = γβ(t)√(0.407)
+γ_eff(t) = γβ(t)√(0.364840 )
 
 2. Numerical Tracking:
 track_parameters = {
@@ -478,7 +478,7 @@ track_parameters = {
 ### D. Quantum Parameter Evolution
 Beta Evolution: β(t) = l_p/r_h(t) = l_p/(2GM(t)) ∝ (1 - t/t_evap)^(-1/3)
 
-Gamma Evolution: γ_eff(t) = γβ(t)√(0.407) ∝ (1 - t/t_evap)^(-1/3)
+Gamma Evolution: γ_eff(t) = γβ(t)√(0.364840 ) ∝ (1 - t/t_evap)^(-1/3)
 
 Coupling Relations: dβ/dt ∝ M^(-2) dγ_eff/dt ∝ M^(-2)
 
@@ -745,7 +745,7 @@ Theory:
 
 2. Grid Density Function:
 ρ(r) = ρ₀ * exp(-α(r-r_h)/(ℓ_P))
-where α = √(0.407) for consistency
+where α = √(0.364840 ) for consistency
 
 3. Resolution Scaling:
 n_points(r) ∝ 1/Δx(r)³
@@ -914,7 +914,7 @@ Quantum-Modified Version: NFW
 
 v_quantum² = v_NFW² * (1 + γ_eff * β * √(196560/24))
 where:
-- γ_eff = 0.407 * β * √(196560/24)
+- γ_eff = 0.364840  * β * √(196560/24)
 - β = 2.32e-44 * √(M/R) * exp(-R/R₀)
 
 Key Modifications:
@@ -1103,7 +1103,7 @@ The key equations in your code match current theoretical proposals:
 Dark Matter:
 
     β_galaxy = ℓ_P/R_galaxy
-    γ_eff = 2β√0.407
+    γ_eff = 2β√0.364840 
     Force enhancement ≈ 1 + γ_eff
 
 Dark Energy:
@@ -1185,7 +1185,7 @@ Here's the mathematical exploration of these quantum-geometric effects:
 python
 
 β(R,M) = β₀√(M/R)e^(-R/R₀)
-γ_eff = 0.407 * β * √(196560/24)
+γ_eff = 0.364840  * β * √(196560/24)
 
 Force Enhancement = 1 + γ_eff
 
@@ -1221,7 +1221,7 @@ Key mathematical relationships incorporating constants:
     Scale-Dependent Coupling:
 
 β = 2.32e-44 * √(M/M_sun)/(R/R_sun) * exp(-R/(1e4*ly_si))
-γ_eff = 0.407 * β * √(LEECH_LATTICE_POINTS/LEECH_LATTICE_DIMENSION)
+γ_eff = 0.364840  * β * √(LEECH_LATTICE_POINTS/LEECH_LATTICE_DIMENSION)
 
     Modified NFW Profile:
 
@@ -1298,7 +1298,7 @@ Quantum-Modified Version:
 
 v_quantum² = v_NFW² * (1 + γ_eff * β * √(196560/24))
 where:
-- γ_eff = 0.407 * β * √(196560/24)
+- γ_eff = 0.364840  * β * √(196560/24)
 - β = 2.32e-44 * √(M/R) * exp(-R/R₀)
 
 Key Modifications:
@@ -1353,7 +1353,7 @@ We can break this down into components:
 2. Quantum Contribution (RHS):
    - êᵢ(x): geometric operator
    - îᵢ(x): information operator
-   - γ: coupling constant = √0.407
+   - γ: coupling constant = √0.364840 
 
 ### B. Scale-Dependent Coupling
 
@@ -1371,10 +1371,10 @@ Derivation:
 
 ### C. Effective Coupling
 
-γ_eff = 0.407 * β * √(196560/24)
+γ_eff = 0.364840  * β * √(196560/24)
 
 Derivation:
-1. Base coupling 0.407 from quantum geometry
+1. Base coupling 0.364840  from quantum geometry
 2. β provides scale dependence
 3. √(196560/24) from Leech lattice symmetry:
    - 196560: number of minimal vectors

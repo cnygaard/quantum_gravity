@@ -636,7 +636,7 @@ class UnifiedTheoryVerification:
         try:
             lattice_coupling = self.entanglement_handler.leech.compute_effective_coupling()
         except AttributeError:
-            lattice_coupling = 0.407  # Theoretical value from Leech lattice
+            lattice_coupling = 0.364840   # Theoretical value from Leech lattice
 
         # Enhanced geometric scaling
         horizon_radius = 2 * CONSTANTS['G'] * state.mass
@@ -715,7 +715,7 @@ class CosmologicalVerification:
     def __init__(self, simulation: 'CosmologySimulation'):
         self.sim = simulation
         # Coupling constants for cosmological verification
-        self.gamma = 0.407  # Coupling constant
+        self.gamma = 0.364840   # Coupling constant
         self.alpha = 0.001  # Scale factor evolution parameter
         self.beta = 1.5e-6  # Quantum correction strength
         
@@ -805,7 +805,7 @@ class CosmologicalVerification:
     def _compute_quantum_contribution(self, state):
         # Quantum geometric contribution
         beta = CONSTANTS['l_p']/state.scale_factor
-        gamma_eff = self.gamma * beta * np.sqrt(0.407)
+        gamma_eff = self.gamma * beta * np.sqrt(0.364840 )
         
         # Energy density with quantum corrections
         rho_quantum = state.energy_density * (1 + gamma_eff)
@@ -883,7 +883,7 @@ class DarkMatterVerification(UnifiedTheoryVerification):
         
         # Quantum-corrected velocity with radius-dependent coupling
         beta_r = CONSTANTS['l_p'] / r_points
-        gamma_eff_r = state.gamma * beta_r * np.sqrt(0.407)
+        gamma_eff_r = state.gamma * beta_r * np.sqrt(0.364840 )
         quantum_factor = 1 + gamma_eff_r * (1 + np.log(r_points/CONSTANTS['l_p']))
         v_quantum = v_classical * np.sqrt(quantum_factor)
         
@@ -912,7 +912,7 @@ class DarkMatterVerification(UnifiedTheoryVerification):
         
         # Quantum-corrected effective mass
         beta_r = CONSTANTS['l_p'] / r_points
-        gamma_eff_r = state.gamma * beta_r * np.sqrt(0.407)
+        gamma_eff_r = state.gamma * beta_r * np.sqrt(0.364840 )
         M_quantum = M_classical * (1 + gamma_eff_r)
         
         return {
@@ -930,7 +930,7 @@ class UniversalQuantumEffects:
     def __init__(self, R_galaxy: float, R_universe: float):
         # Dark Matter (Quantum Gravity)
         self.beta_galaxy = CONSTANTS['l_p']/R_galaxy  # Quantum/classical scale ratio
-        self.gamma_eff_galaxy = 2.0 * self.beta_galaxy * np.sqrt(0.407)  # Effective coupling
+        self.gamma_eff_galaxy = 2.0 * self.beta_galaxy * np.sqrt(0.364840 )  # Effective coupling
         
         # Dark Energy (Quantum Vacuum) 
         self.beta_universe = CONSTANTS['l_p']/R_universe  # Cosmic scale ratio

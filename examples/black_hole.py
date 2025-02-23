@@ -424,7 +424,7 @@ class BlackHoleSimulation:
         """Log comprehensive physics parameters and formulas."""
         # Calculate physical parameters
         self.beta = CONSTANTS['l_p'] / horizon_radius
-        self.gamma_eff = self.verifier.gamma * self.beta * np.sqrt(0.407)
+        self.gamma_eff = self.verifier.gamma * self.beta * np.sqrt(0.364840 )
         
         # Get verification metrics
         geo_metrics = self.verifier._verify_geometric_entanglement(self.qg.state)

@@ -55,7 +55,7 @@ class StarSimulation(StellarStructure):
         # Galaxy scale parameters
         self.galaxy_radius = galaxy_radius or 50000 * CONSTANTS['R_sun']
         self.beta_galaxy = CONSTANTS['l_p'] / self.galaxy_radius
-        self.gamma_eff_galaxy = self.gamma * self.beta_galaxy * np.sqrt(0.407)
+        self.gamma_eff_galaxy = self.gamma * self.beta_galaxy * np.sqrt(0.364840 )
 
         self.mass = mass  # In solar masses
         self.radius = radius  # In solar radii
@@ -73,12 +73,12 @@ class StarSimulation(StellarStructure):
         # Initialize quantum parameters with proper scaling
         self.gamma = 0.55  # Coupling constant
         self.beta = CONSTANTS['l_p'] / self.R_star  # Quantum scale parameter
-        self.gamma_eff = self.gamma * self.beta * np.sqrt(0.407)  # Effective coupling
+        self.gamma_eff = self.gamma * self.beta * np.sqrt(0.364840 )  # Effective coupling
 
         # Galaxy scale quantum parameters
         self.galaxy_radius = galaxy_radius or 50000 * CONSTANTS['R_sun']  # Default ~50 kpc
         self.beta_galaxy = CONSTANTS['l_p'] / self.galaxy_radius
-        self.gamma_eff_galaxy = self.gamma * self.beta_galaxy * np.sqrt(0.407)
+        self.gamma_eff_galaxy = self.gamma * self.beta_galaxy * np.sqrt(0.364840 )
     
         # Quantum vacuum parameters
         self.rho_vacuum = CONSTANTS['hbar'] / (CONSTANTS['c'] * CONSTANTS['l_p']**4)
@@ -1964,7 +1964,7 @@ def compute_temperature_profile(self):
 
     # Scale quantum corrections by stellar type
     beta_local = CONSTANTS['l_p'] / (self.R_star * (self.mass**0.25))
-    gamma_quantum = 0.55 * beta_local * np.sqrt(0.407)
+    gamma_quantum = 0.55 * beta_local * np.sqrt(0.364840 )
     
     if self.radius < 0.5:  # Compact
         quantum_factor = 1.0 + 0.08 * gamma_quantum * (0.5/self.radius)**0.5
@@ -2001,7 +2001,7 @@ def _compute_central_pressure(self):
 
     # Fine-tuned quantum corrections by stellar type
     beta_local = CONSTANTS['l_p'] / (R * (M/CONSTANTS['M_sun'])**0.25)
-    gamma_quantum = 0.55 * beta_local * np.sqrt(0.407)
+    gamma_quantum = 0.55 * beta_local * np.sqrt(0.364840 )
     
     if self.radius < 0.5:
         quantum_factor = 1.0 + 0.12 * gamma_quantum * (0.5/self.radius)**0.5
@@ -2041,7 +2041,7 @@ def _compute_quantum_density(self) -> np.ndarray:
     
     # Enhanced quantum effects near core
     beta_local = CONSTANTS['l_p'] / (self.R_star * (self.mass**0.25))
-    gamma_quantum = 0.55 * beta_local * np.sqrt(0.407)
+    gamma_quantum = 0.55 * beta_local * np.sqrt(0.364840 )
     
     core_region = r_norm < 0.1
     quantum_factor = np.ones_like(r)

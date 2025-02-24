@@ -286,7 +286,7 @@ The coupling constant γ² = 0.364840  emerges from:
 ## VII. Physical Applications
 
 1. Black Hole Evolution:
-   - Mass loss rate: dM/dt = -ℏc⁶/(15360πG²M²)
+   - Mass loss rate: dM/dt = -ℏc⁴/(15360πG²M²)
    - Temperature: T = T_H(1 - β/2)
    - Entropy: S = S_BH(1 + γ_eff*ln(A/ℓ_P²))
 

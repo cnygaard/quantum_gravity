@@ -291,7 +291,9 @@ class UnifiedTheoryVerification:
         
         # Scale normalization with mass evolution
         mass_factor = (state.mass/state.initial_mass)**0.85  # Enhanced mass dependence
-        scale = np.sqrt(lhs * rhs) * (1 + beta) * mass_factor
+        #scale = np.sqrt(lhs * rhs) * (1 + beta) * mass_factor
+        # Add epsilon to prevent negative values under sqrt
+        scale = np.sqrt(abs(lhs * rhs) + 1e-30) * (1 + beta) * mass_factor
 
         return {
             'lhs': float(lhs/scale),

@@ -183,8 +183,8 @@ class StarSimulation(StellarStructure):
         """Setup observables for stellar measurements."""
         self.mass_obs = self.qg.physics.ADMMassObservable(self.qg.grid)
         self.radius_obs = self.qg.physics.AreaObservable(self.qg.grid)
-        self.temp_obs = self.qq.physics.StellarTemperatureObservable(self.qg.grid)  # Direct initialization
-        selfg.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
+        self.temp_obs = self.qg.physics.StellarTemperatureObservable(self.qg.grid)  # Direct initialization
+        self.density_obs = self.qg.physics.EnergyDensityObservable(self.qg.grid)
         self.pressure_obs = self.qg.physics.PressureObservable(self.qg.grid)
 
 
@@ -344,6 +344,9 @@ class StarSimulation(StellarStructure):
             # Mass evolution
             dm_dr = 4*np.pi*r**2 * rho_quantum
             
+            # Define P_quantum for relativistic corrections
+            P_quantum = P  # Pressure with quantum effects
+            
             # Full relativistic pressure evolution
             dP_dr = -CONSTANTS['G']*m*rho_quantum/(r**2) * \
                     (1 + P_quantum/(rho_quantum*CONSTANTS['c']**2)) * \
@@ -421,7 +424,13 @@ class StarSimulation(StellarStructure):
 
             # Extract numeric values from MeasurementResults
             density_value = np.asarray(density_result.value)
-            pressure_value = pressure_result.value[0].value if isinstance(pressure_result.value, np.ndarray) else pressure_result.value
+            
+            # Handle various pressure result formats
+            if isinstance(pressure_result.value, np.ndarray):
+                pressure_value = pressure_result.value[0].value if hasattr(pressure_result.value[0], 'value') else pressure_result.value[0]
+            else:
+                pressure_value = pressure_result.value
+                
             temp_value = np.asarray(temp_result.value)
             
             # Store numeric values in profile arrays
@@ -503,7 +512,7 @@ class StarSimulation(StellarStructure):
         phi = np.arctan2(self.qg.grid.points[:,1], self.qg.grid.points[:,0])
         
         # Calculate displacements from modes
-        xi_r = np.sum([self.A_n[n] * np.sin((n+1) * np.pi * r/self.R) 
+        xi_r = np.sum([self.A_n[n] * np.sin((n+1) * np.pi * r/self.R_star) 
                     for n in range(self.n_modes)], axis=0)
         
         # Update grid positions

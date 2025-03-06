@@ -47,11 +47,9 @@ class StellarDynamics(DarkMatterAnalysis):
         dampening = np.float128(1 + (0.02 * x * bulge_scale))
         
         v_dark = v_visible * np.sqrt(concentration * np.log(1 + x)/(x * dampening))
-        print(f"v_dark: {v_dark}")
         dark_fraction = np.float128((self.dark_mass / self.total_mass))
 
         v_gas = self.compute_gas_contribution()
-        print(f"v_gas: {v_gas}")
         #v_total = np.sqrt(v_visible**2 + (dark_fraction * v_dark)**2 + v_gas**2)
 
         v_total = np.sqrt(v_visible**2 + (dark_fraction * v_dark)**2)

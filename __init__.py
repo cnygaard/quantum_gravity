@@ -167,19 +167,35 @@ def configure_logging(mass: float = None, simulation_type: str = 'black_hole', l
     Args:
         mass: Mass parameter for black hole simulations
         simulation_type: Type of simulation ('black_hole' or 'cosmology')
+        log_file: Optional custom log file name
     """
-    # Clear existing handlers
+    # Get the root logger
     root = logging.getLogger()
+    
+    # Remember if we already had a StreamHandler
+    had_stream_handler = False
+    stream_handler = None
+    
+    # Clear existing handlers, but remember if we had a StreamHandler
     if root.handlers:
         for handler in root.handlers:
+            if isinstance(handler, logging.StreamHandler) and not isinstance(handler, logging.FileHandler):
+                had_stream_handler = True
+                stream_handler = handler
             root.removeHandler(handler)
             
     # Create output directory based on simulation type
     output_dir = Path(f"results/{simulation_type}")
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Configure logging to both file and console
-    handlers = [logging.StreamHandler()]
+    # Configure handlers
+    handlers = []
+    
+    # Restore or create StreamHandler for console output
+    if had_stream_handler and stream_handler:
+        handlers.append(stream_handler)
+    else:
+        handlers.append(logging.StreamHandler())
     
     # Add appropriate file handler based on simulation type
     if simulation_type == 'black_hole':
@@ -191,6 +207,7 @@ def configure_logging(mass: float = None, simulation_type: str = 'black_hole', l
         
     handlers.append(logging.FileHandler(str(output_dir / log_file), mode='w'))
     
+    # Apply configuration
     logging.basicConfig(
         level=logging.INFO,
         format='%(message)s',

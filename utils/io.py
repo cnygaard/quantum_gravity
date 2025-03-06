@@ -3,7 +3,7 @@ import numpy as np
 import h5py
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Tuple, Optional, Any, Union
 from dataclasses import dataclass
 from datetime import datetime
 import logging
@@ -347,6 +347,6 @@ class QuantumGravityIO:
 @dataclass
 class MeasurementResult:
     """Data structure for measurement results."""
-    value: Any
-    uncertainty: Optional[float]
-    metadata: Dict[str, Any]
+    value: Union[float, np.ndarray, Any]
+    uncertainty: Union[float, np.ndarray, Optional[float]]
+    metadata: Optional[Dict[str, Any]] = None

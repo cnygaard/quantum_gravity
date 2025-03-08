@@ -42,6 +42,7 @@ from physics.observables import (
     EnergyDensityObservable, QuantumCorrectionsObservable
 )
 from physics.models.stellar_dynamics import StellarDynamics
+from enhanced_galaxy_entanglement import EnhancedGalaxyEntanglementObservable
 
 class GalaxySimulation:
     """Quantum galaxy simulation with dark matter and geometric corrections."""
@@ -146,7 +147,7 @@ class GalaxySimulation:
         # Configure grid
         grid_config = self.qg.config.config['grid']
         N = grid_config['points_max']
-        N = 2000000
+        N = 100000
         
         # Log adaptive grid setup
         logging.info(f"Setting up adaptive grid for {self.galaxy_type} galaxy with {N} points")
@@ -423,8 +424,8 @@ class GalaxySimulation:
         self.energy_obs = EnergyDensityObservable(self.qg.grid)
         self.quantum_corrections_obs = QuantumCorrectionsObservable(self.qg.grid)
         
-        # Use robust entanglement observable instead
-        self.entanglement_obs = RobustEntanglementObservable(
+        # Use enhanced entanglement observable with quantum geometry integration
+        self.entanglement_obs = EnhancedGalaxyEntanglementObservable(
             self.qg.grid, 
             region_A=list(range(int(len(self.qg.grid.points) * 0.5)))  # Use half of points
         )
@@ -681,16 +682,27 @@ class GalaxySimulation:
         # Measure entanglement using observable
         entropy_result = self.entanglement_obs.measure(self.qg.state)
         
-        # Apply geometric scaling factor
-        entropy = entropy_result.value * (1 + self.gamma_eff * np.log(self.radius/CONSTANTS['l_p']))
-            
-        # Add dark matter contribution
-        dm_coupling = self.dark_matter_ratio * 0.1  # Scale with amount of dark matter
-        dm_contribution = entropy * dm_coupling * np.sqrt(self.dark_matter_ratio)
+        # Apply geometric scaling factor - log of the ratio between galaxy radius and Planck length
+        # This captures the vast scale difference between quantum and galactic scales
+        scale_factor = np.log(self.radius/CONSTANTS['l_p']) / 50.0  # Normalize by dividing by 50
         
-        return entropy + dm_contribution
-
-        #return entropy
+        # Calculate base entropy with improved scaling
+        base_entropy = entropy_result.value * (1 + scale_factor)
+        
+        # Add dark matter contribution with better scaling
+        dm_factor = 0.2 * np.sqrt(self.dark_matter_ratio)  # Reduced coupling factor 
+        
+        # Calculate total entropy
+        total_entropy = base_entropy * (1 + dm_factor)
+        
+        # Add complexity factor based on number of grid points
+        n_points = len(self.qg.grid.points)
+        complexity_factor = np.log(n_points) / 10.0  # Log scaling of grid complexity
+        
+        # Final entropy with all factors
+        final_entropy = total_entropy * (1 + complexity_factor)
+        
+        return final_entropy
     
     def run_simulation(self, t_final: float, dt: float = None) -> None:
         """Run galaxy simulation for specified time.
@@ -1296,7 +1308,12 @@ def main():
     galaxies = [
         {'type': 'spiral', 'mass': 5e10, 'radius': 15.0, 'dm_ratio': 5.0},
         {'type': 'elliptical', 'mass': 1e11, 'radius': 20.0, 'dm_ratio': 7.0},
-        {'type': 'dwarf', 'mass': 1e9, 'radius': 5.0, 'dm_ratio': 10.0}
+        # {'type': 'dwarf', 'mass': 1e9, 'radius': 5.0, 'dm_ratio': 10.0},
+
+        # # Added smaller galaxies
+        # {'type': 'ultra_compact_dwarf', 'mass': 5e7, 'radius': 0.5, 'dm_ratio': 15.0},
+        # {'type': 'ultra_faint_dwarf', 'mass': 1e5, 'radius': 0.2, 'dm_ratio': 100.0},
+        # {'type': 'satellite', 'mass': 1e8, 'radius': 1.0, 'dm_ratio': 20.0}
     ]
     
     # Create single quantum gravity instance to share

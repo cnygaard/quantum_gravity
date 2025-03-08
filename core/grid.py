@@ -31,7 +31,7 @@ class AdaptiveGrid:
         self.l_p = l_p
         self.points = None  # Initialize as None
         self.neighbors = None
-        self.max_points = 10000000  # Add limit
+        self.max_points = 20000000  # Add limit
 
     def set_points(self, points: np.ndarray) -> None:
         """Set grid points with memory-efficient neighbor computation."""

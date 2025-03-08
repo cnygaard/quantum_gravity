@@ -286,9 +286,13 @@ class EntanglementObservable(Observable):
         # Construct reduced density matrix
         rho_A = self._construct_reduced_density_matrix(state)
 
+        # Create a non-zero starting vector for ARPACK
+        n = rho_A.shape[0]
+        v0 = np.ones(n) / np.sqrt(n)  # Uniform non-zero vector
+
         # Compute von Neumann entropy
         eigenvals = sparse_linalg.eigsh(rho_A, k=min(6, rho_A.shape[0]-1),
-                                        which='LM', return_eigenvectors=False)
+                                        which='LM', v0=v0, return_eigenvectors=False)
 
         # Remove numerical noise
         eigenvals = eigenvals[eigenvals > 1e-10]
@@ -547,9 +551,54 @@ class RobustEntanglementObservable:
                 # Optimized ARPACK parameters
                 opts = {'maxiter': 500, 'tol': 1e-3}  # Relaxed tolerance for speed
                 
-                logging.info(f"Using optimized ARPACK (n={n}, k={k})")
-                result = sparse_linalg.eigsh(mat, k=k, which='LM', v0=v0, 
-                                          return_eigenvectors=False, **opts)
+                # Debug matrix properties
+                logging.info(f"_compute_eigenvalues: Matrix shape={mat.shape}, nnz={mat.nnz}")
+                if mat.nnz > 0:
+                    diag = mat.diagonal()
+                    logging.info(f"_compute_eigenvalues: Matrix diagonal min/max={min(diag):.6e}/{max(diag):.6e}")
+                    logging.info(f"_compute_eigenvalues: Matrix trace={np.sum(diag):.6e}")
+                
+                # Debug starting vector
+                logging.info(f"_compute_eigenvalues: v0 shape={v0.shape}, norm={np.linalg.norm(v0):.6e}")
+                logging.info(f"_compute_eigenvalues: v0 min/max/zeros={np.min(v0):.6e}/{np.max(v0):.6e}/{np.sum(v0==0)}")
+                
+                # Ensure matrix conditioning
+                if isinstance(mat, csr_matrix) and mat.nnz == 0:
+                    logging.warning("_compute_eigenvalues: Empty matrix detected, adding identity")
+                    # Add small identity matrix to avoid zero matrix
+                    eye = csr_matrix((np.ones(n), (range(n), range(n))), shape=(n, n))
+                    mat = mat + 1e-6 * eye
+                
+                logging.info(f"Using optimized ARPACK in _compute_eigenvalues (n={n}, k={k})")
+                try:
+                    result = sparse_linalg.eigsh(mat, k=k, which='LM', v0=v0, 
+                                              return_eigenvectors=False, **opts)
+                    logging.info(f"_compute_eigenvalues: ARPACK successful, found {len(result)} eigenvalues")
+                except Exception as e:
+                    logging.error(f"_compute_eigenvalues: ARPACK failed with: {type(e).__name__}: {str(e)}")
+                    
+                    # Try alternative parameters
+                    try:
+                        logging.info("_compute_eigenvalues: Trying alternative ARPACK parameters")
+                        # Use different starting vector 
+                        v0_alt = np.random.randn(n)
+                        v0_alt = v0_alt / np.linalg.norm(v0_alt)
+                        
+                        # Try with even more relaxed parameters
+                        result = sparse_linalg.eigsh(
+                            mat, 
+                            k=max(1, k-1),       # Reduce k
+                            which='LA',          # Largest algebraic instead of magnitude
+                            v0=v0_alt,
+                            maxiter=1000,
+                            tol=1e-2,
+                            return_eigenvectors=False
+                        )
+                        logging.info(f"_compute_eigenvalues: Alternative ARPACK successful with {len(result)} eigenvalues")
+                    except Exception as e2:
+                        logging.error(f"_compute_eigenvalues: Alternative ARPACK also failed: {type(e2).__name__}: {str(e2)}")
+                        # Let it fall through to the analytical approach
+                        result = None
             except Exception as e:
                 logging.info(f"ARPACK failed: {str(e)}")
         
@@ -797,9 +846,83 @@ class RobustEntanglementObservable:
         
         # Multi-stage approach with early exits for performance
         
-        # Stage 1: Try original implementation first
+        # Stage 1: Try original implementation first with direct eigensolver approach
         try:
-            result = self.original_obs.measure(state)
+            # Directly compute the reduced density matrix using original observer's method
+            rho_A = self.original_obs._construct_reduced_density_matrix(state)
+            
+            # Get matrix size
+            n = rho_A.shape[0]
+            
+            # Create physically motivated non-zero starting vector
+            v0 = self._create_physically_motivated_starting_vector(state, n)
+            
+            # Debug information for matrix and arpack parameters
+            k_value = min(6, n-1)
+            logging.info(f"ARPACK Debug: Matrix shape={rho_A.shape}, nnz={rho_A.nnz}, k={k_value}")
+            if rho_A.nnz > 0:
+                logging.info(f"ARPACK Debug: Matrix diagonal min/max: {min(rho_A.diagonal()):.6e}/{max(rho_A.diagonal()):.6e}")
+                logging.info(f"ARPACK Debug: v0 shape={v0.shape}, norm={np.linalg.norm(v0):.6e}, zeros={np.sum(v0==0)}")
+            
+            # Validate parameters
+            if k_value <= 0:
+                logging.warning(f"ARPACK Debug: Invalid k value: {k_value} for matrix size {n}")
+                raise ValueError(f"Invalid k value for ARPACK: {k_value}")
+            
+            # Check for compatibility
+            if len(v0) != n:
+                logging.warning(f"ARPACK Debug: Vector/matrix dimension mismatch: v0 dim={len(v0)}, matrix dim={n}")
+                v0 = np.ones(n) / np.sqrt(n)  # Fallback to uniform vector
+            
+            try:
+                # Compute eigenvalues directly with our custom starting vector
+                logging.info(f"ARPACK Debug: Calling eigsh with matrix shape={rho_A.shape}, k={k_value}")
+                eigenvals = sparse_linalg.eigsh(
+                    rho_A, 
+                    k=k_value,
+                    which='LM', 
+                    v0=v0,  # Use our physically motivated starting vector
+                    return_eigenvectors=False
+                )
+                logging.info(f"ARPACK Debug: Success - found {len(eigenvals)} eigenvalues")
+            except Exception as e:
+                logging.error(f"ARPACK Debug: Failed with error: {type(e).__name__}: {str(e)}")
+                
+                # Try with more relaxed parameters as fallback
+                try:
+                    logging.info(f"ARPACK Debug: Retrying with fallback parameters")
+                    # Create simpler starting vector
+                    v0_new = np.random.rand(n)
+                    v0_new = v0_new / np.linalg.norm(v0_new)
+                    
+                    # Use more relaxed parameters
+                    eigenvals = sparse_linalg.eigsh(
+                        rho_A,
+                        k=max(1, k_value-1),  # Reduce k if possible
+                        which='LA',           # Largest algebraic instead of magnitude
+                        v0=v0_new,
+                        tol=1e-2,             # More relaxed tolerance
+                        maxiter=1000,         # More iterations
+                        return_eigenvectors=False
+                    )
+                    logging.info(f"ARPACK Debug: Fallback succeeded with {len(eigenvals)} eigenvalues")
+                except Exception as e2:
+                    logging.error(f"ARPACK Debug: Fallback also failed: {type(e2).__name__}: {str(e2)}")
+                    # Let original error propagate
+                    raise e
+            
+            # Remove numerical noise
+            eigenvals = eigenvals[eigenvals > 1e-10]
+            
+            # Compute entropy
+            S = -np.sum(eigenvals * np.log(eigenvals))
+            
+            # Estimate uncertainty
+            dS = np.sqrt(np.sum(np.log(eigenvals)**2 * eigenvals))
+            
+            # Create result
+            result = MeasurementResult(S, dS)
+            
             # Cache successful result
             self._cache[cache_key] = result
             return result

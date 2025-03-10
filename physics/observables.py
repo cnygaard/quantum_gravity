@@ -334,12 +334,18 @@ class RobustEntanglementObservable:
     
     def __init__(self, grid, region_A=None):
         from physics.observables import EntanglementObservable
+        from physics.models.renormalization_flow import RenormalizationFlow
+        
         self.grid = grid
         # Use half the points if region not specified
         self.region_A = region_A if region_A is not None else list(range(len(grid.points) // 2))
         self.original_obs = EntanglementObservable(grid, self.region_A)
         # Add caching to improve performance
         self._cache = {}
+        
+        # Initialize renormalization flow for scale bridging
+        self.rg_flow = RenormalizationFlow()
+        logging.info(f"RobustEntanglementObservable initialized with scale bridging")
         
     def _create_galaxy_specific_regions(self, state):
         """Create optimized regions with reduced dimensionality for better performance."""
@@ -659,10 +665,10 @@ class RobustEntanglementObservable:
         return result
     
     def _compute_entanglement_coupling(self, i, j, state):
-        """Optimized calculation of entanglement coupling with caching.
+        """Optimized calculation of entanglement coupling with scale bridging and caching.
         
-        This implementation uses an improved scale-adapted approach that better
-        handles the extreme difference between Planck scale and galactic scales.
+        This implementation uses the renormalization flow approach to properly bridge
+        the gap between Planck scale and galactic scales.
         """
         # Create a unique key for this coupling
         cache_key = f"coupling_{i}_{j}_{getattr(state, 'time', 0.0):.1f}"
@@ -678,52 +684,68 @@ class RobustEntanglementObservable:
         # Prevent division by zero
         r = max(r, self.grid.l_p)
         
-        # Create dimensionless scale-invariant parameter
-        # η = (l_p/R)^α * (M/M_p)^β where α=β=0.5
-        characteristic_radius = state.radius
-        eta = np.sqrt(CONSTANTS['l_p']/characteristic_radius) * np.sqrt(state.mass/CONSTANTS['m_p'])
-        
-        # For galaxy simulations, use a type-specific correlation length
-        if hasattr(state, 'galaxy_type'):
-            # Add dark matter enhancement
-            if hasattr(state, 'dark_matter_ratio'):
-                dm_factor = np.sqrt(state.dark_matter_ratio)
-            else:
-                dm_factor = np.sqrt(5.0)  # Default dark matter ratio
-                
-            # Correlation length depends on galaxy type
-            if state.galaxy_type == 'dwarf':
-                # Dwarf galaxies have shorter correlation lengths
-                xi = characteristic_radius * 1e-10
-                factor = 0.8
-            elif state.galaxy_type == 'spiral':
-                # Spiral galaxies have intermediate correlation lengths
-                xi = characteristic_radius * 1e-9
-                factor = 1.0
-            elif state.galaxy_type == 'elliptical':
-                # Elliptical galaxies have longer correlation lengths
-                xi = characteristic_radius * 1e-8
-                factor = 1.2
-            else:
-                # Default correlation length
-                xi = characteristic_radius * 1e-9
-                factor = 1.0
-                
-            # Apply dark matter enhancement
-            xi *= dm_factor
+        # Use renormalization flow for proper scale-dependent coupling
+        if hasattr(state, 'radius') and hasattr(state, 'mass'):
+            characteristic_radius = state.radius
+            M_si = state.mass
             
-            # Compute scale-appropriate coupling for galaxies
-            # Use bounded exponent to prevent underflow
-            exponent = min(r/xi, 100.0)
-            result = 1j * factor * eta * np.exp(-exponent) / max(r, xi)
+            # Get scale-dependent coupling from renormalization flow
+            beta_flow = self.rg_flow.flow_up(characteristic_radius, M_si)
+            coupling_factor = self.rg_flow.compute_enhancement(beta_flow)
+            
+            # Create dimensionless scale-invariant parameter with flow influence
+            eta = np.sqrt(CONSTANTS['l_p']/characteristic_radius) * np.sqrt(state.mass/CONSTANTS['m_p'])
+            eta *= np.sqrt(beta_flow)  # Apply scale-dependent adjustment
+            
+            # For galaxy simulations, use a type-specific correlation length with scale bridging
+            if hasattr(state, 'galaxy_type'):
+                # Get dark matter enhancement from renormalization flow
+                if hasattr(state, 'dark_matter_ratio'):
+                    # Use scale-bridged dark matter ratio
+                    flow_dm_ratio = self.rg_flow.compute_dark_matter_ratio(characteristic_radius, M_si)
+                    dm_factor = np.sqrt(flow_dm_ratio)
+                else:
+                    dm_factor = np.sqrt(5.0)  # Default
+                
+                # Correlation length depends on galaxy type with scale bridging
+                if state.galaxy_type == 'dwarf':
+                    # Dwarf galaxies - use proper scale from renormalization flow
+                    xi = characteristic_radius * 1e-10 * coupling_factor
+                    factor = 0.8
+                elif state.galaxy_type == 'spiral':
+                    # Spiral galaxies
+                    xi = characteristic_radius * 1e-9 * coupling_factor
+                    factor = 1.0
+                elif state.galaxy_type == 'elliptical':
+                    # Elliptical galaxies
+                    xi = characteristic_radius * 1e-8 * coupling_factor
+                    factor = 1.2
+                else:
+                    # Default with proper scaling
+                    xi = characteristic_radius * 1e-9 * coupling_factor
+                    factor = 1.0
+                
+                # Apply dark matter enhancement
+                xi *= dm_factor
+                
+                # Compute scale-appropriate coupling with proper renormalization flow
+                exponent = min(r/xi, 100.0)
+                result = 1j * factor * eta * np.exp(-exponent) / max(r, xi)
+            else:
+                # For non-galaxy states, use renormalization flow for proper correlation length
+                local_density = self._compute_local_density(i, state)
+                
+                # Correlation length with renormalization flow influence
+                xi = CONSTANTS['l_p'] * (local_density/CONSTANTS['rho_planck'])**(-0.3)
+                xi *= coupling_factor  # Apply scale-dependent correction
+                
+                # Bounded exponent to prevent underflow
+                exponent = min(r/xi, 100.0)
+                result = 1j * eta * np.exp(-exponent) / max(r, xi)
         else:
-            # For non-galaxy states, calculate local density
-            local_density = self._compute_local_density(i, state)
-            
-            # Correlation length scales inversely with local density
-            xi = CONSTANTS['l_p'] * (local_density/CONSTANTS['rho_planck'])**(-0.3)
-            
-            # Bounded exponent to prevent underflow
+            # Fall back to original approach if state lacks required properties
+            eta = 0.01  # Default coupling
+            xi = r * 0.1  # Default correlation length
             exponent = min(r/xi, 100.0)
             result = 1j * eta * np.exp(-exponent) / max(r, xi)
         

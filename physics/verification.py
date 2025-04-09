@@ -130,11 +130,13 @@ class UnifiedTheoryVerification:
         rhs_radiation = de**2 + self.gamma**2 * di**2 - radiation_term
         rhs_quantum = quantum_factor * (de**2 + self.gamma**2 * di**2)
         
-        # Calculate errors
-        error_original = abs(lhs - rhs_original)/max(abs(lhs), 1e-10)
-        error_time_dep = abs(lhs - rhs_time_dep)/max(abs(lhs), 1e-10)
-        error_radiation = abs(lhs - rhs_radiation)/max(abs(lhs), 1e-10)
-        error_quantum = abs(lhs - rhs_quantum)/max(abs(lhs), 1e-10)
+        # Calculate errors with vectorized operations
+        rhs_values = np.array([rhs_original, rhs_time_dep, rhs_radiation, rhs_quantum])
+        denominator = max(abs(lhs), 1e-10)
+        errors = np.abs(lhs - rhs_values) / denominator
+        
+        # Unpack the results
+        error_original, error_time_dep, error_radiation, error_quantum = errors
         
         return {
             'spacetime_interval': float(ds),
@@ -537,12 +539,18 @@ class UnifiedTheoryVerification:
         n_local = len(local_indices)
         rho = np.zeros((n_local, n_local), dtype=complex)
         
-        for i, idx_i in enumerate(local_indices):
-            for j, idx_j in enumerate(local_indices):
-                # Sum over all quantum states
-                for k, coeff in state.coefficients.items():
-                    rho[i,j] += abs(coeff)**2 * state.basis_states[k][idx_i] * \
-                            state.basis_states[k][idx_j].conjugate()
+        # Vectorized implementation
+        # Pre-extract all local basis states for better performance
+        local_basis_states = {}
+        for k in state.coefficients:
+            local_basis_states[k] = state.basis_states[k][local_indices]
+        
+        # Compute outer products for each quantum state and add to density matrix
+        for k, coeff in state.coefficients.items():
+            # Use numpy's outer product for vectorization
+            basis_local = local_basis_states[k]
+            outer_product = np.outer(basis_local, basis_local.conjugate())
+            rho += abs(coeff)**2 * outer_product
                     
         return rho
 
@@ -554,13 +562,18 @@ class UnifiedTheoryVerification:
         distances = np.linalg.norm(points - x, axis=1)
         local_indices = np.where(distances < radius)[0]
         
-        # Construct local state vector
+        # Vectorized implementation
+        # Construct local state vector using direct indexing
         local_state = np.zeros(len(local_indices), dtype=complex)
         
-        for i, idx in enumerate(local_indices):
-            # Sum over quantum states
-            for k, coeff in state.coefficients.items():
-                local_state[i] += coeff * state.basis_states[k][idx]
+        # Pre-extract basis states for local indices to improve performance
+        local_basis_states = {}
+        for k in state.coefficients:
+            local_basis_states[k] = state.basis_states[k][local_indices]
+        
+        # Vectorized calculation - sum all quantum states at once
+        for k, coeff in state.coefficients.items():
+            local_state += coeff * local_basis_states[k]
                 
         # Normalize
         norm = np.sqrt(np.sum(np.abs(local_state)**2))

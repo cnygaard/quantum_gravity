@@ -153,7 +153,7 @@ class GalaxySimulation:
         # Configure grid
         grid_config = self.qg.config.config['grid']
         N = grid_config['points_max']
-        N = 80000
+        N = 1000000
         
         # Log adaptive grid setup
         logging.info(f"Setting up adaptive grid for {self.galaxy_type} galaxy with {N} points")
@@ -633,9 +633,6 @@ class GalaxySimulation:
         M_si = self.total_mass   # Already in kg
         rs_si = self.scale_radius # Already in meters
         
-        # We'll use a physically motivated approach based on scale bridging
-        velocities = np.zeros_like(radii)
-        
         # Base velocity scale - use typical observed values for this galaxy type
         if self.galaxy_type == 'spiral':
             base_velocity = 220.0  # km/s
@@ -650,24 +647,28 @@ class GalaxySimulation:
         mass_scale = (self.initial_stellar_mass / (1e11 * CONSTANTS['M_sun']))**0.25
         base_velocity *= mass_scale
         
-        # Calculate velocities using a realistic rotation curve profile
-        for i, r in enumerate(radii):
-            # Inner region: rising curve
-            if r < 0.05 * self.radius_kpc:
-                velocities[i] = base_velocity * (r / (0.05 * self.radius_kpc))
-            # Middle region: flat rotation curve
-            elif r < 0.8 * self.radius_kpc:
-                velocities[i] = base_velocity
-            # Outer region: slightly declining
-            else:
-                velocities[i] = base_velocity * (1.0 - 0.2 * (r - 0.8 * self.radius_kpc) / (0.2 * self.radius_kpc))
+        # Calculate velocities using a realistic rotation curve profile - vectorized
+        velocities = np.zeros_like(radii)
         
-        # Apply quantum corrections using renormalization flow
-        for i, r in enumerate(r_si):
-            # Get velocity enhancement factor from renormalization flow
-            v_enhancement = self.rg_flow.compute_rotation_curve(r, M_si, rs_si)
-            # Apply enhancement to velocity
-            velocities[i] *= v_enhancement
+        # Create masks for each region - vectorized approach
+        inner_mask = radii < 0.05 * self.radius_kpc
+        middle_mask = (radii >= 0.05 * self.radius_kpc) & (radii < 0.8 * self.radius_kpc)
+        outer_mask = radii >= 0.8 * self.radius_kpc
+        
+        # Inner region: rising curve
+        velocities[inner_mask] = base_velocity * (radii[inner_mask] / (0.05 * self.radius_kpc))
+        # Middle region: flat rotation curve
+        velocities[middle_mask] = base_velocity
+        # Outer region: slightly declining
+        outer_decline = 1.0 - 0.2 * (radii[outer_mask] - 0.8 * self.radius_kpc) / (0.2 * self.radius_kpc)
+        velocities[outer_mask] = base_velocity * outer_decline
+        
+        # Apply quantum corrections using renormalization flow - using list comprehension for vectorization
+        # since compute_rotation_curve likely can't be directly vectorized
+        v_enhancements = np.array([self.rg_flow.compute_rotation_curve(r, M_si, rs_si) for r in r_si])
+        
+        # Apply enhancements to velocities - vectorized
+        velocities *= v_enhancements
         
         self.last_rotation_curve = (radii, velocities)
         return radii, velocities
@@ -697,18 +698,17 @@ class GalaxySimulation:
         # Scale radius
         r_s = self.scale_radius
         
-        # Classical NFW profile
+        # Classical NFW profile - vectorized
         rho_s = self.dark_mass / (4 * np.pi * r_s**3)  # Characteristic density
         x = r_si / r_s
         rho_nfw = rho_s / (x * (1 + x)**2)
         
         # Apply quantum corrections using renormalization flow
-        rho_quantum = np.zeros_like(rho_nfw)
-        for i, r in enumerate(r_si):
-            # Get quantum correction factor from renormalization flow
-            quantum_factor = self.rg_flow.quantum_nfw_profile(r, M_si, r_s)
-            # Apply to NFW profile
-            rho_quantum[i] = rho_nfw[i] * quantum_factor
+        # Use list comprehension for vectorization since quantum_nfw_profile probably can't be directly vectorized
+        quantum_factors = np.array([self.rg_flow.quantum_nfw_profile(r, M_si, r_s) for r in r_si])
+        
+        # Apply correction factors to NFW profile - vectorized operation
+        rho_quantum = rho_nfw * quantum_factors
         
         # Store for later use
         self.last_dm_profile = (radii, rho_quantum)
@@ -1363,11 +1363,11 @@ def main():
     # Run simulations for different galaxy types
     galaxies = [
         {'type': 'spiral', 'mass': 5e10, 'radius': 15.0, 'dm_ratio': 5.0},
-        {'type': 'elliptical', 'mass': 1e11, 'radius': 20.0, 'dm_ratio': 7.0},
-        {'type': 'dwarf', 'mass': 1e9, 'radius': 5.0, 'dm_ratio': 10.0},
+        #{'type': 'elliptical', 'mass': 1e11, 'radius': 20.0, 'dm_ratio': 7.0},
+        #{'type': 'dwarf', 'mass': 1e9, 'radius': 5.0, 'dm_ratio': 10.0},
         
         # Added smaller galaxies
-        {'type': 'ultra_compact_dwarf', 'mass': 5e7, 'radius': 0.5, 'dm_ratio': 15.0}
+        #{'type': 'ultra_compact_dwarf', 'mass': 5e7, 'radius': 0.5, 'dm_ratio': 15.0}
     ]
     
     # Create single quantum gravity instance to share

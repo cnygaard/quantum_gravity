@@ -187,95 +187,116 @@ class EnhancedGalaxyEntanglementObservable:
         # Extract points in the region
         points = self.grid.points[self.region_A]
         
-        # Calculate pairwise distances for all points in region
+        # Calculate pairwise distances for all points in region - vectorized approach
+        # This is much faster than nested loops
         distances = np.zeros((n, n))
-        for i in range(n):
-            for j in range(i, n):
-                if i == j:
-                    distances[i, j] = 0.0
-                else:
-                    dist = np.linalg.norm(points[i] - points[j])
-                    distances[i, j] = dist
-                    distances[j, i] = dist
         
-        # Set diagonal elements based on galaxy density profile
-        for i in range(n):
-            r = np.linalg.norm(points[i])
-            # Use modified NFW profile with quantum corrections
-            if r > 0:
-                # Scale by radius
-                r_scale = r / state.radius
-                # Diagonal values follow quantum-corrected density profile
-                if state.galaxy_type == 'dwarf':
-                    # Dwarf galaxies: steeper central concentration
-                    density_factor = np.exp(-2.0 * r_scale)
-                elif state.galaxy_type == 'spiral':
-                    # Spiral galaxies: exponential disk profile
-                    density_factor = np.exp(-1.5 * r_scale)
-                elif state.galaxy_type == 'elliptical':
-                    # Elliptical galaxies: de Vaucouleurs profile
-                    density_factor = np.exp(-1.0 * r_scale**0.25)
-                else:
-                    # Default profile
-                    density_factor = np.exp(-1.0 * r_scale)
-                
-                # Apply quantum correction from renormalization flow
-                r_si = r  # convert to SI units if needed
-                quantum_factor = self.rg_flow.quantum_nfw_profile(r_si, state.mass, state.radius * 0.2)  # use 0.2*radius as scale radius
-                rho[i, i] = density_factor * quantum_factor
-            else:
-                rho[i, i] = 1.0
+        # Use scipy's pdist and squareform for efficient distance calculation
+        from scipy.spatial.distance import pdist, squareform
+        distances = squareform(pdist(points))
         
-        # Add off-diagonal elements representing quantum correlations
-        # This directly implements the geometric-entanglement relationship
+        # Set diagonal elements based on galaxy density profile - vectorized
+        # Calculate radii for all points at once
+        radii = np.linalg.norm(points, axis=1)
+        
+        # Scale by radius
+        r_scale = np.divide(radii, state.radius, out=np.zeros_like(radii), where=radii>0)
+        
+        # Create array for density factors
+        density_factors = np.ones(n)
+        
+        # Apply appropriate profile based on galaxy type - vectorized
+        if state.galaxy_type == 'dwarf':
+            # Dwarf galaxies: steeper central concentration
+            np.exp(-2.0 * r_scale, out=density_factors, where=radii>0)
+        elif state.galaxy_type == 'spiral':
+            # Spiral galaxies: exponential disk profile
+            np.exp(-1.5 * r_scale, out=density_factors, where=radii>0)
+        elif state.galaxy_type == 'elliptical':
+            # Elliptical galaxies: de Vaucouleurs profile
+            np.exp(-1.0 * np.power(r_scale, 0.25, where=radii>0), out=density_factors, where=radii>0)
+        else:
+            # Default profile
+            np.exp(-1.0 * r_scale, out=density_factors, where=radii>0)
+        
+        # Apply quantum correction from renormalization flow
+        # This is harder to vectorize since quantum_nfw_profile may not be vectorized
+        # Use a list comprehension for a partial vectorization
+        quantum_factors = np.array([
+            self.rg_flow.quantum_nfw_profile(r, state.mass, state.radius * 0.2) if r > 0 else 1.0
+            for r in radii
+        ])
+        
+        # Set diagonal elements all at once
+        diagonal_values = density_factors * quantum_factors
+        
+        # Update the matrix
+        for i in range(n):
+            rho[i, i] = diagonal_values[i]
+        
+        # Add off-diagonal elements representing quantum correlations - partially vectorized
+        # We can't fully vectorize this due to the sparse matrix structure
+        
+        # Determine correlation length based on galaxy type - once for all elements
+        if state.galaxy_type == 'dwarf':
+            xi = 0.1  # Shorter correlation in dwarf galaxies
+        elif state.galaxy_type == 'spiral':
+            xi = 0.2  # Medium correlation in spiral galaxies
+        elif state.galaxy_type == 'elliptical':
+            xi = 0.3  # Longer correlation in elliptical galaxies
+        else:
+            xi = 0.2  # Default value
+        
+        # Apply dark matter ratio for enhanced correlations - once for all elements
+        xi *= np.sqrt(getattr(state, 'dark_matter_ratio', 5.0))
+        
+        # Get enhancement factor once - applies to all elements
+        enhancement = self.rg_flow.compute_enhancement(beta)
+        
+        # Set up phase factor for quantum oscillations
+        phase = np.pi/4  # Typical quantum phase
+        phase_factor = np.exp(1j * phase)
+        
+        # Pre-calculate the distance scaling
+        dist_scales = distances / state.radius
+        
+        # Use more efficient loop structure
         for i in range(n):
             # Limit connections for sparse structure and performance
-            for j in range(i+1, min(i+20, n)):
-                # Distance between points
-                dist = distances[i, j]
+            j_range = range(i+1, min(i+20, n))
+            
+            # Only process distances > 0
+            valid_js = [j for j in j_range if distances[i, j] > 0]
+            
+            if valid_js:
+                # Get distance scales for all valid j indices
+                valid_dist_scales = np.array([dist_scales[i, j] for j in valid_js])
                 
-                if dist > 0:
-                    # Scale by characteristic radius
-                    dist_scale = dist / state.radius
-                    
-                    # Correlation length depends on galaxy type
-                    if state.galaxy_type == 'dwarf':
-                        xi = 0.1  # Shorter correlation in dwarf galaxies
-                    elif state.galaxy_type == 'spiral':
-                        xi = 0.2  # Medium correlation in spiral galaxies
-                    elif state.galaxy_type == 'elliptical':
-                        xi = 0.3  # Longer correlation in elliptical galaxies
-                    else:
-                        xi = 0.2  # Default value
-                    
-                    # Apply dark matter ratio for enhanced correlations
-                    xi *= np.sqrt(getattr(state, 'dark_matter_ratio', 5.0))
-                    
-                    # Quantum correlation with scale-dependent coupling from renormalization flow
-                    # This implements the quantum entanglement in geometric form with proper scale bridging
-                    enhancement = self.rg_flow.compute_enhancement(beta)
-                    correlation = gamma_eff * leech_factor * enhancement * np.exp(-dist_scale/xi) / max(dist_scale, 0.01)
-                    
-                    # Add complex phase for quantum oscillations
-                    phase = np.pi/4  # Typical quantum phase
-                    complex_correlation = correlation * np.exp(1j * phase)
-                    
-                    # Set matrix elements
-                    rho[i, j] = complex_correlation
-                    rho[j, i] = np.conj(complex_correlation)  # Ensure hermiticity
+                # Calculate all correlations at once
+                correlations = gamma_eff * leech_factor * enhancement * np.exp(-valid_dist_scales/xi) / np.maximum(valid_dist_scales, 0.01)
+                
+                # Apply phase to all
+                complex_correlations = correlations * phase_factor
+                
+                # Set all matrix elements at once
+                for idx, j in enumerate(valid_js):
+                    rho[i, j] = complex_correlations[idx]
+                    rho[j, i] = np.conj(complex_correlations[idx])  # Ensure hermiticity
         
-        # Normalize the density matrix
-        trace = sum(rho[i, i] for i in range(n))
+        # Normalize the density matrix - vectorized
+        # Calculate trace from diagonal values we already have
+        trace = np.sum(diagonal_values)
+        
         if abs(trace) > 1e-10:
-            # Scale all elements
-            for i in range(n):
-                for j in range(n):
-                    if rho[i, j] != 0:
-                        rho[i, j] /= trace
+            # Use lil_matrix's efficient multiplication operation instead of loops
+            # This is much faster for sparse matrices
+            rho = rho / trace
         else:
             # If trace is too small, create a uniform distribution
-            for i in range(n):
-                rho[i, i] = 1.0/n
+            # First clear the matrix
+            rho = lil_matrix((n, n), dtype=complex)
+            # Then set diagonal in one step - vectorized approach
+            rho.setdiag(np.ones(n) / n)
         
         # Convert to CSR format for efficient computation
         rho_csr = rho.tocsr()

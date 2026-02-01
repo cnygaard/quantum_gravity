@@ -166,11 +166,11 @@ class TestBlackHoleSimulation(unittest.TestCase):
         self.default_sim.run_simulation(t_final=10.0)
         initial_entropy = self.default_sim.entropy_history[0]
         final_entropy = self.default_sim.entropy_history[-1]
-        
+
         # As black hole evaporates, entropy decreases due to mass loss
         self.assertLess(final_entropy, initial_entropy)
-        # Verify entropy scales with area using correct factor
-        expected_entropy = np.pi * self.default_mass**2
+        # Verify entropy scales with area: S = A/(4l_p²) = 4*pi*M² in Planck units
+        expected_entropy = 4 * np.pi * self.default_mass**2
         self.assertAlmostEqual(initial_entropy, expected_entropy, delta=0.1*initial_entropy)
 
 
@@ -198,9 +198,9 @@ class TestBlackHoleSimulation(unittest.TestCase):
         for mass in test_masses:
             bh = BlackHoleSimulation(mass=mass)
             bh.run_simulation(t_final=1.0)
-            
-            # Test entropy scaling
-            expected_S = np.pi * mass**2
+
+            # Test entropy scaling: S = A/(4l_p²) = 4*pi*M² in Planck units
+            expected_S = 4 * np.pi * mass**2
             initial_entropy = bh.entropy_history[0]
             self.assertAlmostEqual(initial_entropy/expected_S, 1.0, delta=0.1)
 

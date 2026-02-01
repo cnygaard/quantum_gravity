@@ -13,6 +13,46 @@ import logging
 from utils.io import MeasurementResult
 import cProfile
 
+
+def compute_black_hole_entropy(horizon_radius: float, include_log_correction: bool = False) -> float:
+    """
+    Compute black hole entropy using Bekenstein-Hawking formula with optional LQG correction.
+
+    Leading order (Bekenstein-Hawking):
+        S = A/(4*l_p²) = 4πr_h²/(4*l_p²) = πr_h²/l_p²
+
+    With LQG logarithmic correction (Meissner 2004, Kaul-Majumdar 2000):
+        S = A/(4*l_p²) - (1/2)*ln(A/l_p²)
+
+    The logarithmic correction arises from quantum corrections to the area spectrum
+    in Loop Quantum Gravity and becomes significant for Planck-scale black holes.
+
+    Args:
+        horizon_radius: Schwarzschild radius r_h = 2GM/c²
+        include_log_correction: If True, include the LQG logarithmic correction
+
+    Returns:
+        Black hole entropy in units of k_B (Boltzmann constant)
+    """
+    l_p_sq = CONSTANTS['l_p']**2
+
+    # Horizon area A = 4π*r_h²
+    area = 4 * np.pi * horizon_radius**2
+
+    # Leading order Bekenstein-Hawking entropy: S = A/(4*l_p²) = πr_h²/l_p²
+    entropy = area / (4 * l_p_sq)
+
+    if include_log_correction:
+        # LQG logarithmic correction: -½ ln(A/l_p²)
+        # This correction is derived from microstate counting in LQG
+        area_ratio = area / l_p_sq
+        if area_ratio > 1.0:  # Only apply for macroscopic black holes
+            log_correction = -0.5 * np.log(area_ratio)
+            entropy += log_correction
+
+    return entropy
+
+
 class Observable(ABC):
     """Base class for quantum gravity observables."""
 
@@ -1915,7 +1955,7 @@ class RadiationEntropyObservable(Observable):
     - G_μν^Fisher of radiation encodes recovered information
     """
 
-    def __init__(self, grid, initial_entropy: float = None):
+    def __init__(self, grid, initial_entropy: float = None, include_log_correction: bool = False):
         """
         Initialize radiation entropy observable.
 
@@ -1923,9 +1963,12 @@ class RadiationEntropyObservable(Observable):
             grid: Computational grid
             initial_entropy: Initial black hole entropy S_BH(0).
                            If None, will be set on first measurement.
+            include_log_correction: If True, use LQG logarithmic correction to entropy.
+                                  Default False for backward compatibility.
         """
         super().__init__(grid)
         self.initial_entropy = initial_entropy
+        self.include_log_correction = include_log_correction
         self.page_time = None
         self._max_radiation_entropy = 0.0
         self._max_entropy_time = None
@@ -1945,9 +1988,9 @@ class RadiationEntropyObservable(Observable):
         Returns:
             MeasurementResult with radiation entropy value
         """
-        # Get current black hole entropy
+        # Get current black hole entropy using utility function
         horizon_radius = 2 * CONSTANTS['G'] * state.mass
-        current_entropy = np.pi * horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
+        current_entropy = compute_black_hole_entropy(horizon_radius, self.include_log_correction)
 
         # Set initial entropy on first call
         if self.initial_entropy is None:

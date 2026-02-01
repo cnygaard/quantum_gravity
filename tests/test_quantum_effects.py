@@ -126,7 +126,11 @@ class TestPhysicalValidation:
     #     assert abs(enhancement - expected)/expected < 0.01
         
     def test_leech_lattice_contribution(self):
-        """Verify Leech lattice enhancement factor"""
-        enhancement = self.dm_analysis.compute_geometric_enhancement()  # Use correct method name
-        expected = np.sqrt(196560/24)
-        assert abs(enhancement - expected)/expected < 0.01
+        """Verify v7 dark matter enhancement factor (replaces Leech lattice)"""
+        enhancement = self.dm_analysis.compute_geometric_enhancement()
+
+        # v7 formulation: M_DM/M_b = π/(2γ₀) ≈ 5.73
+        # where γ₀ = 0.274 is the Immirzi parameter
+        # This replaces the deprecated Leech lattice formula √(196560/24) ≈ 90.5
+        expected = np.pi / (2 * 0.274)  # ≈ 5.73
+        assert abs(enhancement - expected) / expected < 0.01

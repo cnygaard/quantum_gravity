@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 from constants import CONSTANTS
 from core.state import QuantumState
 from physics.verification import UnifiedTheoryVerification
+from physics.observables import compute_black_hole_entropy
 from utils.io import QuantumGravityIO, MeasurementResult
 from matplotlib.gridspec import GridSpec
 
@@ -665,7 +666,7 @@ class BlackHoleSimulation:
 
             # Calculate derived quantities
             horizon_radius = 2 * CONSTANTS['G'] * self.qg.state.mass
-            entropy = np.pi * horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
+            entropy = compute_black_hole_entropy(horizon_radius, include_log_correction=False)
             
 
             # Calculate temperature

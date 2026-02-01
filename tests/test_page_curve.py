@@ -51,11 +51,11 @@ def compute_black_hole_entropy(mass: float) -> float:
     """
     Compute Bekenstein-Hawking entropy for a Schwarzschild black hole.
 
-    S_BH = pi * r_h^2 / (4 * l_p^2)
+    S_BH = A / (4 * l_p^2) = 4*pi*r_h^2 / (4*l_p^2) = pi * r_h^2 / l_p^2
 
     where r_h = 2GM is the horizon radius.
 
-    In Planck units (G = l_p = 1): S_BH = pi * (2M)^2 / 4 = pi * M^2
+    In Planck units (G = l_p = 1): S_BH = pi * (2M)^2 = 4 * pi * M^2
 
     Args:
         mass: Black hole mass in Planck units
@@ -64,7 +64,7 @@ def compute_black_hole_entropy(mass: float) -> float:
         Black hole entropy in Planck units
     """
     horizon_radius = 2 * CONSTANTS['G'] * mass
-    return np.pi * horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
+    return np.pi * horizon_radius**2 / CONSTANTS['l_p']**2
 
 
 def compute_evaporation_time(mass: float) -> float:
@@ -329,16 +329,18 @@ class TestBlackHoleEntropyFormula:
             )
 
     def test_entropy_formula_explicit(self):
-        """Test the explicit entropy formula S = pi * M^2."""
+        """Test the explicit entropy formula S = 4 * pi * M^2."""
         mass = 100.0
         S_BH = compute_black_hole_entropy(mass)
 
         # In Planck units with G = l_p = 1:
-        # S = pi * (2GM)^2 / (4 * l_p^2) = pi * M^2
-        expected = np.pi * mass**2
+        # r_h = 2GM = 2M
+        # A = 4*pi*r_h^2 = 16*pi*M^2
+        # S = A/(4*l_p^2) = 4*pi*M^2
+        expected = 4 * np.pi * mass**2
 
         assert np.isclose(S_BH, expected, rtol=0.01), (
-            f"S_BH = {S_BH}, expected pi * M^2 = {expected}"
+            f"S_BH = {S_BH}, expected 4*pi*M^2 = {expected}"
         )
 
 

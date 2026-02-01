@@ -19,7 +19,7 @@ def compute_black_hole_entropy(horizon_radius: float, include_log_correction: bo
     Compute black hole entropy using Bekenstein-Hawking formula with optional LQG correction.
 
     Leading order (Bekenstein-Hawking):
-        S = A/(4*l_p²) = π*r_h²/(4*l_p²)
+        S = A/(4*l_p²) = 4πr_h²/(4*l_p²) = πr_h²/l_p²
 
     With LQG logarithmic correction (Meissner 2004, Kaul-Majumdar 2000):
         S = A/(4*l_p²) - (1/2)*ln(A/l_p²)
@@ -39,9 +39,8 @@ def compute_black_hole_entropy(horizon_radius: float, include_log_correction: bo
     # Horizon area A = 4π*r_h²
     area = 4 * np.pi * horizon_radius**2
 
-    # Leading order Bekenstein-Hawking entropy: S = A/(4*l_p²)
-    # Note: Implementation uses S = π*r_h²/(4*l_p²) = A/(16*l_p²) for historical consistency
-    entropy = np.pi * horizon_radius**2 / (4 * l_p_sq)
+    # Leading order Bekenstein-Hawking entropy: S = A/(4*l_p²) = πr_h²/l_p²
+    entropy = area / (4 * l_p_sq)
 
     if include_log_correction:
         # LQG logarithmic correction: -½ ln(A/l_p²)

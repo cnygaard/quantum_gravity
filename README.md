@@ -101,6 +101,30 @@ Where χ_E(r) is the entanglement susceptibility proportional to γ₀.
 | NGC 3198 | 6.2 | 5.73 | 8% |
 | Average Spiral | 5.5 | 5.73 | 4% |
 
+### The Geometric Factor: Nine Derivations of π/2
+
+The factor π/2 in the dark matter ratio is **not arbitrary** but emerges from fundamental geometry. It represents the maximum ratio of boundary path (holographic) to bulk path (causal) for points on a sphere:
+
+```
+ξ(θ) = θ / (2·sin(θ/2))  →  ξ_max = ξ(π) = π/2
+```
+
+Nine independent derivations confirm this factor:
+
+| # | Framework | Method | Result |
+|---|-----------|--------|--------|
+| 1 | Integral Geometry | Crofton's formula | π/2 |
+| 2 | Information Geometry | Fisher metric paths | π/2 |
+| 3 | Optimal Transport | Wasserstein distance | π/2 |
+| 4 | AdS/CFT | Ryu-Takayanagi surfaces | π/2 |
+| 5 | Holographic MI | Connected/disconnected RT | π/2 |
+| 6 | ER=EPR | Wormhole vs boundary geodesic | π/2 |
+| 7 | LQG | Chern-Simons boundary theory | π/2 |
+| 8 | Thermodynamic | Screen holography | π/2 |
+| 9 | Bekenstein Bound | Hemisphere decomposition | π/2 |
+
+For complete derivations, see [theory/darkmatter.md](theory/darkmatter.md).
+
 ## Quantum Corrections
 
 The framework predicts quantum corrections to classical geometry:
@@ -172,6 +196,18 @@ python examples/star.py
 
 Multi-scale stellar physics with v7 quantum corrections.
 
+### Geometric Factor Visualization
+
+```bash
+python examples/geometric_factor.py
+```
+
+Visualizes the mathematical origin of π/2 in the dark matter ratio:
+- Plots ξ(θ) = θ/(2·sin(θ/2)) showing maximum at π/2
+- 3D visualization of boundary vs bulk paths on a sphere
+- Numerical verification of the maximum
+- Connection to dark matter prediction M_DM/M_b = π/(2γ₀)
+
 ## Framework Architecture
 
 ```
@@ -193,10 +229,12 @@ quantum_gravity/
 │   ├── black_hole.py        # Black hole evolution
 │   ├── galaxy.py            # Galaxy dynamics
 │   ├── cosmology.py         # Cosmological evolution
-│   └── star.py              # Stellar physics
+│   ├── star.py              # Stellar physics
+│   └── geometric_factor.py  # π/2 derivation visualization
 ├── tests/                   # Unit tests
 ├── theory/                  # Theoretical documents
-│   └── quantum-gravity-proposal-v7.tex
+│   ├── quantum-gravity-proposal-v7.md   # Full v7 proposal
+│   └── darkmatter.md        # Nine derivations of π/2
 └── results/                 # Simulation outputs
 ```
 

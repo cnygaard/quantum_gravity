@@ -176,63 +176,47 @@ class AdaptiveGrid:
 
 
 class LeechLattice:
-    def __init__(self, points=CONSTANTS['LEECH_LATTICE_POINTS']):  # Reduced from 10000
-        self.n_points = points
-        self.dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
-        self._cached_energy = None
-        self._lattice_points = None
-        self._setup_lattice()
+    """
+    DEPRECATED: v7 compatibility wrapper.
 
-    def _setup_lattice(self) -> None:
-        """Initialize the Leech lattice structure."""
-        # Generate initial lattice points
-        self._lattice_points = self._generate_lattice_points()
-        
-        # Pre-compute common values for efficiency
-        self._lattice_norms = np.linalg.norm(self._lattice_points, axis=1)
-        self._symmetry_factor = self._compute_symmetry_factor()
+    This class is maintained for backward compatibility but now returns
+    v7-compatible values based on the Immirzi parameter formulation.
+
+    In v7, the Leech lattice factor sqrt(196560/24) ≈ 90.5 is replaced by
+    the cosmic factor π/γ₀ ≈ 11.46 where γ₀ = 0.274 (Meissner Immirzi value).
+    """
+
+    def __init__(self, points=None):
+        """Initialize v7-compatible LeechLattice wrapper."""
+        import warnings
+        warnings.warn(
+            "LeechLattice is deprecated in v7. Use QuantumGeometry instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        self.gamma_0 = CONSTANTS['gamma_0']
+        self.cosmic_factor = np.pi / self.gamma_0  # v7 cosmic scale factor
+
+        # Keep for backward compatibility
+        self.n_points = points if points is not None else 196560
+        self.dimension = 24
 
     def compute_vacuum_energy(self) -> float:
-        """Enhanced vacuum energy with geometric suppression"""
-        base_energy = CONSTANTS['hbar']/(CONSTANTS['c'] * CONSTANTS['l_p']**4)
-        lattice_sum = self._compute_lattice_sum()
-        
-        # Geometric suppression from Leech lattice symmetries
-        symmetry_factor = self._compute_symmetry_factor()
-        
-        # Enhanced scale factor with refined corrections
-        scale_factor = np.sqrt(self.n_points) * np.log(self.n_points) * (1 + np.log(self.n_points)/self.dimension)
-        
-        return base_energy * lattice_sum * symmetry_factor / scale_factor
+        """Compute vacuum energy using v7 formulation."""
+        base_energy = CONSTANTS['hbar'] / (CONSTANTS['c'] * CONSTANTS['l_p']**4)
 
+        # v7: Use Immirzi parameter instead of Leech lattice symmetries
+        symmetry_factor = self.gamma_0
 
+        # v7 scale factor
+        scale_factor = self.cosmic_factor
 
-    def _generate_lattice_points(self) -> np.ndarray:
-        """Optimized Leech lattice point generation."""
-        # Pre-allocate array
-        points = np.zeros((self.n_points, self.dimension))
-        # Vectorized operations
-        points = np.random.randint(-2, 3, (self.n_points, self.dimension))
-        # Adjust for divisibility conditions efficiently
-        sums = np.sum(points, axis=1)
-        squares = np.sum(points**2, axis=1)
-        # Quick fixes for conditions
-        points[:, 0] += (4 - sums % 4)
-        points[:, -1] += (8 - squares % 8)
-        return points
+        return base_energy * symmetry_factor / scale_factor
 
-
-    def _compute_lattice_sum(self) -> float:
-        """Sum over Leech lattice points"""
-        # Efficient implementation using numpy vectorization
-        lattice_points = self._generate_lattice_points()
-        return np.sum(1.0/np.linalg.norm(lattice_points, axis=1)**4)
+    def compute_effective_coupling(self) -> float:
+        """Return v7 effective coupling (Immirzi parameter)."""
+        return self.gamma_0
 
     def _compute_symmetry_factor(self) -> float:
-        """Calculate symmetry factor from Leech lattice"""
-        # M24 group order = 2^10 * 3^3 * 5 * 7 * 11 * 23
-        return np.sqrt(244823040 / self.n_points)
-
-    def compute_effective_coupling(self):
-        """Calculate effective coupling from lattice symmetries"""
-        # Coupling calculation code...
+        """Return v7 cosmic scale factor."""
+        return self.cosmic_factor

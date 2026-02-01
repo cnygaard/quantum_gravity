@@ -67,7 +67,7 @@ class TimeEvolution:
     def _evolve_state(self, dt: float):
         """Evolution following Ashtekar et al. LQC equations."""
         # Parameters from paper
-        gamma = 0.2375  # Barbero-Immirzi parameter
+        gamma = CONSTANTS['gamma_0']  # v7 Immirzi parameter (Meissner 2004)
         beta = CONSTANTS['l_p']/self.state.scale_factor
         mu_0 = np.sqrt(3/(16*np.pi*gamma)) * CONSTANTS['l_p']
         
@@ -376,7 +376,7 @@ class TimeEvolution:
     def _evolve_state(self, dt: float):
         """Evolution following Ashtekar et al. LQC equations."""
         # Parameters from paper
-        gamma = 0.2375  # Barbero-Immirzi parameter
+        gamma = CONSTANTS['gamma_0']  # v7 Immirzi parameter (Meissner 2004)
         beta = CONSTANTS['l_p']/self.state.scale_factor
         mu_0 = np.sqrt(3/(16*np.pi*gamma)) * CONSTANTS['l_p']
         

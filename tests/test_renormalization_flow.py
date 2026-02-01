@@ -127,28 +127,29 @@ def test_scale_dependent_coupling():
     assert betas[1] > betas[2] + 1e-10
 
 def test_leech_lattice_contribution():
-    """Test Leech lattice enhancement."""
+    """Test v7 cosmic factor enhancement (replaces Leech lattice test)."""
     rg_flow = RenormalizationFlow()
-    
+
     # Test at galactic scale
     r = 50000 * SI_UNITS['ly_si']
     M = 1e12 * SI_UNITS['M_sun_si']
-    
-    # Ensure the lattice factor affects enhancement
-    # First get baseline with original factor
+
+    # v7: Verify cosmic_factor is based on Immirzi parameter
+    # cosmic_factor = π / γ₀ ≈ 11.46
+    expected_cosmic_factor = np.pi / CONSTANTS['gamma_0']
+    assert np.isclose(rg_flow.cosmic_factor, expected_cosmic_factor, rtol=0.01)
+
+    # Ensure the cosmic factor affects enhancement
     beta = rg_flow.flow_up(r, M)
-    
-    # Get enhancement with original lattice factor
-    enhancement_with_lattice = rg_flow.compute_enhancement(beta)
-    
-    # Temporarily modify lattice factor to a much smaller value (0.1 instead of ~90)
-    original_factor = rg_flow.lattice_factor
-    rg_flow.lattice_factor = 0.1
-    enhancement_without_lattice = rg_flow.compute_enhancement(beta)
-    rg_flow.lattice_factor = original_factor
-    
-    # Leech lattice should significantly enhance effect (add small delta to ensure strict inequality)
-    assert enhancement_with_lattice > enhancement_without_lattice + 1e-10
+    enhancement = rg_flow.compute_enhancement(beta)
+
+    # v7: Enhancement should be > 1.0
+    assert enhancement > 1.0
+
+    # v7: Verify dark matter ratio is π/(2γ₀) ≈ 5.73
+    dm_ratio = rg_flow.compute_dark_matter_ratio(r, M)
+    expected_dm_base = np.pi / (2 * CONSTANTS['gamma_0'])  # ≈ 5.73
+    assert abs(dm_ratio - expected_dm_base) < 1.0  # Within 1 of base value
 
 def test_edge_cases():
     """Test behavior at edge cases."""

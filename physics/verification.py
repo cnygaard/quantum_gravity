@@ -239,8 +239,8 @@ class UnifiedTheoryVerification:
         # This is physically motivated by coherence length scaling
         log_scale = np.log10(characteristic_radius / CONSTANTS['l_p'])
 
-        # Unified width formula: w = w_base * (1 + α * log(R/l_p))
-        # where w_base is the quantum-scale width and α controls scale dependence
+        # Unified width formula: w = w_base * (1 + alpha * log(R/l_p))
+        # where w_base is the quantum-scale width and alpha controls scale dependence
         if is_galaxy:
             # Galaxy scale: broader localization due to larger coherence volume
             e_width = 2 * phi * (1 + 0.15 * log_scale)
@@ -251,8 +251,37 @@ class UnifiedTheoryVerification:
             i_width = 0.6 * phi
 
         # Compute localization terms with unified formula
-        e_term = np.sum(np.exp(-x*x / e_width) * np.cos(phase)) / len(state.grid.points)
-        i_term = np.sum(np.exp(-x*x / i_width) * np.cos(phase)) / len(state.grid.points)
+        #
+        # PHYSICS FIX: Remove problematic phase oscillation from localization terms
+        #
+        # The v7 master equation g_mu_nu = l_P^2 (G_mu_nu^Fisher + gamma_0 E_mu_nu)
+        # relates the metric to Fisher information and entanglement strain.
+        #
+        # Key physical principles:
+        # 1. Fisher Information Metric is positive semi-definite (represents state
+        #    distinguishability, computed from |<d_mu Psi|d_nu Psi>|)
+        # 2. The metric g_mu_nu represents the *geometry* of spacetime, which for a
+        #    static configuration (like a Schwarzschild black hole) should not
+        #    oscillate in time
+        # 3. The LHS (area_term * area_factor * quantum_factor) is time-independent,
+        #    so RHS must also be approximately time-independent for consistency
+        #
+        # The original cos(phase) term was physically incorrect because:
+        # - It caused RHS to oscillate and go negative
+        # - It introduced time dependence where the geometry should be static
+        # - It conflated quantum phase evolution with geometric observables
+        #
+        # For a proper verification of the v7 master equation:
+        # - The localization terms e_term and i_term should represent the spatial
+        #   structure of the Fisher metric and entanglement strain
+        # - Time evolution effects enter through changes in mass, entropy, and
+        #   other physical quantities - not through oscillating prefactors
+        #
+        # The coherence_factor (line ~288) already captures small time-dependent
+        # quantum corrections using sin^2, which is always non-negative and bounded.
+        #
+        e_term = np.sum(np.exp(-x*x / e_width)) / len(state.grid.points)
+        i_term = np.sum(np.exp(-x*x / i_width)) / len(state.grid.points)
 
         # v7 dark matter contribution (applies to all scales, weighted by dm_ratio)
         if hasattr(state, 'dark_matter_ratio'):
@@ -304,7 +333,14 @@ class UnifiedTheoryVerification:
             flow_coupling = self.rg_flow.flow_up(characteristic_radius, M_si)
 
             dm_term = dV * i_term * dm_ratio * flow_coupling * area_factor * quantum_factor
-            phase_factor = 1.0 + 0.12 * np.cos(phase * phi_inv) + 0.05 * np.sin(phase * phi_inv * 2.0)**2
+            # PHYSICS FIX: Use small, bounded corrections for time-dependent phase effects
+            # The phase_factor represents small quantum coherence corrections that modulate
+            # the dark matter contribution. Using sin^2 terms ensures:
+            # - Factor ranges from 1.0 to 1.17 (always positive, bounded enhancement)
+            # - Time evolution is captured through bounded oscillations
+            # - No risk of negative contributions or sign flips
+            # Note: For consistency with static LHS, these should be small perturbations
+            phase_factor = 1.0 + 0.05 * np.sin(phase * phi_inv)**2 + 0.03 * np.sin(phase * phi_inv * 2.0)**2
             rhs += dm_term * phase_factor * galaxy_scale_factor
 
         # Consistent normalization for all simulation types

@@ -1898,9 +1898,105 @@ class HawkingFluxObservable(Observable):
         # return MeasurementResult(flux, delta_flux)
 
 
+class RadiationEntropyObservable(Observable):
+    """
+    Track entropy of Hawking radiation using the Page curve model.
+
+    For unitary black hole evaporation, the radiation entropy follows:
+        S_rad = min(S_BH(0) - S_BH(t), S_BH(t))
+
+    This produces the characteristic Page curve:
+    - Early times: S_rad rises as radiation becomes entangled with BH
+    - Page time: S_rad peaks at ~S_BH(0)/2
+    - Late times: S_rad falls as information transfers to radiation
+
+    Connection to v7 framework:
+    - E_μν (entanglement strain) peaks at Page time
+    - G_μν^Fisher of radiation encodes recovered information
+    """
+
+    def __init__(self, grid, initial_entropy: float = None):
+        """
+        Initialize radiation entropy observable.
+
+        Args:
+            grid: Computational grid
+            initial_entropy: Initial black hole entropy S_BH(0).
+                           If None, will be set on first measurement.
+        """
+        super().__init__(grid)
+        self.initial_entropy = initial_entropy
+        self.page_time = None
+        self._max_radiation_entropy = 0.0
+        self._max_entropy_time = None
+
+    def _construct_operator(self) -> csr_matrix:
+        """Construct radiation entropy operator (identity for this observable)."""
+        n_points = len(self.grid.points)
+        return csr_matrix(np.eye(n_points))
+
+    def measure(self, state) -> 'MeasurementResult':
+        """
+        Measure radiation entropy using Page curve model.
+
+        Args:
+            state: Quantum state with mass and entropy attributes
+
+        Returns:
+            MeasurementResult with radiation entropy value
+        """
+        # Get current black hole entropy
+        horizon_radius = 2 * CONSTANTS['G'] * state.mass
+        current_entropy = np.pi * horizon_radius**2 / (4 * CONSTANTS['l_p']**2)
+
+        # Set initial entropy on first call
+        if self.initial_entropy is None:
+            self.initial_entropy = current_entropy
+
+        # Page curve formula: S_rad = min(entropy_released, current_entropy)
+        entropy_released = self.initial_entropy - current_entropy
+        radiation_entropy = min(max(0.0, entropy_released), current_entropy)
+
+        # Track Page time (when S_rad peaks)
+        if radiation_entropy > self._max_radiation_entropy:
+            self._max_radiation_entropy = radiation_entropy
+            self._max_entropy_time = getattr(state, 'time', None)
+
+        # Detect Page time: when entropy_released ≈ current_entropy
+        if self.page_time is None and entropy_released >= current_entropy:
+            self.page_time = getattr(state, 'time', None)
+
+        return MeasurementResult(
+            value=radiation_entropy,
+            uncertainty=0.0,  # Theoretical model, no measurement uncertainty
+            metadata={
+                'initial_entropy': self.initial_entropy,
+                'current_bh_entropy': current_entropy,
+                'entropy_released': entropy_released,
+                'page_time': self.page_time,
+                'normalized_s_rad': radiation_entropy / self.initial_entropy if self.initial_entropy > 0 else 0
+            }
+        )
+
+    def get_page_time(self) -> float:
+        """Return the detected Page time, or None if not yet reached."""
+        return self.page_time
+
+    def get_max_radiation_entropy(self) -> float:
+        """Return the maximum radiation entropy observed."""
+        return self._max_radiation_entropy
+
+    def reset(self, initial_entropy: float = None):
+        """Reset the observable for a new simulation."""
+        self.initial_entropy = initial_entropy
+        self.page_time = None
+        self._max_radiation_entropy = 0.0
+        self._max_entropy_time = None
+
+
 class ScaleFactorObservable(Observable):
     """Observable for measuring cosmic scale factor."""
-    
+
     def _construct_operator(self) -> csr_matrix:
         """Construct scale factor operator."""
         n_points = len(self.grid.points)

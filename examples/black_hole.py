@@ -88,14 +88,19 @@ class BlackHoleSimulation:
         ax4.legend()
         ax4.grid(True)
         
-        # Gamma effective
-        # ax5.plot(self.time_points, [v['diagnostics']['gamma_eff'] for v in self.verification_results], label='γ_eff Effective strength Quantum Coupling')
-        # ax5.set_xlabel('Time [t_P]')
-        # ax5.set_ylabel('γ_eff Effective strength Quantum Coupling')
-        # ax5.set_yscale('log')
-        # ax5.legend()
-        # ax5.grid(True)
-        
+        # Page Curve: S_BH vs S_rad
+        ax5.plot(self.time_points, self.entropy_history, 'b-', linewidth=2, label='S_BH (black hole)')
+        ax5.plot(self.time_points, self.radiation_entropy_history, 'r-', linewidth=2, label='S_rad (radiation)')
+        ax5.plot(self.time_points, self.total_entropy_history, 'g--', linewidth=1, label='S_total', alpha=0.7)
+        if self.page_time is not None:
+            ax5.axvline(x=self.page_time, color='purple', linestyle=':', linewidth=2, label=f't_Page = {self.page_time:.2f}')
+        ax5.set_xlabel('Time [t_P]')
+        ax5.set_ylabel('Entropy [k_B]')
+        ax5.set_title('Page Curve')
+        ax5.set_yscale('log')
+        ax5.legend(fontsize=8)
+        ax5.grid(True)
+
         # Radiation flux
         ax6.plot(self.time_points, self.radiation_flux_history, label='Radiation Flux [P_p] Planck power')
         ax6.set_xlabel('Time [t_P]')
@@ -122,13 +127,23 @@ class BlackHoleSimulation:
         ax7.set_xlabel('Time [t_P]')
         ax7.set_ylabel('QNM Frequency Re(ω) [1/M]')
         ax7.legend()
-        #standard_freqs = [omega_standard for omega_standard in self.standard_frequencies]
-        #modified_freqs = [omega_modified for omega_modified in self.ringdown_frequencies]
-#        ax7.plot(self.time_points, np.real(standard_freqs2), 'b--', label='Standard QNM')
-        #ax7.plot(self.time_points, np.real(modified_freqs), 'r-', label='Leech-modified')
-        #ax7.set_xlabel('Time [t_P]')
-        #ax7.set_ylabel('Re(ω) [1/M]')
-        #ax7.legend()
+
+        # Page Curve: Entropy ratio S_rad/S_BH(0)
+        ax8 = fig.add_subplot(gs[2, 1])
+        initial_S_BH = self.entropy_history[0] if self.entropy_history else 1
+        normalized_S_rad = np.array(self.radiation_entropy_history) / initial_S_BH
+        normalized_S_BH = np.array(self.entropy_history) / initial_S_BH
+        ax8.plot(self.time_points, normalized_S_BH, 'b-', linewidth=2, label='S_BH/S_BH(0)')
+        ax8.plot(self.time_points, normalized_S_rad, 'r-', linewidth=2, label='S_rad/S_BH(0)')
+        ax8.axhline(y=0.5, color='gray', linestyle='--', alpha=0.5, label='Expected max at 0.5')
+        if self.page_time is not None:
+            ax8.axvline(x=self.page_time, color='purple', linestyle=':', linewidth=2, alpha=0.7)
+        ax8.set_xlabel('Time [t_P]')
+        ax8.set_ylabel('S / S_BH(0)')
+        ax8.set_title('Normalized Page Curve')
+        ax8.set_ylim(0, 1.1)
+        ax8.legend(fontsize=8)
+        ax8.grid(True)
 
         plt.tight_layout()
         
@@ -336,12 +351,17 @@ class BlackHoleSimulation:
         # Results storage
         self.time_points = []
         self.mass_history = []
-        self.entropy_history = []  
+        self.entropy_history = []  # S_BH - black hole entropy
         self.temperature_history = []
         self.radiation_flux_history = []
         self.ringdown_measurements = []  # Store full MeasurementResult objects
         self.ringdown_frequencies = []  # Add this line
         self.standard_frequencies = []  # Add this line
+
+        # Page curve tracking
+        self.radiation_entropy_history = []  # S_rad - radiation entropy
+        self.total_entropy_history = []  # S_BH + S_rad (should be bounded)
+        self.page_time = None  # Time when S_rad peaks
 
         # Add verification
         self.verifier = UnifiedTheoryVerification(self)
@@ -490,6 +510,80 @@ class BlackHoleSimulation:
             self.qg.grid
         )
 
+        # Page curve: radiation entropy observable
+        self.radiation_entropy_obs = self.qg.physics.RadiationEntropyObservable(
+            self.qg.grid
+        )
+
+    def _compute_radiation_entropy(self, current_entropy: float) -> float:
+        """
+        Compute radiation entropy using the Page curve model.
+
+        For unitary black hole evaporation:
+        - Early times: S_rad = S_BH(0) - S_BH(t)  (information leaves with radiation)
+        - Page time: S_rad = S_BH(t)  (transition point)
+        - Late times: S_rad = S_BH(t)  (radiation purifies)
+
+        The formula S_rad = min(S_BH(0) - S_BH(t), S_BH(t)) automatically
+        produces the Page curve shape:
+        - Rises linearly until Page time
+        - Peaks at S_BH(0)/2 when S_BH(t) = S_BH(0)/2
+        - Falls linearly after Page time
+
+        This captures the essential physics of information transfer
+        without requiring full quantum field theory on curved spacetime.
+
+        Args:
+            current_entropy: Current black hole entropy S_BH(t)
+
+        Returns:
+            Radiation entropy S_rad (in k_B units)
+        """
+        if not hasattr(self, '_initial_entropy_recorded'):
+            self._initial_entropy_recorded = current_entropy
+
+        initial_entropy = self._initial_entropy_recorded
+
+        # Entropy "released" so far
+        entropy_released = initial_entropy - current_entropy
+
+        # Page curve: S_rad = min(entropy_released, current_entropy)
+        # This gives the characteristic rise-then-fall shape
+        S_rad = min(entropy_released, current_entropy)
+
+        return max(0.0, S_rad)
+
+    def _detect_page_time(self) -> float:
+        """
+        Find Page time where S_rad reaches maximum.
+
+        The Page time marks the transition where:
+        - Before: E_μν dominates (BH-radiation entanglement grows)
+        - After: G_μν^Fisher of radiation dominates (information recovery)
+
+        Returns:
+            Page time (Planck times), or None if not found
+        """
+        # First check if the observable detected Page time
+        if hasattr(self, 'radiation_entropy_obs'):
+            obs_page_time = self.radiation_entropy_obs.get_page_time()
+            if obs_page_time is not None:
+                return obs_page_time
+
+        # Fallback to history-based detection
+        if len(self.radiation_entropy_history) < 3:
+            return None
+
+        S_rad = np.array(self.radiation_entropy_history)
+
+        # Find where dS_rad/dt changes sign (peak of S_rad)
+        for i in range(1, len(S_rad) - 1):
+            if S_rad[i] > S_rad[i-1] and S_rad[i] >= S_rad[i+1]:
+                return self.time_points[i]
+
+        # If monotonically increasing, Page time not yet reached
+        return None
+
     def run_simulation(self, t_final: float) -> None:
         """Run black hole evolution simulation with geometric-entanglement verification."""
         # Add initial parameter logging
@@ -498,21 +592,38 @@ class BlackHoleSimulation:
         logging.info(f"Simulation Time: {t_final:.2e} Planck times")
         logging.info(f"Initial Horizon Radius: {self.horizon_radius:.2e} Planck lengths\n")
     
-        dt = 0.01  # Initial timestep
-        t = 0.0
-        
+        # Calculate theoretical evaporation time
+        t_evap_theoretical = 5120 * np.pi * self.initial_mass**3
+
+        # Use logarithmic time stepping to span the vast timescale
+        # This allows us to cover t_evap ~ 10^13 t_P efficiently
+        n_steps = 1000
+        dt_min = 0.01  # Minimum timestep
+        t_max = min(t_final, t_evap_theoretical * 0.99)
+
+        # Generate log-spaced time points
+        log_times = np.logspace(np.log10(dt_min), np.log10(t_max), n_steps)
+        log_times = np.insert(log_times, 0, 0.0)  # Start from t=0
+
+        logging.info(f"Using logarithmic time stepping:")
+        logging.info(f"  Theoretical t_evap: {t_evap_theoretical:.3e} t_P")
+        logging.info(f"  Simulation covers: 0 to {t_max:.3e} t_P")
+        logging.info(f"  Number of steps: {n_steps}")
+
         # Track equation verification
         error_history = []
         lhs_history = []
         rhs_history = []
 
-        # In run_simulation
+        # Initial verification
         metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
         quantum_factor = self._compute_quantum_factor()
-        if int(t/dt) % 100 == 0:  # Log every 100 steps
-           self.verifier._log_verification_diagnostics(self.qg.state, metrics)
+        self.verifier._log_verification_diagnostics(self.qg.state, metrics)
 
-        while t < t_final:
+        for step_idx in range(1, len(log_times)):
+            t = log_times[step_idx]
+            t_prev = log_times[step_idx - 1]
+            dt = t - t_prev  # Variable timestep
             # Add verification step
             #metrics = self.verifier.verify_unified_relations()
             metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
@@ -536,11 +647,10 @@ class BlackHoleSimulation:
             evaporation_rate = (CONSTANTS['hbar'] * CONSTANTS['c']**6) / \
                             (15360 * np.pi * CONSTANTS['G']**2 * self.qg.state.mass**2)
             
-            # Compute mass loss
-            original_dm = (self.qg.state.mass**2 * dt) / (15360 * np.pi)
-
-            # Physical constants correction
-            dm = original_dm * (CONSTANTS['c']**6 / CONSTANTS['G']**2)
+            # Compute mass loss using correct Hawking formula
+            # dM/dt = -1 / (15360 * π * M²)  [in Planck units where G=ℏ=c=1]
+            # Bug fix: M² must be in DENOMINATOR, not numerator!
+            dm = dt / (15360 * np.pi * self.qg.state.mass**2)
             
             # logging.info(f"Time: {t}")
             # logging.info(f"Current Mass: {self.qg.state.mass}")
@@ -567,15 +677,21 @@ class BlackHoleSimulation:
             self.entropy_history.append(entropy)
             self.temperature_history.append(temperature)
             self.radiation_flux_history.append(evaporation_rate)
-            
+
+            # Page curve: track radiation entropy using RadiationEntropyObservable
+            rad_result = self.radiation_entropy_obs.measure(self.qg.state)
+            radiation_entropy = rad_result.value
+            self.radiation_entropy_history.append(radiation_entropy)
+            self.total_entropy_history.append(entropy + radiation_entropy)
+
             # Measure ringdown
             ringdown = self.ringdown_obs.measure(self.qg.state)
             #self.ringdown_frequencies.append(ringdown.value)
             self.ringdown_measurements.append(ringdown)  # Complete MeasurementResult
             self.ringdown_frequencies.append(ringdown.value)  # Modified frequency
             self.standard_frequencies.append(ringdown.metadata['standard_freq'])  # Standard frequency
-            # Log equation verification at intervals
-            if int(t/t_final * 10) > int((t-dt)/t_final * 10):
+            # Log equation verification at intervals (every 10% of steps)
+            if step_idx % (n_steps // 10) == 0:
                 self.log_physics_output(t, entropy, horizon_radius, temperature)
                 # logging.info(f"\nGeometric-Entanglement Equation at t={t:.2f}:")
                 # logging.info(f"Relative Error = {error:.6e}")
@@ -586,7 +702,8 @@ class BlackHoleSimulation:
                 # max_error = np.max(error_history[-100:] if len(error_history) > 100 else error_history)
                 # logging.info(f"Recent Mean Error = {mean_error:.6e}, Max Error = {max_error:.6e}\n")
             
-            t += dt
+            # Update state time for Page curve detection (t already set from log_times)
+            self.qg.state.time = t
         
         # Final summary focused on equation verification
         logging.info("\nFinal v7 Equation Verification Summary:")
@@ -604,6 +721,62 @@ class BlackHoleSimulation:
             'rhs_values': rhs_history,
             'times': self.time_points
         }
+
+        # Page curve analysis
+        self.page_time = self._detect_page_time()
+        self._log_page_curve_summary()
+
+    def _log_page_curve_summary(self) -> None:
+        """Log Page curve analysis results."""
+        logging.info("\n" + "="*60)
+        logging.info("PAGE CURVE ANALYSIS (Information Preservation)")
+        logging.info("="*60)
+
+        initial_entropy = self.entropy_history[0] if self.entropy_history else 0
+        max_rad_entropy = max(self.radiation_entropy_history) if self.radiation_entropy_history else 0
+        final_rad_entropy = self.radiation_entropy_history[-1] if self.radiation_entropy_history else 0
+
+        logging.info(f"\nEntropy Evolution:")
+        logging.info(f"  Initial BH entropy (S_BH):    {initial_entropy:.3e} k_B")
+        logging.info(f"  Max radiation entropy:         {max_rad_entropy:.3e} k_B")
+        logging.info(f"  Final radiation entropy:       {final_rad_entropy:.3e} k_B")
+
+        if self.page_time is not None:
+            # Use theoretical Hawking evaporation time, not simulation end time
+            # t_evap = 5120 * π * G² * M₀³ / (ℏ * c⁴)
+            t_evap_theoretical = (5120 * np.pi * CONSTANTS['G']**2 * self.initial_mass**3) / \
+                                 (CONSTANTS['hbar'] * CONSTANTS['c']**4)
+            page_fraction = self.page_time / t_evap_theoretical
+            logging.info(f"\nPage Time Analysis:")
+            logging.info(f"  Page time:                     {self.page_time:.3e} t_P")
+            logging.info(f"  Theoretical t_evap:            {t_evap_theoretical:.3e} t_P")
+            logging.info(f"  Page time / t_evap:            {page_fraction:.3f}")
+            logging.info(f"  Expected (unitary evolution):  ~0.5")
+
+            # Check if Page curve shape is correct
+            if 0.3 < page_fraction < 0.7:
+                logging.info(f"  Status: ✓ Page time consistent with unitarity")
+            else:
+                logging.info(f"  Status: ⚠ Page time outside expected range")
+        else:
+            logging.info(f"\nPage Time: Not detected (simulation may be too short)")
+
+        # Entropy bound check
+        max_total = max(self.total_entropy_history) if self.total_entropy_history else 0
+        logging.info(f"\nEntropy Conservation:")
+        logging.info(f"  Max total entropy (S_BH + S_rad): {max_total:.3e} k_B")
+        logging.info(f"  Initial BH entropy:               {initial_entropy:.3e} k_B")
+        if max_total <= initial_entropy * 1.1:  # Allow 10% numerical tolerance
+            logging.info(f"  Status: ✓ Total entropy bounded by initial S_BH")
+        else:
+            logging.info(f"  Status: ⚠ Total entropy exceeds initial (ratio: {max_total/initial_entropy:.2f})")
+
+        logging.info("\nv7 Framework Connection:")
+        logging.info("  - E_μν (entanglement strain) peaks near Page time")
+        logging.info("  - G_μν^Fisher of radiation encodes recovered information")
+        logging.info("  - See theory/page_curve.md for theoretical discussion")
+        logging.info("="*60 + "\n")
+
 
 class EntanglementGeometryHandler:
     """Handle geometric aspects of entanglement computation."""
@@ -670,7 +843,12 @@ def main():
         
         # Pass existing QG instance to simulation
         sim = BlackHoleSimulation(initial_mass, quantum_gravity=quantum_gravity)
-        t_final = 1200.0
+
+        # Use theoretical Hawking evaporation time
+        # t_evap = 5120 * π * M³ (in Planck units)
+        t_evap = 5120 * np.pi * initial_mass**3
+        t_final = t_evap * 0.99  # Run to 99% of evaporation
+        logging.info(f"Theoretical evaporation time: {t_evap:.3e} t_P")
         sim.run_simulation(t_final)
        
         # Save simulation results

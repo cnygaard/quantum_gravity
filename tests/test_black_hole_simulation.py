@@ -65,10 +65,11 @@ class TestBlackHoleSimulation(unittest.TestCase):
         )
         
         self.default_sim.run_simulation(t_final=t_final)
-        
-        # Verify evolution length and parameters
-        expected_steps = int(t_final / self.default_sim.qg.evolution.dt)
-        self.assertGreaterEqual(len(self.default_sim.time_points), expected_steps)
+
+        # Verify evolution uses logarithmic time stepping (fixed n_steps=1000)
+        # rather than linear stepping (t_final / dt)
+        self.assertGreaterEqual(len(self.default_sim.time_points), 100)  # At least 100 steps
+        self.assertLessEqual(len(self.default_sim.time_points), 1001)  # At most ~1000 log steps
         self.assertTrue(all(v['diagnostics']['beta'] > 0 for v in self.default_sim.verification_results))
         self.assertTrue(all(v['diagnostics']['gamma'] > 0 for v in self.default_sim.verification_results))
 

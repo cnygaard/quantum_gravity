@@ -18,6 +18,7 @@ from physics.observables import (
     ADMMassObservable,
     BlackHoleTemperatureObservable,
     HawkingFluxObservable,
+    RadiationEntropyObservable,
     ScaleFactorObservable,
     EnergyDensityObservable,
     QuantumCorrectionsObservable,
@@ -314,6 +315,7 @@ class QuantumGravity:
         physics.ADMMassObservable = ADMMassObservable
         physics.BlackHoleTemperatureObservable = BlackHoleTemperatureObservable
         physics.HawkingFluxObservable = HawkingFluxObservable
+        physics.RadiationEntropyObservable = RadiationEntropyObservable
         physics.ScaleFactorObservable = ScaleFactorObservable
         physics.EnergyDensityObservable = EnergyDensityObservable
         physics.QuantumCorrectionsObservable = QuantumCorrectionsObservable

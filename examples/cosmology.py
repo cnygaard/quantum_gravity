@@ -28,7 +28,8 @@ from numerics.errors import ErrorTracker
 from physics.conservation import ConservationLawTracker
 from physics.verification import CosmologicalVerification
 from core.state import QuantumState, CosmologicalState
-from core.grid import AdaptiveGrid, LeechLattice
+from core.grid import AdaptiveGrid
+from physics.quantum_geometry import QuantumGeometry
 from physics.observables import CosmicEvolutionObservable
 
 class CosmologySimulation:
@@ -55,13 +56,13 @@ class CosmologySimulation:
         self.hubble_parameter = hubble_parameter
         self.lambda_cosm = CONSTANTS['lambda']  # Cosmological constant
 
-        # Add Leech lattice structure
-        self.leech_lattice = LeechLattice(points=CONSTANTS['LEECH_LATTICE_POINTS'])
-        
-        # Add vacuum energy from Leech lattice
-        #self.vacuum_energy = self.leech_lattice.compute_vacuum_energy()
-        self.vacuum_energy = self.leech_lattice.compute_vacuum_energy() * \
-        (initial_scale/CONSTANTS['l_p'])**(-CONSTANTS['LEECH_LATTICE_DIMENSION'])
+        # v7: Use QuantumGeometry instead of LeechLattice
+        self.quantum_geometry = QuantumGeometry()
+        gamma_0 = CONSTANTS['gamma_0']  # Immirzi parameter
+
+        # v7 vacuum energy using cosmic factor
+        cosmic_factor = np.pi / gamma_0  # ≈ 11.46
+        self.vacuum_energy = (CONSTANTS['l_p'] / initial_scale)**4 * cosmic_factor
 
         self.qg.state = CosmologicalState(
             grid=self.qg.grid,
@@ -126,9 +127,10 @@ class CosmologySimulation:
         #state.energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
         base_energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
 
-        # Enhanced vacuum energy with proper scaling
-        vacuum_energy = self.leech_lattice.compute_vacuum_energy() * \
-            (self.initial_scale/CONSTANTS['l_p'])**(-CONSTANTS['LEECH_LATTICE_DIMENSION'])
+        # v7: Enhanced vacuum energy with Immirzi-based scaling
+        gamma_0 = CONSTANTS['gamma_0']
+        cosmic_factor = np.pi / gamma_0
+        vacuum_energy = (CONSTANTS['l_p'] / self.initial_scale)**4 * cosmic_factor
 
         state.energy_density = base_energy_density + self.vacuum_energy
 
@@ -138,8 +140,9 @@ class CosmologySimulation:
         
         # Set metric components
         state._metric_array[0, 0, :] = -1  # Proper time components
-        quantum_factor = 1 + (CONSTANTS['l_p']/state.scale_factor)**2
-        leech_factor = self.vacuum_energy * (CONSTANTS['l_p']/state.scale_factor)**CONSTANTS['LEECH_LATTICE_DIMENSION']
+        # v7: Quantum factor using Immirzi parameter
+        gamma_0 = CONSTANTS['gamma_0']
+        quantum_factor = 1 + gamma_0 * (CONSTANTS['l_p']/state.scale_factor)**2
 
         for i in range(1, 4):
             state._metric_array[i, i, :] = state.scale_factor**2 * quantum_factor
@@ -345,8 +348,10 @@ class CosmologySimulation:
         state = self.qg.state
         while t < t_final:
             base_energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
-            self.vacuum_energy = self.leech_lattice.compute_vacuum_energy() * \
-                (self.qg.state.scale_factor/CONSTANTS['l_p'])**(-CONSTANTS['LEECH_LATTICE_DIMENSION'])
+            # v7: Update vacuum energy using cosmic factor
+            gamma_0 = CONSTANTS['gamma_0']
+            cosmic_factor = np.pi / gamma_0
+            self.vacuum_energy = (CONSTANTS['l_p'] / self.qg.state.scale_factor)**4 * cosmic_factor
         
             # Update state
             state.energy_density = base_energy_density + self.vacuum_energy
@@ -407,9 +412,9 @@ class CosmologySimulation:
                     f"\nCosmic Entropy S = {cosmic.value['entropy']:.6e}"
                 )
                 
-                # Log geometric entanglement
+                # Log v7 master equation verification
                 logging.info(
-                    f"\nGeometric-Entanglement Formula at t={t:.2f}:"
+                    f"\nv7 Master Equation: g_μν = ℓ_P²(G_μν^Fisher + γ₀E_μν) at t={t:.2f}:"
                     f"\nLHS = {metrics['lhs']:.6e}"
                     f"\nRHS = {metrics['rhs']:.6e}"
                     f"\nRelative Error = {metrics['relative_error']:.6e}"
@@ -451,8 +456,9 @@ class CosmologySimulation:
                 self._handle_bounce(self.qg.state)
                 logging.info(f"Quantum bounce detected at t={t:.2f}, a={self.qg.state.scale_factor:.6e}")
             
-            # Update metric with quantum corrections
-            quantum_factor = 1 + (CONSTANTS['l_p']/self.qg.state.scale_factor)**2
+            # Update metric with v7 quantum corrections
+            gamma_0 = CONSTANTS['gamma_0']
+            quantum_factor = 1 + gamma_0 * (CONSTANTS['l_p']/self.qg.state.scale_factor)**2
             for i in range(len(self.qg.grid.points)):
                 for mu in range(1, 4):
                     current = self.qg.state.get_metric_component((mu, mu), i)

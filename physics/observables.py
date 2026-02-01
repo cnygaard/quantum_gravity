@@ -5,7 +5,7 @@ from scipy.sparse import csr_matrix, linalg as sparse_linalg
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from constants import CONSTANTS
-from core.grid import AdaptiveGrid, LeechLattice
+from core.grid import AdaptiveGrid
 from core.state import QuantumState
 from physics.quantum_geometry import QuantumGeometry
 from physics.models.stellar_core import StellarCore
@@ -480,7 +480,7 @@ class RobustEntanglementObservable:
         # Add physically-motivated patterns - vectorized for performance
         if hasattr(state, 'galaxy_type'):
             beta = CONSTANTS['l_p'] / state.radius
-            gamma_eff = 0.364840 * beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
+            gamma_eff = CONSTANTS['gamma_0'] * beta * (np.pi / CONSTANTS['gamma_0'])
             
             # Add random perturbations
             v0 += gamma_eff * 10.0 * np.random.randn(n)
@@ -772,7 +772,7 @@ class RobustEntanglementObservable:
         
         # Get galaxy parameters for physics-based construction
         beta = CONSTANTS['l_p'] / state.radius
-        gamma_eff = 0.364840 * beta * np.sqrt(CONSTANTS['LEECH_LATTICE_POINTS']/24)
+        gamma_eff = CONSTANTS['gamma_0'] * beta * (np.pi / CONSTANTS['gamma_0'])  # v7 formulation
         dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
         
         # Create appropriate eigenvalue spectrum based on galaxy type
@@ -2141,7 +2141,7 @@ class StellarTemperatureObservable:
     def __init__(self, grid):
         self.grid = grid
         self.mass_obs = ADMMassObservable(grid)
-        self.gamma = 0.55  # Coupling constant
+        self.gamma_0 = CONSTANTS['gamma_0']  # v7 Immirzi parameter
         self.T_core = 1.57e7  # Core temperature in K
         self.T_surface = 5778  # Surface temperature in K
 
@@ -2239,7 +2239,7 @@ class PressureObservable(Observable):
         
         # Add quantum corrections
         beta = CONSTANTS['l_p'] / r_max
-        gamma_eff = 0.55 * beta * np.sqrt(0.364840 )
+        gamma_eff = CONSTANTS['gamma_0'] * beta * (np.pi / CONSTANTS['gamma_0'])
         pressure *= (1 + gamma_eff)
         
         return MeasurementResult(
@@ -2251,7 +2251,7 @@ class PressureObservable(Observable):
 class RingdownObservable(Observable):
     def __init__(self, grid):
         super().__init__(grid)
-        self.leech = LeechLattice(points=CONSTANTS['LEECH_LATTICE_POINTS'])
+        self.gamma_0 = CONSTANTS['gamma_0']  # v7 Immirzi parameter
 
     def _construct_operator(self) -> csr_matrix:
             """Construct ringdown operator matrix."""
@@ -2281,22 +2281,20 @@ class RingdownObservable(Observable):
         l = 2  # Quadrupole mode
         n = 0  # Fundamental tone
         omega_standard = self._compute_standard_frequency(M, l, n)
-        
-        # Get Leech lattice coupling with default value
-        beta_leech = self.leech.compute_effective_coupling()
-        if beta_leech is None:
-            beta_leech = 0.364840   # Theoretical value from Leech lattice
 
-        # Leech lattice correction
-        #beta_leech = self.leech.compute_effective_coupling()
-        omega_modified = omega_standard * (1 + beta_leech)
-        
+        # v7 quantum correction using Immirzi parameter
+        # The correction factor comes from the v7 master equation
+        beta_v7 = self.gamma_0  # v7 uses Immirzi parameter directly
+
+        # v7 quantum-corrected frequency
+        omega_modified = omega_standard * (1 + beta_v7)
+
         return MeasurementResult(
             value=omega_modified,
             uncertainty=abs(omega_modified - omega_standard),
             metadata={
                 'standard_freq': omega_standard,
-                'leech_correction': beta_leech
+                'v7_correction': beta_v7
             }
         )
         

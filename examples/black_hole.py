@@ -115,10 +115,10 @@ class BlackHoleSimulation:
         #ax7.plot(self.time_points, np.real(standard_freqs), 'b--', label='Standard QNM')
         #ax7.plot(self.time_points, np.real(modified_freqs), 'r-', label='Leech-modified')
         #ax7.plot(self.time_points, np.real(modified_freqs), 'r-', label='Leech-modified')
-        ax7.plot(self.time_points[:len(standard_freqs)], np.real(standard_freqs), 'b--', 
+        ax7.plot(self.time_points[:len(standard_freqs)], np.real(standard_freqs), 'b--',
                 label='Standard QNM')
-        ax7.plot(self.time_points[:len(modified_freqs)], np.real(modified_freqs), 'r-', 
-                label='Leech-lattice-modified')
+        ax7.plot(self.time_points[:len(modified_freqs)], np.real(modified_freqs), 'r-',
+                label='v7 Fisher-modified')
         ax7.set_xlabel('Time [t_P]')
         ax7.set_ylabel('QNM Frequency Re(ω) [1/M]')
         ax7.legend()
@@ -227,8 +227,8 @@ class BlackHoleSimulation:
                 '• Yellow/bright: Strong quantum effects near horizon\n' +
                 '• Blue: Weakening quantum effects with distance\n' +
                 '• Black surface: Event horizon\n\n' +
-                'Geometric-Entanglement Formula:\n' +
-                r'dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩',
+                'v7 Master Equation:\n' +
+                r'g_μν = ℓ_P²(G_μν^Fisher + γ₀E_μν)',
                 transform=ax.transAxes,
                 fontsize=10,
                 bbox=dict(facecolor='white', alpha=0.9, edgecolor='none'))
@@ -288,20 +288,19 @@ class BlackHoleSimulation:
 
 
     def _compute_quantum_factor(self) -> float:
-        """Compute quantum geometric enhancement factor for black holes."""
+        """Compute v7 quantum geometric enhancement factor for black holes."""
         # Scale with horizon radius instead of stellar radius
         r_natural = self.horizon_radius / CONSTANTS['l_p']
         m_natural = self.qg.state.mass / CONSTANTS['m_p']
-        
-        # Leech lattice geometric factors
-        dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
-        points = CONSTANTS['LEECH_LATTICE_POINTS']
-        lattice_factor = np.sqrt(points/dimension)
-        
-        # Black hole specific quantum enhancement
+
+        # v7: Use Immirzi parameter and cosmic factor
+        gamma_0 = CONSTANTS['gamma_0']  # 0.274
+        cosmic_factor = np.pi / gamma_0  # ≈ 11.46
+
+        # Black hole specific quantum enhancement with v7 scaling
         scale_factor = np.exp(-r_natural/1e4)
-        quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
-        
+        quantum_enhancement = scale_factor * cosmic_factor * (m_natural)**0.25
+
         return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
 
     def quantum_correction_magnitude(self):
@@ -421,10 +420,12 @@ class BlackHoleSimulation:
         # )
 
     def log_physics_output(self, t: float, entropy: float, horizon_radius: float, temperature: float) -> None:
-        """Log comprehensive physics parameters and formulas."""
+        """Log comprehensive physics parameters and formulas (v7 formulation)."""
         # Calculate physical parameters
         self.beta = CONSTANTS['l_p'] / horizon_radius
-        self.gamma_eff = self.verifier.gamma * self.beta * np.sqrt(0.364840 )
+        # v7: Use Immirzi parameter for effective coupling
+        gamma_0 = CONSTANTS['gamma_0']  # 0.274
+        self.gamma_eff = gamma_0 * self.beta * (np.pi / gamma_0)  # v7 cosmic factor
         
         # Get verification metrics
         geo_metrics = self.verifier._verify_geometric_entanglement(self.qg.state)
@@ -443,8 +444,8 @@ class BlackHoleSimulation:
         logging.info(f"β (l_p/r_h): {self.beta:.2e}")
         logging.info(f"γ_eff: {self.gamma_eff:.2e}")
         
-        logging.info("\nGeometric-Entanglement Formula:")
-        logging.info("dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩")
+        logging.info("\nv7 Master Equation:")
+        logging.info("g_μν = ℓ_P²(G_μν^Fisher + γ₀E_μν)  [γ₀ = 0.274]")
         logging.info(f"LHS = {self.ds2:.22e}")
         logging.info(f"RHS = {self.integral:.22e}")
 
@@ -588,8 +589,8 @@ class BlackHoleSimulation:
             t += dt
         
         # Final summary focused on equation verification
-        logging.info("\nFinal Equation Verification Summary:")
-        logging.info("dS² = ∫ d³x √g ⟨Ψ|(êᵢ(x) + γ²îᵢ(x))|Ψ⟩")
+        logging.info("\nFinal v7 Equation Verification Summary:")
+        logging.info("g_μν = ℓ_P²(G_μν^Fisher + γ₀E_μν)  [γ₀ = 0.274]")
         logging.info(f"Final LHS = {lhs_history[-1]:.6e}")
         logging.info(f"Final RHS = {rhs_history[-1]:.6e}")
         logging.info(f"Final Error = {error_history[-1]:.6e}")

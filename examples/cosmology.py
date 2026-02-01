@@ -313,49 +313,87 @@ class CosmologySimulation:
 
 
     def run_simulation(self, t_final: float, dt_save: float = None) -> None:
-        """Run simulation with synchronized data collection and full logging."""
-        # Initialize simulation parameters
-        dt = 0.01
-        dt_save = 0.1 if dt_save is None else dt_save  # Save every 0.1 time units
-        next_save = 0.0
-        t = 0.0
-        step_count = 0
-        
+        """Run simulation with logarithmic time stepping for cosmological scales.
+
+        Cosmological simulations span vast timescales (potentially 60+ orders of
+        magnitude from Planck time to present). Logarithmic stepping efficiently
+        samples this range while maintaining numerical accuracy.
+        """
         # Initialize all tracking arrays
         self.time_points = []
         self.verification_results = []
         self.hubble_squared_lhs = []
         self.hubble_squared_rhs = []
-        
-        logging.info(f"Starting simulation with initial scale factor: {self.qg.state.scale_factor}")
+
+        # Calculate characteristic cosmological timescales
+        t_hubble = 1.0 / max(self.hubble_parameter, 1e-10)  # Hubble time
+
+        # For inflation, use e-folding time; otherwise use Hubble time
+        n_efolds = 60  # Typical number of e-folds for inflation
+        t_inflation = n_efolds * t_hubble
+
+        # Determine appropriate simulation timescale
+        t_max = min(t_final, t_inflation * 0.99)
+
+        # Logarithmic time stepping parameters
+        n_steps = 1000
+        dt_min = 0.001 * t_hubble  # Start with small fraction of Hubble time
+        dt_min = max(dt_min, 1e-6)  # Ensure minimum timestep
+
+        # Generate log-spaced time points
+        if t_max > dt_min:
+            log_times = np.logspace(np.log10(dt_min), np.log10(t_max), n_steps)
+        else:
+            # Fallback to linear if timescales are too close
+            log_times = np.linspace(dt_min, t_max, n_steps)
+        log_times = np.insert(log_times, 0, 0.0)  # Start from t=0
+
+        logging.info(f"Starting Cosmology Simulation:")
+        logging.info(f"Initial scale factor: {self.qg.state.scale_factor:.3e}")
+        logging.info(f"Initial Hubble parameter: {self.hubble_parameter:.3e}")
+        logging.info(f"Hubble time: {t_hubble:.3e} t_P")
+        logging.info(f"\nUsing logarithmic time stepping:")
+        logging.info(f"  Simulation covers: 0 to {t_max:.3e} t_P")
+        logging.info(f"  Number of steps: {n_steps}")
+        logging.info(f"  dt_min: {dt_min:.3e}, dt_max: {log_times[-1] - log_times[-2]:.3e}")
+
         self.verifier = CosmologicalVerification(self)
-        
-        # Record initial state
-        self._record_measurements(t)
+
+        # Record initial state at t=0
+        self._record_measurements(0.0)
         initial_metrics = self.verifier.verify_geometric_entanglement(self.qg.state)
         initial_friedmann = self.verifier.verify_friedmann_equations(self.qg.state)
-        
+
         self.hubble_squared_lhs.append(initial_friedmann['lhs'])
         self.hubble_squared_rhs.append(initial_friedmann['rhs'])
-        
-        # Base evolution configuration
+
+        # Base evolution configuration (dt will be updated each step)
         evolution_config = {
-            'dt': dt,
+            'dt': dt_min,
             'error_tolerance': 1e-6
         }
-        
+
         # Get reference to quantum state
         state = self.qg.state
-        while t < t_final:
+
+        # Main evolution loop with logarithmic time stepping
+        for step_idx in range(1, len(log_times)):
+            t = log_times[step_idx]
+            t_prev = log_times[step_idx - 1]
+            dt = t - t_prev  # Variable timestep
+
+            # Update evolution config with current dt
+            evolution_config['dt'] = dt
             base_energy_density = 3 * self.hubble_parameter**2 / (8 * np.pi * CONSTANTS['G'])
             # v7: Update vacuum energy using cosmic factor
             gamma_0 = CONSTANTS['gamma_0']
             cosmic_factor = np.pi / gamma_0
             self.vacuum_energy = (CONSTANTS['l_p'] / self.qg.state.scale_factor)**4 * cosmic_factor
-        
+
             # Update state
             state.energy_density = base_energy_density + self.vacuum_energy
-            # Evolution step
+
+            # Evolution step with variable dt
             evolution = TimeEvolution(
                 grid=self.qg.grid,
                 config=evolution_config,
@@ -364,14 +402,11 @@ class CosmologySimulation:
                 state=self.qg.state
             )
             evolution._evolve_state(dt)
-            
-            # Update time and collect metrics
-            t += dt
-            step_count += 1
-            
+
+            # Collect metrics at current time
             metrics = self.verifier.verify_geometric_entanglement(self.qg.state)
             friedmann = self.verifier.verify_friedmann_equations(self.qg.state)
-            
+
             # Store verification results
             self.verification_results.append({
                 'time': t,
@@ -384,8 +419,8 @@ class CosmologySimulation:
             H = state.hubble_parameter
             diagnostics = self._validate_hubble(H, state)
 
-            # Detailed logging every 100 steps
-            if step_count % 100 == 0:
+            # Detailed logging at log-spaced intervals (every 10% of steps)
+            if step_idx % (n_steps // 10) == 0:
                 # Log inflation dynamics
                 inflation_metrics = self.verifier.verify_inflation_dynamics(self.qg.state)
                 logging.info(
@@ -446,16 +481,16 @@ class CosmologySimulation:
                     f"\nPower Spectrum P(k) mean = {np.mean(Pk_scalar):.6e}"
                 )
                 
-                logging.info(f"Simulation progress: {t/t_final*100:.1f}% (t={t:.2f}/{t_final})")
-            
+                logging.info(f"Simulation progress: {step_idx/n_steps*100:.1f}% (t={t:.3e}/{t_max:.3e})")
+
             # Store quantum state on grid
             self.qg.grid.quantum_state = self.qg.state
-            
+
             # Check for bounce conditions
             if self._check_quantum_bounce(self.qg.state):
                 self._handle_bounce(self.qg.state)
-                logging.info(f"Quantum bounce detected at t={t:.2f}, a={self.qg.state.scale_factor:.6e}")
-            
+                logging.info(f"Quantum bounce detected at t={t:.3e}, a={self.qg.state.scale_factor:.6e}")
+
             # Update metric with v7 quantum corrections
             gamma_0 = CONSTANTS['gamma_0']
             quantum_factor = 1 + gamma_0 * (CONSTANTS['l_p']/self.qg.state.scale_factor)**2
@@ -463,22 +498,25 @@ class CosmologySimulation:
                 for mu in range(1, 4):
                     current = self.qg.state.get_metric_component((mu, mu), i)
                     self.qg.state.set_metric_component((mu, mu), i, current * quantum_factor)
-            
-            # Record measurements
-            if t >= next_save:
-                self.verification_results.append({
-                    'time': t,
-                    'scale_factor': self.qg.state.scale_factor,
-                    'lhs': initial_metrics['lhs'],
-                    'rhs': initial_metrics['rhs']
-                })
+
+            # Record measurements at log-spaced intervals
+            if step_idx % (n_steps // 100) == 0 or step_idx == len(log_times) - 1:
                 self._record_measurements(t)
-                next_save += dt_save
 
+        # Final verification summary
+        lhs_history = [v['lhs'] for v in self.verification_results]
+        rhs_history = [v['rhs'] for v in self.verification_results]
+        if lhs_history and rhs_history:
+            errors = [abs(l - r) / max(abs(l), abs(r), 1e-30) for l, r in zip(lhs_history, rhs_history)]
+            logging.info(f"\nFinal v7 Equation Verification Summary:")
+            logging.info(f"g_μν = ℓ_P²(G_μν^Fisher + γ₀E_μν)  [γ₀ = {CONSTANTS['gamma_0']}]")
+            logging.info(f"Final LHS = {lhs_history[-1]:.6e}")
+            logging.info(f"Final RHS = {rhs_history[-1]:.6e}")
+            logging.info(f"Final Error = {errors[-1]:.6e}")
+            logging.info(f"Overall Mean Error = {np.mean(errors):.6e}")
+            logging.info(f"Overall Max Error = {np.max(errors):.6e}")
 
-            #self._record_measurements(t)
-        
-        logging.info(f"Simulation completed: {step_count} steps")
+        logging.info(f"\nSimulation completed: {n_steps} steps")
 
 
     def _record_measurements(self, t: float) -> None:
@@ -731,23 +769,34 @@ class CosmologySimulation:
 def main():
     """Run cosmology simulation example."""
     # Setup logging
-    #logging.basicConfig(level=logging.INFO)
     configure_logging(simulation_type='cosmology')
-    
+
     # Create output directories with correct path
     output_dir = Path("results/cosmology")
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Initial cosmological parameters
     initial_scale = 1000.0  # in Planck lengths
-    hubble_parameter = 0.1  # in Planck units
-    
-    # Create and run simulation
+    hubble_parameter = 0.1  # in Planck units (H ~ 0.1 t_P^-1)
+
+    # Create simulation
     sim = CosmologySimulation(initial_scale, hubble_parameter)
-    
-    # Run until significant expansion
-    t_final = 20.0  # in Planck times
-    sim.run_simulation(t_final, dt_save=0.5)
+
+    # Calculate appropriate simulation time
+    # Hubble time t_H = 1/H defines the characteristic expansion timescale
+    t_hubble = 1.0 / hubble_parameter  # = 10 t_P for H=0.1
+    n_efolds = 10  # Number of e-foldings to simulate
+
+    # Simulate for multiple Hubble times to see significant expansion
+    # For inflation: t_final ~ N_efolds * t_H
+    t_final = n_efolds * t_hubble
+
+    logging.info(f"Cosmological Timescales:")
+    logging.info(f"  Hubble time t_H = {t_hubble:.3e} t_P")
+    logging.info(f"  Simulating {n_efolds} e-folds")
+    logging.info(f"  Total time: {t_final:.3e} t_P")
+
+    sim.run_simulation(t_final)
     
     # Plot and save results
     sim.plot_results(str(output_dir / "evolution.png"))

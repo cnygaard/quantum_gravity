@@ -108,10 +108,10 @@ class GalaxySimulation:
         self.gamma_eff = self.gamma * self.beta * np.sqrt(0.364840)  # Effective coupling
         self.phi = (1 + np.sqrt(5)) / 2  # Golden ratio for quantum NFW profile
         
-        # Initialize scale bridging renormalization flow
+        # Initialize v7 scale bridging renormalization flow
         self.rg_flow = RenormalizationFlow()
-        logging.info(f"Initialized renormalization flow for scale bridging")
-        logging.info(f"Leech lattice factor: {self.rg_flow.lattice_factor:.2f}")
+        logging.info(f"Initialized v7 renormalization flow for scale bridging")
+        logging.info(f"v7 Cosmic factor (π/γ₀): {self.rg_flow.cosmic_factor:.2f}")
 
 
         # Setup grid with proper points
@@ -796,8 +796,8 @@ class GalaxySimulation:
                 
                 # Detailed logging
                 logging.info(f"\nTime: {current_time/self.rotation_period:.2f} rotation periods")
-                logging.info(f"Geometry-Entanglement: LHS={metrics['lhs']:.6e}, RHS={metrics['rhs']:.6e}, Error={metrics['relative_error']:.6e}")
-                logging.info(f"Geometry-Entanglement Error: {metrics['relative_error']:.6e}")
+                logging.info(f"v7 Master Equation [g_μν = ℓ_P²(G_μν^Fisher + γ₀E_μν)]: LHS={metrics['lhs']:.6e}, RHS={metrics['rhs']:.6e}")
+                logging.info(f"v7 Verification Error: {metrics['relative_error']:.6e}")
                 #logging.info(f"Peak Rotation Velocity: {np.max(v_rot):.1f} m/s")
                 logging.info(f"Peak Rotation Velocity: {np.max(v_rot):.1f} km/s") 
                 logging.info(f"Entanglement Entropy: {entropy:.2e}")
@@ -977,16 +977,16 @@ class GalaxySimulation:
         ax4.set_title('Entanglement Entropy Evolution')
         ax4.grid(True)
         
-        # Geometry-Entanglement verification
+        # v7 Master Equation verification
         ax5 = fig.add_subplot(gs[2, 0])
         times = [v['time'] for v in self.verification_results]
         lhs = [v['lhs'] for v in self.verification_results]
         rhs = [v['rhs'] for v in self.verification_results]
-        ax5.plot(times, lhs, 'b-', label='LHS (Classical Geometry)')
-        ax5.plot(times, rhs, 'r--', label='RHS (Quantum Geometry)')
+        ax5.plot(times, lhs, 'b-', label='LHS (g_μν)')
+        ax5.plot(times, rhs, 'r--', label='RHS (ℓ_P²(G^Fisher + γ₀E))')
         ax5.set_xlabel('Time [rotation periods]')
-        ax5.set_ylabel('Geometric-Entanglement Terms')
-        ax5.set_title('Geometric-Entanglement Verification')
+        ax5.set_ylabel('v7 Metric Terms')
+        ax5.set_title('v7 Master Equation Verification')
         ax5.grid(True)
         ax5.legend()
         
@@ -996,7 +996,7 @@ class GalaxySimulation:
         ax6.semilogy(times, errors, 'k-')
         ax6.set_xlabel('Time [rotation periods]')
         ax6.set_ylabel('Relative Error')
-        ax6.set_title('Geometric-Entanglement Error')
+        ax6.set_title('v7 Master Equation Error')
         ax6.grid(True)
         
         # Dark matter ratio vs radius

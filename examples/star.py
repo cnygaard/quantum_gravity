@@ -7,7 +7,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from constants import CONSTANTS, SI_UNITS
 from core.state import QuantumState
-from core.grid import LeechLattice
+from physics.quantum_geometry import QuantumGeometry
 from physics.verification import UnifiedTheoryVerification
 from physics.stellar.eos import RealisticEOS
 from physics.stellar.relativity import RelativityHandler
@@ -48,14 +48,15 @@ class StarSimulation(StellarStructure):
             stellar_type=stellar_type
         )
 
-        # Initialize quantum coupling constants
-        self.gamma = 0.55  # Coupling constant
+        # Initialize v7 quantum coupling constants
+        self.gamma_0 = CONSTANTS['gamma_0']  # 0.274 Immirzi parameter
         self.beta = CONSTANTS['l_p'] / self.R_star  # Quantum scale parameter
 
-        # Galaxy scale parameters
+        # Galaxy scale parameters (v7 formulation)
         self.galaxy_radius = galaxy_radius or 50000 * CONSTANTS['R_sun']
         self.beta_galaxy = CONSTANTS['l_p'] / self.galaxy_radius
-        self.gamma_eff_galaxy = self.gamma * self.beta_galaxy * np.sqrt(0.364840 )
+        self.cosmic_factor = np.pi / self.gamma_0  # v7 cosmic factor ~11.47
+        self.gamma_eff_galaxy = self.gamma_0 * self.beta_galaxy * self.cosmic_factor
 
         self.mass = mass  # In solar masses
         self.radius = radius  # In solar radii
@@ -70,26 +71,27 @@ class StarSimulation(StellarStructure):
         self.qg = quantum_gravity or QuantumGravity()
         self.debug = debug
 
-        # Initialize quantum parameters with proper scaling
-        self.gamma = 0.55  # Coupling constant
+        # Initialize v7 quantum parameters with proper scaling
+        self.gamma_0 = CONSTANTS['gamma_0']  # 0.274 Immirzi parameter
         self.beta = CONSTANTS['l_p'] / self.R_star  # Quantum scale parameter
-        self.gamma_eff = self.gamma * self.beta * np.sqrt(0.364840 )  # Effective coupling
+        self.cosmic_factor = np.pi / self.gamma_0  # v7 cosmic factor ~11.47
+        self.gamma_eff = self.gamma_0 * self.beta * self.cosmic_factor  # v7 effective coupling
 
-        # Galaxy scale quantum parameters
+        # Galaxy scale quantum parameters (v7 formulation)
         self.galaxy_radius = galaxy_radius or 50000 * CONSTANTS['R_sun']  # Default ~50 kpc
         self.beta_galaxy = CONSTANTS['l_p'] / self.galaxy_radius
-        self.gamma_eff_galaxy = self.gamma * self.beta_galaxy * np.sqrt(0.364840 )
-    
-        # Quantum vacuum parameters
+        self.gamma_eff_galaxy = self.gamma_0 * self.beta_galaxy * self.cosmic_factor
+
+        # Quantum vacuum parameters (v7 formulation)
         self.rho_vacuum = CONSTANTS['hbar'] / (CONSTANTS['c'] * CONSTANTS['l_p']**4)
         self.beta_universe = CONSTANTS['l_p'] / CONSTANTS['c'] * self.hubble_parameter
         self.rho_vacuum_modified = self.rho_vacuum * (1 + self.gamma_eff * self.beta_universe)
 
-        # Add Leech lattice vacuum energy calculations
-        self.leech = LeechLattice(points=CONSTANTS['LEECH_LATTICE_POINTS'])
+        # v7 quantum geometry calculations
+        self.quantum_geometry = QuantumGeometry()
 
         # Compute initial vacuum energy and lambda
-        self.vacuum_energy = self._compute_leech_vacuum_energy()
+        self.vacuum_energy = self._compute_v7_vacuum_energy()
         self.cosmological_constant = self._compute_modified_lambda()
 
         self.verifier = UnifiedTheoryVerification(self)
@@ -218,14 +220,14 @@ class StarSimulation(StellarStructure):
             
         return P_classical
 
-    def _compute_leech_vacuum_energy(self) -> float:
-            """Compute vacuum energy with Leech lattice corrections"""
+    def _compute_v7_vacuum_energy(self) -> float:
+            """Compute vacuum energy with v7 Fisher metric corrections"""
             base_energy = CONSTANTS['hbar']/(CONSTANTS['c'] * CONSTANTS['l_p']**4)
-            leech_correction = self.leech.compute_vacuum_energy()
+            # v7: Use cosmic factor π/γ₀ instead of Leech lattice
+            v7_correction = 1.0 + self.gamma_0 * (CONSTANTS['l_p']/self.R_star)**2
             quantum_factor = self._compute_quantum_factor()
-            # Combine quantum corrections with Leech lattice effects
-            return base_energy * quantum_factor * leech_correction
-            #return base_energy * (1 + self.gamma_eff * self.beta_universe) * leech_correction
+            # Combine quantum corrections with v7 Fisher metric effects
+            return base_energy * quantum_factor * v7_correction
 
     def _compute_modified_lambda(self) -> float:
         """Calculate modified cosmological constant"""
@@ -455,7 +457,7 @@ class StarSimulation(StellarStructure):
                 thermo_metrics = self.verifier.verify_thermodynamics(self.qg.state)
 
                 # Update vacuum energy calculations
-                self.vacuum_energy = self._compute_leech_vacuum_energy()
+                self.vacuum_energy = self._compute_v7_vacuum_energy()
                 self.cosmological_constant = self._compute_modified_lambda()
 
                 if self.qg.state.time >= self.next_checkpoint:
@@ -483,18 +485,20 @@ class StarSimulation(StellarStructure):
                 logging.info(f"Core Temperature: {np.mean(temp_value):.26e}")
                 logging.info(f"Surface Temperature: {self.compute_surface_temperature():.26e}")
 
-                # Log geometric verification
-                logging.info(f"\nGeometric-Entanglement Formula:")
+                # Log v7 master equation verification
+                logging.info(f"\nv7 Master Equation: g_μν = ℓ_P²(G_μν^Fisher + γ₀E_μν)")
                 logging.info(f"LHS = {metrics['lhs']:.44e}")
                 logging.info(f"RHS = {metrics['rhs']:.44e}")
                 logging.info(f"LHS (normalized) = {normalized_scales['lhs_normalized']:.44e}")
                 logging.info(f"RHS (normalized) = {normalized_scales['rhs_normalized']:.44e}")
                 logging.info(f"Relative Error = {metrics['error']:.6e}")
 
-                # Log quantum parameters
-                logging.info(f"\nQuantum Parameters:")
+                # Log v7 quantum parameters
+                logging.info(f"\nv7 Quantum Parameters:")
+                logging.info(f"γ₀ (Immirzi): {self.gamma_0:.3f}")
                 logging.info(f"β (l_p/R): {self.beta:.2e}")
                 logging.info(f"γ_eff: {self.gamma_eff:.2e}")
+                logging.info(f"Cosmic factor (π/γ₀): {self.cosmic_factor:.2f}")
 
                 # Log progress
                 progress = min((self.qg.state.time/t_final) * 100, 100.0)
@@ -816,19 +820,17 @@ class StarSimulation(StellarStructure):
         ax4.set_ylabel('Quantum Correction Factor')
         ax4.grid(True)
         
-        # Geometric-Entanglement Verification
+        # v7 Master Equation Verification (disabled for now)
         # ax5 = fig.add_subplot(gs[2, 0])
-        # ax5.plot(verification_times, [v['lhs'] for v in self.verification_results], label='LHS')
-        # ax5.plot(verification_times, [v['rhs'] for v in self.verification_results], label='RHS')
-        # #ax5.plot(self.time_points, [v['lhs'] for v in self.verification_results], label='LHS')
-        # #ax5.plot(self.time_points, [v['rhs'] for v in self.verification_results], label='RHS')
+        # ax5.plot(verification_times, [v['lhs'] for v in self.verification_results], label='LHS (g_μν)')
+        # ax5.plot(verification_times, [v['rhs'] for v in self.verification_results], label='RHS (ℓ_P²(G^Fisher + γ₀E))')
         # ax5.set_yscale('log')
         # ax5.set_xlabel('Time [t_P]')
-        # ax5.set_ylabel('Geometric-Entanglement Terms')
+        # ax5.set_ylabel('v7 Metric Terms')
         # ax5.legend()
         # ax5.grid(True)
-        
-        # Leech Lattice Energy
+
+        # v7 Vacuum Energy
         ax6 = fig.add_subplot(gs[2, 1])
         ax6.plot(self.time_points, self.vacuum_energy_history)
         ax6.set_xlabel('Time [t_P]')
@@ -1373,16 +1375,16 @@ class StarSimulation(StellarStructure):
         else:
             base_enhancement = 1.0
             
-        # Enhanced Leech lattice coupling
-        dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
-        points = CONSTANTS['LEECH_LATTICE_POINTS']
-        lattice_factor = np.sqrt(points/dimension) * base_enhancement
-        
+        # v7 cosmic factor coupling (replaces Leech lattice)
+        gamma_0 = CONSTANTS['gamma_0']  # 0.274
+        cosmic_factor = np.pi / gamma_0  # ~11.47
+        v7_factor = cosmic_factor * base_enhancement
+
         # Scale quantum effects properly
         r_natural = self.radius * CONSTANTS['R_sun'] / CONSTANTS['l_p']
         quantum_scale = np.exp(-np.sqrt(r_natural)/100)
-        
-        return 1.0 + lattice_factor * quantum_scale
+
+        return 1.0 + v7_factor * quantum_scale
 
     def compute_total_pressure(self):
         """Calculate total pressure including quantum effects"""
@@ -1427,19 +1429,18 @@ class StarSimulation(StellarStructure):
         return (3 * G * self.M_star**2) / (8 * np.pi * self.R_star**4)
 
     def compute_quantum_factor(self):
-        """Compute quantum geometric enhancement factor"""
+        """Compute v7 quantum geometric enhancement factor"""
         r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
         m_natural = self.mass / CONSTANTS['M_sun']
-        
-        # Leech lattice geometric factors
-        dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
-        points = CONSTANTS['LEECH_LATTICE_POINTS']
-        lattice_factor = np.sqrt(points/dimension)
-        
+
+        # v7 cosmic factor (replaces Leech lattice)
+        gamma_0 = CONSTANTS['gamma_0']  # 0.274
+        cosmic_factor = np.pi / gamma_0  # ~11.47
+
         # Normalized quantum enhancement
         scale_factor = np.exp(-r_natural/1e4)
-        quantum_enhancement = scale_factor * lattice_factor * (m_natural)**0.25
-        
+        quantum_enhancement = scale_factor * cosmic_factor * (m_natural)**0.25
+
         return 1.0 + 0.1 * np.tanh(quantum_enhancement * 1e-6)
 
     def verify_stellar_structure(self) -> Dict[str, float]:
@@ -1973,7 +1974,7 @@ def compute_temperature_profile(self):
 
     # Scale quantum corrections by stellar type
     beta_local = CONSTANTS['l_p'] / (self.R_star * (self.mass**0.25))
-    gamma_quantum = 0.55 * beta_local * np.sqrt(0.364840 )
+    gamma_quantum = CONSTANTS['gamma_0'] * beta_local * (np.pi / CONSTANTS['gamma_0'])  # v7 formulation
     
     if self.radius < 0.5:  # Compact
         quantum_factor = 1.0 + 0.08 * gamma_quantum * (0.5/self.radius)**0.5
@@ -2010,7 +2011,7 @@ def _compute_central_pressure(self):
 
     # Fine-tuned quantum corrections by stellar type
     beta_local = CONSTANTS['l_p'] / (R * (M/CONSTANTS['M_sun'])**0.25)
-    gamma_quantum = 0.55 * beta_local * np.sqrt(0.364840 )
+    gamma_quantum = CONSTANTS['gamma_0'] * beta_local * (np.pi / CONSTANTS['gamma_0'])  # v7 formulation
     
     if self.radius < 0.5:
         quantum_factor = 1.0 + 0.12 * gamma_quantum * (0.5/self.radius)**0.5
@@ -2050,7 +2051,7 @@ def _compute_quantum_density(self) -> np.ndarray:
     
     # Enhanced quantum effects near core
     beta_local = CONSTANTS['l_p'] / (self.R_star * (self.mass**0.25))
-    gamma_quantum = 0.55 * beta_local * np.sqrt(0.364840 )
+    gamma_quantum = CONSTANTS['gamma_0'] * beta_local * (np.pi / CONSTANTS['gamma_0'])  # v7 formulation
     
     core_region = r_norm < 0.1
     quantum_factor = np.ones_like(r)
@@ -2074,13 +2075,13 @@ def _compute_quantum_factor(self):
     r_natural = self.radius * SI_UNITS['ly_si'] / (CONSTANTS['R_sun'] * SI_UNITS['R_sun_si'])
     m_natural = self.mass / CONSTANTS['M_sun']
     
-    # Enhanced Leech lattice coupling
-    dimension = CONSTANTS['LEECH_LATTICE_DIMENSION']
-    points = CONSTANTS['LEECH_LATTICE_POINTS']
-    lattice_factor = np.sqrt(points/dimension) * base_enhancement
-    
-    quantum_enhancement = (1 - np.exp(-compactness)) * lattice_factor * (m_natural)**0.25
-    
+    # v7 cosmic factor coupling (replaces Leech lattice)
+    gamma_0 = CONSTANTS['gamma_0']  # 0.274
+    cosmic_factor = np.pi / gamma_0  # ~11.47
+    v7_factor = cosmic_factor * base_enhancement
+
+    quantum_enhancement = (1 - np.exp(-compactness)) * v7_factor * (m_natural)**0.25
+
     return 1.0 + quantum_enhancement
 
 def compute_geometric_lhs(self):

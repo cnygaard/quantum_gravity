@@ -123,7 +123,7 @@ Nine independent derivations confirm this factor:
 | 8 | Thermodynamic | Screen holography | π/2 |
 | 9 | Bekenstein Bound | Hemisphere decomposition | π/2 |
 
-For complete derivations, see [theory/darkmatter.md](theory/darkmatter.md).
+For derivation sketches and mathematical motivation, see [theory/darkmatter.md](theory/darkmatter.md).
 
 ## Quantum Corrections
 

@@ -675,7 +675,7 @@ class RobustEntanglementObservable:
             return self._cache[cache_key]
         
         # Get dark matter ratio with default
-        dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
+        dm_ratio = getattr(state, 'dark_matter_ratio', 5.43)
         
         # Vectorized implementation for performance
         if hasattr(state, 'galaxy_type'):
@@ -817,7 +817,7 @@ class RobustEntanglementObservable:
         # Get galaxy parameters for physics-based construction
         beta = CONSTANTS['l_p'] / state.radius
         gamma_eff = CONSTANTS['gamma_0'] * beta * (np.pi / CONSTANTS['gamma_0'])  # v7 formulation
-        dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
+        dm_ratio = getattr(state, 'dark_matter_ratio', 5.43)
         
         # Create appropriate eigenvalue spectrum based on galaxy type
         if state.galaxy_type == 'dwarf':
@@ -1030,7 +1030,7 @@ class RobustEntanglementObservable:
             logging.info("Using physics-based entropy values for galaxy")
             
             # Get preset entropy based on galaxy type
-            dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
+            dm_ratio = getattr(state, 'dark_matter_ratio', 5.43)
             
             if state.galaxy_type == 'spiral':
                 # Spiral galaxies: derived from typical entanglement structure
@@ -1161,7 +1161,7 @@ class RobustEntanglementObservable:
                 density = avg_density * np.exp(-1.0 * r_ratio)
             
             # Add dark matter contribution
-            dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
+            dm_ratio = getattr(state, 'dark_matter_ratio', 5.43)
             density += avg_density * dm_ratio * np.exp(-0.5 * r_ratio)
         else:
             # Default for non-galaxy states
@@ -1743,7 +1743,7 @@ class RobustEntanglementObservable:
                 eigenvalues /= np.sum(eigenvalues)
             else:
                 # Default distribution - vectorized
-                power = 1.3 + 0.1 * np.log(getattr(state, 'dark_matter_ratio', 5.0))
+                power = 1.3 + 0.1 * np.log(getattr(state, 'dark_matter_ratio', 5.43))
                 eigenvalues = 1.0 / np.power(np.arange(1, n_points+1), power)
                 eigenvalues /= np.sum(eigenvalues)
         else:

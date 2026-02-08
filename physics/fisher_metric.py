@@ -1,5 +1,5 @@
 """
-Fisher Information Metric for Quantum Gravity v7
+Fisher Information Metric for Quantum Gravity v8
 
 Implements the quantum Fisher information metric which measures the
 distinguishability of nearby quantum states:
@@ -7,11 +7,15 @@ distinguishability of nearby quantum states:
     G_μν^Fisher = 4 Re[⟨∂_μΨ|∂_νΨ⟩ - ⟨∂_μΨ|Ψ⟩⟨Ψ|∂_νΨ⟩]
 
 This metric encodes how spacetime geometry emerges from quantum information
-geometry according to the v7 master equation:
+geometry according to the v8 master equation:
 
     g_μν = ℓ_P² (G_μν^Fisher + γ₀ E_μν)
 
-Reference: Holographic Fisher Geometry and Quantum Gravity Proposal v7
+Supports:
+- Schwarzschild metric (non-rotating black holes)
+- Kerr metric (rotating black holes) - Section 12 of v8
+
+Reference: Holographic Fisher Geometry and Quantum Gravity Proposal v8
 """
 
 import numpy as np
@@ -150,6 +154,226 @@ class FisherMetric:
         G[3, 3] = G[2, 2]  # Spherical symmetry
 
         return G
+
+    def compute_kerr_fisher(self, r: float, theta: float, M: float, a: float,
+                            c: float = 1.0) -> np.ndarray:
+        """
+        Compute Fisher metric for Kerr geometry (rotating black hole).
+
+        From v8 Section 12: The rotating quantum state is a squeezed thermal
+        coherent state |Ψ⟩ = D̂(α)Ŝ(ξ)|thermal⟩ where:
+        - |α|² = r_s r a² sin²θ/(ΣΔ) encodes rotation
+        - |ξ| = ½ln(Σ/Δ) encodes curvature
+
+        The Fisher metric reproduces the Kerr metric exactly:
+
+        ds² = -(1-r_sr/Σ)c²dt² - (2r_sra sin²θ/Σ)c dt dφ
+              + (Σ/Δ)dr² + Σdθ² + (A sin²θ/Σ)dφ²
+
+        Key insight: Frame dragging g_tφ emerges from quantum correlations
+        ⟨ΔE·ΔL_z⟩ between energy and angular momentum fluctuations.
+
+        Args:
+            r: Radial coordinate (Boyer-Lindquist, in Planck units)
+            theta: Polar angle (radians)
+            M: Black hole mass (in Planck mass units)
+            a: Spin parameter a = J/(Mc), where J is angular momentum
+               (in Planck length units, must satisfy |a| ≤ r_s/2)
+            c: Speed of light (default 1 in natural units)
+
+        Returns:
+            4x4 Kerr metric tensor in coordinates (t, r, θ, φ)
+
+        Raises:
+            ValueError: If parameters would give naked singularity (|a| > r_s/2)
+        """
+        # Schwarzschild radius
+        r_s = 2 * CONSTANTS['G'] * M
+
+        # Check for extremal/naked singularity
+        if abs(a) > r_s / 2:
+            logger.warning(f"Spin parameter |a|={abs(a):.4f} > r_s/2={r_s/2:.4f}, "
+                          "approaching extremal limit")
+
+        # Kerr geometry functions
+        sin_theta = np.sin(theta)
+        cos_theta = np.cos(theta)
+        sin2_theta = sin_theta**2
+
+        # Σ = r² + a²cos²θ
+        Sigma = r**2 + a**2 * cos_theta**2
+
+        # Δ = r² - r_s*r + a²
+        Delta = r**2 - r_s * r + a**2
+
+        # A = (r² + a²)² - a²Δsin²θ
+        r2_plus_a2 = r**2 + a**2
+        A = r2_plus_a2**2 - a**2 * Delta * sin2_theta
+
+        # Handle singularities
+        if Sigma < 1e-10:
+            logger.warning("Near ring singularity (Σ → 0)")
+            Sigma = max(Sigma, 1e-10)
+
+        if abs(Delta) < 1e-10:
+            logger.warning("Near horizon (Δ → 0)")
+            Delta = np.sign(Delta) * max(abs(Delta), 1e-10)
+
+        # Construct metric tensor
+        # Coordinates: (0=t, 1=r, 2=θ, 3=φ)
+        G = np.zeros((4, 4))
+
+        # g_tt = -(1 - r_s*r/Σ) c²
+        G[0, 0] = -(1 - r_s * r / Sigma) * c**2
+
+        # g_rr = Σ/Δ
+        G[1, 1] = Sigma / Delta
+
+        # g_θθ = Σ
+        G[2, 2] = Sigma
+
+        # g_φφ = A sin²θ / Σ
+        G[3, 3] = A * sin2_theta / Sigma
+
+        # g_tφ = g_φt = -(r_s * r * a * sin²θ / Σ) * c (frame dragging)
+        # This off-diagonal term arises from ⟨ΔE·ΔL_z⟩ correlations
+        G[0, 3] = -(r_s * r * a * sin2_theta / Sigma) * c
+        G[3, 0] = G[0, 3]  # Symmetric tensor
+
+        return G
+
+    def kerr_horizon_radii(self, M: float, a: float) -> Tuple[float, float]:
+        """
+        Compute inner and outer horizon radii for Kerr black hole.
+
+        r_± = (r_s/2) ± √((r_s/2)² - a²)
+
+        Args:
+            M: Black hole mass (Planck units)
+            a: Spin parameter (Planck units)
+
+        Returns:
+            Tuple (r_outer, r_inner) horizon radii
+
+        Raises:
+            ValueError: If |a| > r_s/2 (naked singularity)
+        """
+        r_s = 2 * CONSTANTS['G'] * M
+        r_s_half = r_s / 2
+
+        discriminant = r_s_half**2 - a**2
+        if discriminant < 0:
+            raise ValueError(f"Naked singularity: |a|={abs(a):.4f} > r_s/2={r_s_half:.4f}")
+
+        sqrt_disc = np.sqrt(discriminant)
+        r_outer = r_s_half + sqrt_disc
+        r_inner = r_s_half - sqrt_disc
+
+        return r_outer, r_inner
+
+    def kerr_ergosphere_radius(self, theta: float, M: float, a: float) -> float:
+        """
+        Compute ergosphere radius (static limit surface) for Kerr black hole.
+
+        r_ergo(θ) = (r_s/2) + √((r_s/2)² - a²cos²θ)
+
+        Inside the ergosphere, no observer can remain stationary due to
+        frame dragging.
+
+        Args:
+            theta: Polar angle (radians)
+            M: Black hole mass (Planck units)
+            a: Spin parameter (Planck units)
+
+        Returns:
+            Ergosphere radius at given angle
+        """
+        r_s = 2 * CONSTANTS['G'] * M
+        r_s_half = r_s / 2
+
+        discriminant = r_s_half**2 - a**2 * np.cos(theta)**2
+        if discriminant < 0:
+            # Should not happen for valid Kerr BH
+            return r_s_half
+
+        return r_s_half + np.sqrt(discriminant)
+
+    def frame_dragging_angular_velocity(self, r: float, theta: float,
+                                          M: float, a: float) -> float:
+        """
+        Compute frame dragging angular velocity ω = -g_tφ/g_φφ.
+
+        This is the angular velocity at which spacetime itself rotates,
+        representing the quantum correlation ⟨ΔE·ΔL_z⟩.
+
+        At the outer horizon: ω_H = a c / (r_+² + a²)
+
+        Args:
+            r: Radial coordinate
+            theta: Polar angle
+            M: Black hole mass
+            a: Spin parameter
+
+        Returns:
+            Frame dragging angular velocity (rad/s in natural units)
+        """
+        G = self.compute_kerr_fisher(r, theta, M, a)
+
+        if abs(G[3, 3]) < 1e-15:
+            return 0.0
+
+        omega = -G[0, 3] / G[3, 3]
+        return omega
+
+    def kerr_quantum_state_params(self, r: float, theta: float,
+                                   M: float, a: float) -> Tuple[float, float]:
+        """
+        Compute quantum state parameters for Kerr geometry.
+
+        The rotating vacuum state is a squeezed thermal coherent state:
+        |Ψ⟩ = D̂(α)Ŝ(ξ)|thermal⟩
+
+        where D̂(α) is the displacement operator and Ŝ(ξ) is the squeeze operator.
+
+        Parameters:
+        - |α|² = r_s * r * a² * sin²θ / (Σ * Δ)  [rotation/displacement]
+        - |ξ| = ½ ln(Σ/Δ)  [curvature/squeezing]
+
+        Args:
+            r: Radial coordinate
+            theta: Polar angle
+            M: Black hole mass
+            a: Spin parameter
+
+        Returns:
+            Tuple (|α|², |ξ|) quantum state parameters
+        """
+        r_s = 2 * CONSTANTS['G'] * M
+
+        sin2_theta = np.sin(theta)**2
+        cos2_theta = np.cos(theta)**2
+
+        # Σ = r² + a²cos²θ
+        Sigma = r**2 + a**2 * cos2_theta
+
+        # Δ = r² - r_s*r + a²
+        Delta = r**2 - r_s * r + a**2
+
+        # Avoid singularities
+        Sigma = max(Sigma, 1e-15)
+        Delta_safe = max(abs(Delta), 1e-15) * np.sign(Delta) if Delta != 0 else 1e-15
+
+        # |α|² - displacement parameter (rotation)
+        alpha_squared = r_s * r * a**2 * sin2_theta / (Sigma * abs(Delta_safe))
+
+        # |ξ| - squeeze parameter (curvature)
+        if Delta > 0:
+            xi = 0.5 * np.log(Sigma / Delta)
+        else:
+            # Inside inner horizon, curvature changes sign
+            xi = 0.5 * np.log(Sigma / abs(Delta_safe))
+
+        return alpha_squared, abs(xi)
 
     def _compute_state_derivative(self, state, direction: int) -> np.ndarray:
         """

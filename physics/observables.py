@@ -1834,33 +1834,123 @@ class ADMMassObservable:
         )
 
 class BlackHoleTemperatureObservable:
+    """
+    Measure Hawking temperature with v8 quantum corrections.
+
+    Classical Hawking temperature (v8 Section 17.1):
+        T_H = ℏc³/(8πGMk_B)
+
+    Quantum-corrected temperature:
+        T = T_H(1 − ℓ_P/(2r_h) + O(ℓ_P²/r_h²))
+
+    where r_h = 2GM/c² is the horizon radius.
+
+    Physical interpretation: Quantum corrections reduce the temperature
+    slightly for small black holes, providing a smooth transition to
+    the Planck regime rather than a divergence.
+    """
+
     def __init__(self, grid):
         self.grid = grid
         self.mass_obs = ADMMassObservable(grid)
         self.qg = QuantumGeometry()
+        self.l_p = CONSTANTS['l_p']
+        self.gamma_0 = CONSTANTS['gamma_0']
+
+    def classical_temperature(self, mass: float) -> float:
+        """
+        Compute classical Hawking temperature.
+
+        T_H = ℏc³/(8πGMk_B)
+
+        In Planck units with k_B = 1: T_H = 1/(8πM)
+
+        Args:
+            mass: Black hole mass (Planck units)
+
+        Returns:
+            Hawking temperature (Planck temperature units)
+        """
+        return (CONSTANTS['hbar'] * CONSTANTS['c']**3 /
+                (8 * np.pi * CONSTANTS['G'] * mass))
+
+    def quantum_correction(self, mass: float, order: int = 1) -> float:
+        """
+        Compute v8 quantum correction factor.
+
+        From v8 Section 17.1:
+            T/T_H = 1 - ℓ_P/(2r_h) + O(ℓ_P²/r_h²)
+
+        where r_h = 2GM.
+
+        Args:
+            mass: Black hole mass (Planck units)
+            order: Order of correction (1 = leading, 2 = next-to-leading)
+
+        Returns:
+            Quantum correction factor (multiply by T_H to get T)
+        """
+        r_h = 2 * CONSTANTS['G'] * mass  # Horizon radius
+
+        # Leading order: 1 - ℓ_P/(2r_h)
+        beta = self.l_p / r_h  # Quantum parameter β = ℓ_P/r_h
+        correction = 1 - beta / 2
+
+        if order >= 2:
+            # Next-to-leading order with Immirzi parameter
+            # T/T_H = 1 - β/2 + γ₀β²/4 + O(β³)
+            correction += self.gamma_0 * beta**2 / 4
+
+        return max(correction, 0.0)  # Ensure non-negative
 
     def measure(self, state):
         """Measure black hole temperature with quantum geometric corrections."""
         mass_result = self.mass_obs.measure(state)
         mass = max(mass_result.value, CONSTANTS['m_p'])
 
-        # Enhanced quantum corrections using universal length and cosmic factor
-        temp = (
-            CONSTANTS['hbar'] * CONSTANTS['c']**3 /
-            (8 * np.pi * CONSTANTS['G'] * mass) *
-            (1 - self.qg.l_universal/(2 * CONSTANTS['G'] * mass)) *
-            (1 + self.qg.cosmic_factor * self.qg.l_universal/(CONSTANTS['G'] * mass))
-        )
+        # v8 quantum-corrected temperature
+        T_classical = self.classical_temperature(mass)
+        correction = self.quantum_correction(mass, order=2)
+        temp = T_classical * correction
+
+        # Horizon radius for metadata
+        r_h = 2 * CONSTANTS['G'] * mass
+        beta = self.l_p / r_h
 
         return MeasurementResult(
             value=temp,
             uncertainty=abs(temp * mass_result.uncertainty / mass),
             metadata={
                 'mass': mass,
+                'T_classical': T_classical,
+                'quantum_correction': correction,
+                'beta': beta,
+                'r_h': r_h,
                 'quantum_factor': self.qg.cosmic_factor,
                 'phase': self.qg.phase
             }
         )
+
+    def temperature_vs_mass(self, masses: np.ndarray) -> dict:
+        """
+        Compute temperature vs mass with quantum corrections for analysis.
+
+        Args:
+            masses: Array of black hole masses (Planck units)
+
+        Returns:
+            Dictionary with 'mass', 'T_classical', 'T_quantum', 'correction'
+        """
+        T_classical = np.array([self.classical_temperature(m) for m in masses])
+        corrections = np.array([self.quantum_correction(m, order=2) for m in masses])
+        T_quantum = T_classical * corrections
+
+        return {
+            'mass': masses,
+            'T_classical': T_classical,
+            'T_quantum': T_quantum,
+            'correction': corrections
+        }
 
 
 # class BlackHoleTemperatureObservable:

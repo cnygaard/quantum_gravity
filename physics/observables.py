@@ -21,11 +21,15 @@ def compute_black_hole_entropy(horizon_radius: float, include_log_correction: bo
     Leading order (Bekenstein-Hawking):
         S = A/(4*l_p²) = 4πr_h²/(4*l_p²) = πr_h²/l_p²
 
-    With LQG logarithmic correction (Meissner 2004, Kaul-Majumdar 2000):
-        S = A/(4*l_p²) - (1/2)*ln(A/l_p²)
+    With LQG logarithmic correction (v8 theory, SU(2) Chern-Simons framework):
+        S = A/(4*l_p²) - (3/2)*ln(A/l_p²)
 
-    The logarithmic correction arises from quantum corrections to the area spectrum
-    in Loop Quantum Gravity and becomes significant for Planck-scale black holes.
+    Note on the logarithmic coefficient α:
+        - U(1) Chern-Simons (γ₀ ≈ 0.2375, Meissner 2004): α = -1/2
+        - SU(2) Chern-Simons (γ₀ ≈ 0.274, Engle-Noui-Perez 2010): α = -3/2
+
+    Since we use γ₀ = 0.274 (SU(2) framework) throughout, we use α = -3/2
+    for consistency. See v8 theory document Section 17.2.
 
     Args:
         horizon_radius: Schwarzschild radius r_h = 2GM/c²
@@ -43,11 +47,11 @@ def compute_black_hole_entropy(horizon_radius: float, include_log_correction: bo
     entropy = area / (4 * l_p_sq)
 
     if include_log_correction:
-        # LQG logarithmic correction: -½ ln(A/l_p²)
-        # This correction is derived from microstate counting in LQG
+        # LQG logarithmic correction: -3/2 ln(A/l_p²) for SU(2) framework
+        # Coefficient α = -3/2 is consistent with γ₀ = 0.274 (Engle-Noui-Perez 2010)
         area_ratio = area / l_p_sq
         if area_ratio > 1.0:  # Only apply for macroscopic black holes
-            log_correction = -0.5 * np.log(area_ratio)
+            log_correction = -1.5 * np.log(area_ratio)
             entropy += log_correction
 
     return entropy

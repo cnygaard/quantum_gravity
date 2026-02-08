@@ -1,12 +1,18 @@
 import numpy as np
-from constants import CONSTANTS, SI_UNITS
+from constants import CONSTANTS, SI_UNITS, geometric_factor_ds, dm_ratio_v8 as compute_dm_ratio_v8
 from physics.quantum_geometry import QuantumGeometry
 
-# v7 Holographic Fisher Geometry parameters
-# γ₀ = 0.274 (Immirzi parameter from LQG, Meissner 2004)
-# Dark matter ratio M_DM/M_b = π/(2γ₀) ≈ 5.73
+# v7/v8 Holographic Fisher Geometry parameters
+# γ₀ = 0.274 (Immirzi parameter from LQG, Engle-Noui-Perez 2010, SU(2))
+#
+# v7 flat-space prediction: M_DM/M_b = π/(2γ₀) ≈ 5.73 (7.4σ from Planck)
+# v8 de Sitter corrected:   M_DM/M_b = (π/2γ₀)(sin√Ω_m)/√Ω_m ≈ 5.43 (1.4σ from Planck)
+#
+# The improvement comes from accounting for the positive cosmological constant Λ > 0
+# which curves the information geometry into S³, reducing the holographic path ratio.
 GAMMA_0 = CONSTANTS.get('gamma_0', 0.274)
-DM_RATIO_V7 = CONSTANTS.get('dm_ratio_v7', np.pi / (2 * GAMMA_0))
+DM_RATIO_V7 = CONSTANTS.get('dark_matter_ratio', np.pi / (2 * GAMMA_0))  # 5.73
+DM_RATIO_V8 = CONSTANTS.get('dm_ratio_v8', 5.43)  # de Sitter corrected
 
 
 class DarkMatterAnalysis:
@@ -65,15 +71,47 @@ class DarkMatterAnalysis:
 
         return gamma
 
-    def compute_geometric_enhancement(self):
+    def compute_geometric_enhancement(self, use_v8=True):
         """
         Compute geometric enhancement factor for dark matter.
 
-        v7 formulation: M_DM/M_b = π/(2γ₀) ≈ 5.73
-        This replaces the deprecated Leech lattice formula √(196560/24).
+        v7 formulation (flat-space): M_DM/M_b = π/(2γ₀) ≈ 5.73
+            - 7.4σ discrepancy from Planck 2018
+
+        v8 formulation (de Sitter corrected): M_DM/M_b = (π/2γ₀)(sin√Ω_m)/√Ω_m ≈ 5.43
+            - 1.4σ discrepancy from Planck 2018
+            - Accounts for positive cosmological constant (Λ > 0)
+            - Information geometry is S³, not flat R³
+
+        Args:
+            use_v8: If True, use v8 de Sitter correction (default: True)
+
+        Returns:
+            Dark matter to baryonic matter ratio
         """
-        # v7 dark matter ratio from Immirzi parameter
-        return DM_RATIO_V7
+        if use_v8:
+            # v8 de Sitter corrected ratio
+            return DM_RATIO_V8
+        else:
+            # v7 flat-space ratio (for backward compatibility)
+            return DM_RATIO_V7
+
+    def compute_geometric_enhancement_v8(self, omega_m=None):
+        """
+        Compute v8 de Sitter corrected dark matter ratio with custom Ω_m.
+
+        This allows computing the ratio for different matter densities,
+        useful for exploring the self-consistency equation.
+
+        Args:
+            omega_m: Matter density parameter (default: 0.317)
+
+        Returns:
+            Dark matter to baryonic matter ratio
+        """
+        if omega_m is None:
+            omega_m = CONSTANTS.get('omega_m_v8', 0.317)
+        return compute_dm_ratio_v8(gamma_0=self.gamma_0, omega_m=omega_m)
 
 
     def compare_with_observations(self):

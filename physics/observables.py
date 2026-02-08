@@ -21,11 +21,15 @@ def compute_black_hole_entropy(horizon_radius: float, include_log_correction: bo
     Leading order (Bekenstein-Hawking):
         S = A/(4*l_p²) = 4πr_h²/(4*l_p²) = πr_h²/l_p²
 
-    With LQG logarithmic correction (Meissner 2004, Kaul-Majumdar 2000):
-        S = A/(4*l_p²) - (1/2)*ln(A/l_p²)
+    With LQG logarithmic correction (v8 theory, SU(2) Chern-Simons framework):
+        S = A/(4*l_p²) - (3/2)*ln(A/l_p²)
 
-    The logarithmic correction arises from quantum corrections to the area spectrum
-    in Loop Quantum Gravity and becomes significant for Planck-scale black holes.
+    Note on the logarithmic coefficient α:
+        - U(1) Chern-Simons (γ₀ ≈ 0.2375, Meissner 2004): α = -1/2
+        - SU(2) Chern-Simons (γ₀ ≈ 0.274, Engle-Noui-Perez 2010): α = -3/2
+
+    Since we use γ₀ = 0.274 (SU(2) framework) throughout, we use α = -3/2
+    for consistency. See v8 theory document Section 17.2.
 
     Args:
         horizon_radius: Schwarzschild radius r_h = 2GM/c²
@@ -43,11 +47,11 @@ def compute_black_hole_entropy(horizon_radius: float, include_log_correction: bo
     entropy = area / (4 * l_p_sq)
 
     if include_log_correction:
-        # LQG logarithmic correction: -½ ln(A/l_p²)
-        # This correction is derived from microstate counting in LQG
+        # LQG logarithmic correction: -3/2 ln(A/l_p²) for SU(2) framework
+        # Coefficient α = -3/2 is consistent with γ₀ = 0.274 (Engle-Noui-Perez 2010)
         area_ratio = area / l_p_sq
         if area_ratio > 1.0:  # Only apply for macroscopic black holes
-            log_correction = -0.5 * np.log(area_ratio)
+            log_correction = -1.5 * np.log(area_ratio)
             entropy += log_correction
 
     return entropy
@@ -671,7 +675,7 @@ class RobustEntanglementObservable:
             return self._cache[cache_key]
         
         # Get dark matter ratio with default
-        dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
+        dm_ratio = getattr(state, 'dark_matter_ratio', 5.43)
         
         # Vectorized implementation for performance
         if hasattr(state, 'galaxy_type'):
@@ -813,7 +817,7 @@ class RobustEntanglementObservable:
         # Get galaxy parameters for physics-based construction
         beta = CONSTANTS['l_p'] / state.radius
         gamma_eff = CONSTANTS['gamma_0'] * beta * (np.pi / CONSTANTS['gamma_0'])  # v7 formulation
-        dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
+        dm_ratio = getattr(state, 'dark_matter_ratio', 5.43)
         
         # Create appropriate eigenvalue spectrum based on galaxy type
         if state.galaxy_type == 'dwarf':
@@ -1026,7 +1030,7 @@ class RobustEntanglementObservable:
             logging.info("Using physics-based entropy values for galaxy")
             
             # Get preset entropy based on galaxy type
-            dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
+            dm_ratio = getattr(state, 'dark_matter_ratio', 5.43)
             
             if state.galaxy_type == 'spiral':
                 # Spiral galaxies: derived from typical entanglement structure
@@ -1157,7 +1161,7 @@ class RobustEntanglementObservable:
                 density = avg_density * np.exp(-1.0 * r_ratio)
             
             # Add dark matter contribution
-            dm_ratio = getattr(state, 'dark_matter_ratio', 5.0)
+            dm_ratio = getattr(state, 'dark_matter_ratio', 5.43)
             density += avg_density * dm_ratio * np.exp(-0.5 * r_ratio)
         else:
             # Default for non-galaxy states
@@ -1739,7 +1743,7 @@ class RobustEntanglementObservable:
                 eigenvalues /= np.sum(eigenvalues)
             else:
                 # Default distribution - vectorized
-                power = 1.3 + 0.1 * np.log(getattr(state, 'dark_matter_ratio', 5.0))
+                power = 1.3 + 0.1 * np.log(getattr(state, 'dark_matter_ratio', 5.43))
                 eigenvalues = 1.0 / np.power(np.arange(1, n_points+1), power)
                 eigenvalues /= np.sum(eigenvalues)
         else:

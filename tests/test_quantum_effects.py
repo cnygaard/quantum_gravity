@@ -126,11 +126,12 @@ class TestPhysicalValidation:
     #     assert abs(enhancement - expected)/expected < 0.01
         
     def test_leech_lattice_contribution(self):
-        """Verify v7 dark matter enhancement factor (replaces Leech lattice)"""
+        """Verify v8 dark matter enhancement factor (de Sitter corrected)"""
         enhancement = self.dm_analysis.compute_geometric_enhancement()
 
-        # v7 formulation: M_DM/M_b = π/(2γ₀) ≈ 5.73
+        # v8 formulation: M_DM/M_b = (π/2γ₀)(sin√Ω_m)/√Ω_m ≈ 5.43
         # where γ₀ = 0.274 is the Immirzi parameter
-        # This replaces the deprecated Leech lattice formula √(196560/24) ≈ 90.5
-        expected = np.pi / (2 * 0.274)  # ≈ 5.73
+        # The de Sitter correction reduces the ratio from 5.73 (v7) to 5.43 (v8)
+        # This brings prediction from 7.4σ discrepancy to 1.4σ from Planck 2018
+        expected = 5.43  # v8 de Sitter corrected
         assert abs(enhancement - expected) / expected < 0.01

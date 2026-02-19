@@ -1,0 +1,42 @@
+{
+  "simulation": "Bullet Cluster (Holographic Fisher Geometry)",
+  "timestamp": "2026-02-19T21:59:43.551248",
+  "parameters": {
+    "M_main_stellar": 250000000000000.0,
+    "M_main_gas": 150000000000000.0,
+    "M_sub_stellar": 25000000000000.0,
+    "M_sub_gas": 15000000000000.0,
+    "v_initial_km_s": 3000.0,
+    "d_initial_Mpc": 4.0,
+    "dm_ratio_v8": 5.43,
+    "C_d": 1.2,
+    "beta_gas": 0.6666666666666666
+  },
+  "results": {
+    "peak_offset_kpc": 716.6,
+    "observed_offset_kpc": 720,
+    "offset_agreement": "99.5%",
+    "observation_time_Gyr": 1.32,
+    "t_post_merger_Myr": 280.0,
+    "separation_kpc": 1441.0,
+    "sub_gas_lag_kpc": 717.0,
+    "EST_mass_sub": 110750000000000.0,
+    "EST_to_stellar_ratio": 4.43,
+    "expected_ratio": 4.43
+  },
+  "physics": {
+    "framework": "Holographic Fisher Geometry v9.8",
+    "master_equation": "g_uv = l_P^2 (G_uv^Fisher + gamma_0 E_uv)",
+    "EST_anchoring": "Galaxy distribution (collisionless)",
+    "gas_dynamics": "Ram pressure stripping (Gunn & Gott 1972)",
+    "ICM_model": "Beta model (Cavaliere & Fusco-Femiano 1976)",
+    "key_prediction": "EST convergence follows galaxies, not gas",
+    "gamma_0": 0.274,
+    "Immirzi_source": "Engle-Noui-Perez (2010), SU(2)"
+  },
+  "comparison": {
+    "Clowe_2006": "ApJ 648, L109",
+    "observed_offset": "~720 kpc between lensing and X-ray peaks",
+    "prediction_status": "CONSISTENT"
+  }
+}

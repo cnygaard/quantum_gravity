@@ -74,6 +74,11 @@ def L2_closed(z, t=T_BENCH):
     return 2 / t - 1 / z ** 2 + 1 / sinh(z) ** 2
 
 
+def L3_closed(z):
+    """L'''(z) = 2/z^3 - 2 cosh z / sinh^3 z  (t-independent)."""
+    return 2 / z ** 3 - 2 * cosh(z) / sinh(z) ** 3
+
+
 def Zratio_closed(t=T_BENCH):
     """Z1/Z0 = <j(j+1)> = 3/(2t) - 1/4."""
     return mpf(3) / (2 * t) - mpf(1) / 4

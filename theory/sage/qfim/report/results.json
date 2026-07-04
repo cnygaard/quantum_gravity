@@ -551,10 +551,10 @@
     ],
     "target": [
       4.920674,
-      19.724062,
-      79.304088
+      19.7240872,
+      79.3040872
     ],
-    "error": 8.246679371180748e-08,
+    "error": 1.2948144788942928e-06,
     "tol": 1e-05,
     "note": "w_L = p^2 L''"
   },
@@ -575,7 +575,7 @@
     ],
     "error": 2.601676945223342e-07,
     "tol": 1e-05,
-    "note": "w_T = 2 L' tanh(p/2) [supersedes 18.19539]"
+    "note": "w_T = 2 L' tanh(p/2)"
   },
   {
     "id": "P4.wL.brute_vs_closed",
@@ -608,6 +608,17 @@
     "note": "w_T(1)/w_L(1)"
   },
   {
+    "id": "P4.R_shape",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 1.7567176639593103,
+    "target": 1.756718,
+    "error": 1.91288920467496e-07,
+    "tol": 1e-05,
+    "note": "S[q]/S[1] = 1.756718"
+  },
+  {
     "id": "P4.R.Q4",
     "phase": "Phase4",
     "tier": "T2",
@@ -616,7 +627,155 @@
     "target": 2.021779,
     "error": 2.0458440807227057e-07,
     "tol": 1e-05,
-    "note": "R(Q=4)=sqrt(Q)L''(Q)/L''(1)"
+    "note": "S[Q1]/S[1], Q=4"
+  },
+  {
+    "id": "P4.R.functional_lock",
+    "phase": "Phase4",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 2.02177858637554,
+    "target": 2.02177858637554,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "R(Q) same S[q] routine == sqrt(Q)L''(Q)/L''(1) [dictionary tripwire]"
+  },
+  {
+    "id": "P4.shear.triple",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      23.013431084381736,
+      78.30446931191732,
+      64.92716372052638
+    ],
+    "target": [
+      23.013432,
+      78.304476,
+      64.927172
+    ],
+    "error": 1.275193938977349e-07,
+    "tol": 1e-05,
+    "note": "W_ab = w_T(p_a) + w_T(p_b)"
+  },
+  {
+    "id": "P4.shear.maxmin",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 3.402555187221054,
+    "target": 3.402554,
+    "error": 3.489205620690623e-07,
+    "tol": 1e-05,
+    "note": "cross-plane violation max/min"
+  },
+  {
+    "id": "P4.rho",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      728.80794585035,
+      672.4465585340511,
+      469.4590419449899
+    ],
+    "target": [
+      728.807976,
+      672.446591,
+      469.459062
+    ],
+    "error": 4.828033826913221e-08,
+    "tol": 1e-05,
+    "note": "rho_i = 2[2 W_tot - w(p_i)] (absolute; convention-bound)"
+  },
+  {
+    "id": "P4.rho.mean",
+    "phase": "Phase4",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 623.5711821097971,
+    "target": 623.5711821097971,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "rho_bar = (10/3) W_tot"
+  },
+  {
+    "id": "P4.rho.ratio13",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 1.5524420252528655,
+    "target": 1.552442,
+    "error": 1.6266543627049947e-08,
+    "tol": 1e-05,
+    "note": "rho1/rho3 (convention-proof)"
+  },
+  {
+    "id": "P4.rho.spread",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.41590905953651747,
+    "target": 0.415909,
+    "error": 1.431479421893259e-07,
+    "tol": 1e-05,
+    "note": "spread (convention-proof)"
+  },
+  {
+    "id": "P4.rho.offdiag_zero",
+    "phase": "Phase4",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "gamma_ij = 0: <v^m v^n> = q^{mn}/3 diagonal on diagonal q"
+  },
+  {
+    "id": "P4.chiT.anchor",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.38639351742455136,
+    "target": 0.3863935,
+    "error": 4.509535326663236e-08,
+    "tol": 1e-05,
+    "note": "chi_T(1) = p w'/(5w)"
+  },
+  {
+    "id": "P4.chiT.limits_2over5",
+    "phase": "Phase4",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "dln w/dln p -> 2 (chi_T->2/5) at p->0 (2.0000) AND p->inf (1.9980)"
+  },
+  {
+    "id": "P4.chiT.interior_dip",
+    "phase": "Phase4",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "interior dip min=0.3484 < chi_T(1)=0.3864, rises again by p=20 (new claim confirmed)"
+  },
+  {
+    "id": "P4.traceless.dWdh_zero",
+    "phase": "Phase4",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "dW_tot/dh = -p w'(p) * sum(dh_k) = 0 (traceless variation is stationary)"
   },
   {
     "id": "P4.dict.unimodular",
@@ -627,7 +786,7 @@
     "target": null,
     "error": null,
     "tol": 0.0,
-    "note": "q_k p_bar_k^2 = det q on the unimodular slice"
+    "note": "q_k p_bar_k^2 = det q"
   },
   {
     "id": "P4.dict.pbar_formula",
@@ -649,7 +808,7 @@
     "target": 0.0,
     "error": 0.0,
     "tol": 1e-33,
-    "note": "q=delta -> p_bar=1 -> weights isotropic"
+    "note": "q=delta -> p_bar isotropic -> weights equal (zero spread)"
   },
   {
     "id": "P4.geomean.asymptotic",
@@ -660,26 +819,7 @@
     "target": null,
     "error": null,
     "tol": 1e-16,
-    "note": "sqrt(wLwT)t/(2sqrt2 p^1.5): p=20:0.9987 50:0.9995 200:0.9999 -> 1"
-  },
-  {
-    "id": "P4.shear.triple_recon",
-    "phase": "Phase4",
-    "tier": "T2",
-    "status": "LOG-FAIL",
-    "computed": [
-      23.11604193209413,
-      79.8331626349973,
-      65.02977456823878
-    ],
-    "target": [
-      23.013432,
-      78.304476,
-      64.927172
-    ],
-    "error": 0.019522340395934614,
-    "tol": 1e-05,
-    "note": "shear triple ~ w_L(a)+w_T(b) (recon ~0.5%; exact probe not in SPEC -- LEDGER)"
+    "note": "sqrt(wLwT)t/(2sqrt2 p^1.5) -> 1 (p=200: 0.99987)"
   },
   {
     "id": "P5.M.diag",
@@ -1298,6 +1438,39 @@
     "error": null,
     "tol": 0.0,
     "note": "Var_total = E[Var] + Var[E] exact [Sage+numeric]"
+  },
+  {
+    "id": "S4a.wick_identity",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Gaussian d_i d_k f d_j d_l f integral = 3-term q-contraction (resid 0.0e+00) [Sage+quad]"
+  },
+  {
+    "id": "S4b.rho_additive",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "sum rho = 10 W_tot; rho_i-rho_j = 2[w(p_j)-w(p_i)] -- additive under q_a p_a^2=1, no C sqrt(prod) [S2]"
+  },
+  {
+    "id": "S4c.equal_footing",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "L''=w_L/p^2 and G^phys_perp=w_T/p^2: both channels enter displacement cost as weight/p^2"
   },
   {
     "id": "Cap.recon.t01_envelope",

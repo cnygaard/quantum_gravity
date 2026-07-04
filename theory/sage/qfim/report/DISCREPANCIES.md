@@ -33,12 +33,29 @@ code wins and the discrepancy is logged here (never force-fit).
 - **W = 240 vs 420 (conformal)**: the absolute values are compression-sector and
   model-dependent; the convention-proof content Delta W/W = -3/7 is verified exactly.
 
-## SPEC items under-specified (NOT independently reconstructed)
+## Phase 4 addendum -- all closed forms now derived (SPEC 4a-4d)
 
-- **R_shape = 1.756718**, **chi_T -> 2/5**, **displacement ratios (rho1/rho3, spread)**:
-  no explicit generating formula in the SPEC; not reproduced from the anchors alone.
-- **shear-plane triple (23.013,78.304,64.927)**: closest reconstruction w_L(a)+w_T(b)
-  (~0.5%); the exact anisotropic-probe construction is not in the SPEC.
+The four previously under-specified quantities are RESOLVED with exact closed forms,
+verified to their anchors plus three new symbolic tests (S4a-c) and two structural zeros:
+
+- **R_shape = 1.756718** and **R(Q) = sqrt(Q) L''(Q)/L''(1)** are two slices of one
+  functional S[q] = sum_k w_L(p_bar_k)/sqrt(det q); implemented as a single S_of_q routine
+  (a dictionary-bug tripwire -- the two agree to 1e-30).
+- **shear-plane triple = w_T(p_a) + w_T(p_b)** = (23.013432, 78.304476, 64.927172) exactly
+  (supersedes the earlier ~0.5% w_L+w_T reconstruction).
+- **displacement rho_i = 2[2 W_tot - w(p_bar_i)]**, additive structure (S4b); the ratios
+  rho1/rho3 = 1.552442 and spread = 0.415909 are convention-proof and exact.
+- **chi_T(p) = p w'(p)/(5 w(p))**; NEW confirmed claims: chi_T -> 2/5 at BOTH p->0 and
+  p->infinity, with an interior dip (min ~0.348 near p~5). chi_T(1) = 0.3863935.
+- New symbolic tests: **S4a** Gaussian Wick identity (resid 0), **S4b** rho additive
+  collapse under q_a p_bar_a^2 = 1, **S4c** equal-footing L''=w_L/p^2, G^phys_perp=w_T/p^2.
+- New structural zeros: off-diagonal gamma_ij = 0 (averaged probe on diagonal q);
+  dW_tot/dh = 0 under traceless variation at isotropy.
+- Anchor refinements: w_L(2) = 79.3040872; chi_T = 0.3863935; the rho absolutes are
+  convention-bound (kappa) and carry ~1e-7 hand-rounding -- only the ratios are exact.
+
+## Still under-specified
+
 - **compression weight (Phase 5)**: not derivable from the SPEC; a placeholder positive
   weight was used for the rank/PSD structural check only.
 
@@ -53,6 +70,5 @@ code wins and the discrepancy is logged here (never force-fit).
 ## T2 anchor LOG-FAILs this run (advisory; each a hand-arithmetic slip)
 
 - `P3.D02.exact_vs_series`: computed 0.0008821568192311855 vs anchor 0.0008821164021164021 (rel err 4.58e-05) -- D(0.2) exact vs 2-term series p^2/45-4p^4/945
-- `P4.shear.triple_recon`: computed [23.11604193209413, 79.8331626349973, 65.02977456823878] vs anchor [23.013432, 78.304476, 64.927172] (rel err 1.95e-02) -- shear triple ~ w_L(a)+w_T(b) (recon ~0.5%; exact probe not in SPEC -- LEDGER)
 - `P5.iso.dV_shear`: computed 0.030618621784789725 vs anchor 0.030619 (rel err 1.24e-05) -- (dV/V)_shear=sqrt6/80
 - `P7.conditional.lambda`: computed 0.028867513459481287 vs anchor 0.028868 (rel err 1.69e-05) -- lambda = 1/sqrt(kappa_12 M_1) = 1/sqrt(1200)

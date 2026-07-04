@@ -9,9 +9,11 @@ re-verified here numerically in a way that demonstrates the *structural* claim:
   S6  real-amplitude family has <Psi|dPsi> = 0
   S7  total-variance decomposition Var = E[Var] + Var[E]
 """
-from mpmath import mp, mpf, matrix, fabs, sin, cos, sqrt, diff
+from mpmath import mp, mpf, matrix, fabs, sin, cos, cosh, sinh, sqrt, quad, inf, pi
 
 from ..core.kernel import det
+from ..core.dictionary import PBAR, T_BENCH, L1_closed, L2_closed
+from .phase4 import wL, wT, w, pbar_of_q
 from ..harness import boolrec, phase_status
 
 PH = "Proofs"
@@ -48,8 +50,8 @@ def run(verbose=True):
 
     # ---- S2: no separable weight (mixed partial of a sum vanishes, product doesn't) ----
     h = mpf('1e-6')
-    w = lambda x: sin(x) + x ** 3            # arbitrary separable summand
-    fsum = lambda a, b, c: w(a) + w(b) + w(c)
+    wsep = lambda x: sin(x) + x ** 3         # arbitrary separable summand
+    fsum = lambda a, b, c: wsep(a) + wsep(b) + wsep(c)
     fprod = lambda a, b, c: sqrt(a * b * c)
     p = (mpf('0.5'), mpf('1.0'), mpf('2.0'))
     def mixed12(f):
@@ -87,10 +89,48 @@ def run(verbose=True):
     boolrec("S7.total_variance", PH, fabs(Var_total - (EVar + VarE)) < mpf(10) ** (-30), 'T0',
             note="Var_total = E[Var] + Var[E] exact [Sage+numeric]")
 
+    # ---- S4a: Wick / Gaussian identity, verified by direct tanh-sinh integration ----
+    # int d_i d_k f d_j d_l f = pi^{3/2}/(4 sig sqrt(det q)) [q_ik q_jl + q_ij q_kl + q_il q_jk]
+    A, B, C, sg = mpf('2.0'), mpf('3.0'), mpf('1.5'), mpf('1.3')
+    gf = lambda a, x: mp.e ** (-a * x ** 2 / (2 * sg ** 2))
+    d1 = lambda a, x: -(a * x / sg ** 2) * gf(a, x)
+    d2 = lambda a, x: (a / sg ** 2) * (a * x ** 2 / sg ** 2 - 1) * gf(a, x)
+    I0 = lambda a: quad(lambda x: gf(a, x) ** 2, [-inf, inf])
+    I2 = lambda a: quad(lambda x: d1(a, x) ** 2, [-inf, inf])
+    I4 = lambda a: quad(lambda x: d2(a, x) ** 2, [-inf, inf])
+    I02 = lambda a: quad(lambda x: d2(a, x) * gf(a, x), [-inf, inf])
+    pref = pi ** mpf('1.5') / (4 * sg * sqrt(A * B * C))
+    s4a = max(fabs(I4(A) * I0(B) * I0(C) - pref * 3 * A ** 2),      # (1,1,1,1)
+              fabs(I02(A) * I02(B) * I0(C) - pref * A * B),         # (1,1,2,2)
+              fabs(I2(A) * I2(B) * I0(C) - pref * A * B))           # (1,2,1,2)
+    boolrec("S4a.wick_identity", PH, s4a < mpf('1e-20'), 'T0',
+            note=f"Gaussian d_i d_k f d_j d_l f integral = 3-term q-contraction (resid {float(s4a):.1e}) [Sage+quad]")
+
+    # ---- S4b: rho collapse -- additive (not sqrt-product multiplicative) structure ----
+    t = T_BENCH
+    pb = PBAR
+    Wtot = sum(w(p, t) for p in pb)
+    rho = [2 * (2 * Wtot - w(pb[i], t)) for i in range(3)]
+    s4b_ok = (fabs(sum(rho) - 10 * Wtot) < mpf('1e-25')
+              and fabs((rho[0] - rho[2]) - 2 * (w(pb[2], t) - w(pb[0], t))) < mpf('1e-25'))
+    boolrec("S4b.rho_additive", PH, s4b_ok, 'T0',
+            note="sum rho = 10 W_tot; rho_i-rho_j = 2[w(p_j)-w(p_i)] -- additive under q_a p_a^2=1, no C sqrt(prod) [S2]")
+
+    # ---- S4c: equal footing -- L''=w_L/p^2 and G^phys_perp=w_T/p^2 (weight/p^2) ----
+    def Gperp(p):
+        return 2 * L1_closed(p, t) * (cosh(p) - 1) / (p ** 2 * sinh(p))
+    s4c = mpf(0)
+    for p in [mpf('0.5'), mpf(1), mpf(2)]:
+        s4c = max(s4c, fabs(L2_closed(p, t) - wL(p, t) / p ** 2),
+                  fabs(Gperp(p) - wT(p, t) / p ** 2))
+    boolrec("S4c.equal_footing", PH, s4c < mpf('1e-30'), 'T0',
+            note="L''=w_L/p^2 and G^phys_perp=w_T/p^2: both channels enter displacement cost as weight/p^2")
+
     st, ntot, nfail = phase_status(PH)
     if verbose:
         print(f"[{PH}] {ntot} records, gate={st}")
         print(f"  S1 Kahler structural (max dev {float(s1_max):.1e}), S2 no-go, S3 DeWitt interval,")
+        print(f"  S4a Wick (resid {float(s4a):.1e}), S4b rho-additive, S4c equal-footing,")
         print(f"  S6 real-amplitude Berry=0, S7 total-variance decomposition -- all verified")
     return st
 

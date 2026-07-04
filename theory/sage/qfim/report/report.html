@@ -135,7 +135,7 @@
 
   <section>
     <div class="tiles">
-      <div class="tile ok"><div class="k">Records</div><div class="v">113</div><div class="n">0 hard-gate failures</div></div>
+      <div class="tile ok"><div class="k">Records</div><div class="v">128</div><div class="n">0 hard-gate failures</div></div>
       <div class="tile ok"><div class="k">max |r<sub>∞</sub>|</div><div class="v">7.4e−6</div><div class="n">threshold 0.5% = 5e−3</div></div>
       <div class="tile ok"><div class="k">B<sub>ij</sub> on class</div><div class="v">1.5e−30</div><div class="n">Lagrangian holds</div></div>
       <div class="tile ok"><div class="k">Phases</div><div class="v">10 / 10</div><div class="n">all gates OK</div></div>
@@ -215,11 +215,11 @@
           <tr><td>1 · edge blocks</td><td class="num">13</td><td><span class="chip ok">OK</span></td><td>G<sub>∥</sub>=L″, G<sub>⊥</sub>=L′coth, transverse eigs — Hessian vs closed to 5.6e−30</td></tr>
           <tr><td>2 · Berry / Kähler</td><td class="num">16</td><td><span class="chip ok">OK</span></td><td>|Pf B| = ⅛√detG = 691.894, B = ½JᵀG to 2.8e−30, Wilson-loop cross-check</td></tr>
           <tr><td>3 · connector</td><td class="num">10</td><td><span class="chip ok">OK</span></td><td>δp∧δp Lagrangian (5e−30), connector O(β²) slope 2.000, D(0.2) adjudicated</td></tr>
-          <tr><td>4 · anisotropic weights</td><td class="num">10</td><td><span class="chip ok">OK</span></td><td>w<sub>L</sub>, w<sub>T</sub>, R(Q=4)=2.0218, unimodular dictionary, geometric-mean asymptotic</td></tr>
+          <tr><td>4 · anisotropic weights</td><td class="num">22</td><td><span class="chip ok">OK</span></td><td>closed forms 4a–4d: R<sub>shape</sub>=1.7567 &amp; R(Q) one S[q] functional, shear W<sub>ab</sub>=w<sub>T</sub>(a)+w<sub>T</sub>(b), ρ<sub>i</sub>, χ<sub>T</sub>→⅖ both ends + dip</td></tr>
           <tr><td>5 · vertex QFIM</td><td class="num">16</td><td><span class="chip ok">OK</span></td><td>reduced-mass eigs {0, 4j<sub>a</sub>j<sub>b</sub>/(j<sub>a</sub>+j<sub>b</sub>)}, rank 6, PSD, iso locks</td></tr>
           <tr><td>6 · pair / compression</td><td class="num">12</td><td><span class="chip ok">OK</span></td><td>pair QFIM, triple MI = ½ln(27/20), ΔW/W = −3/7, DeWitt χ∈(−½,1)</td></tr>
           <tr><td>7 · shear closure</td><td class="num">13</td><td><span class="chip ok">OK</span></td><td>Robertson lock Var(η)·Var(p̂<sub>η</sub>)=¼ every plane, squeeze (1.5, 0.75, 1.25)</td></tr>
-          <tr><td>Proofs · S1–S7</td><td class="num">5</td><td><span class="chip ok">OK</span></td><td>Kähler structural (any L), no-go, DeWitt interval, real-amplitude Berry, total variance</td></tr>
+          <tr><td>Proofs · S1–S7</td><td class="num">8</td><td><span class="chip ok">OK</span></td><td>Kähler structural (any L), no-go, DeWitt interval, Gaussian Wick (S4a), ρ-additive (S4b), equal-footing (S4c), real-amplitude Berry, total variance</td></tr>
           <tr><td>Capstone</td><td class="num">9</td><td><span class="chip ok">OK</span></td><td>falsification test PASS, B<sub>ij</sub>=0, covariance, χ-degeneracy</td></tr>
         </tbody>
       </table>
@@ -263,12 +263,16 @@
         <span>— √(w<sub>L</sub>w<sub>T</sub>) t/(2√2 p̄^{3/2}) → 1 only as p̄→∞ (0.99987 at p̄=200), not an identity.</span></div></div>
     </div>
 
-    <div class="grouplab" style="margin-top:22px">Under-specified in the SPEC — not independently reconstructed</div>
+    <div class="grouplab" style="margin-top:22px">Phase 4 addendum — closed forms now derived (4a–4d)</div>
     <div class="ledger" style="margin-top:8px">
-      <div class="litem"><span class="chip adv">open</span><div class="t"><b>R_shape, χ_T→⅖, displacement ratios</b>
-        <span>— no explicit generating formula in the brief; not reproduced from anchors alone.</span></div></div>
-      <div class="litem"><span class="chip adv">open</span><div class="t"><b>shear-plane triple</b>
-        <span>— closest reconstruction w<sub>L</sub>(a)+w<sub>T</sub>(b) (~0.5%); exact anisotropic probe not specified.</span></div></div>
+      <div class="litem"><span class="chip ok">resolved</span><div class="t"><b>R_shape &amp; R(Q) = one S[q] functional</b>
+        <span>— S[q]=Σ w<sub>L</sub>(p̄<sub>k</sub>)/√det q on two slices; the two agree to 1e−30 (dictionary-bug tripwire).</span></div></div>
+      <div class="litem"><span class="chip ok">resolved</span><div class="t"><b>shear triple = w_T(a)+w_T(b)</b>
+        <span>— exact (23.013432, 78.304476, 64.927172); supersedes the earlier ~0.5% w<sub>L</sub>+w<sub>T</sub> guess.</span></div></div>
+      <div class="litem"><span class="chip ok">resolved</span><div class="t"><b>ρ_i = 2[2W_tot − w(p̄_i)], χ_T = p̄w′/(5w)</b>
+        <span>— additive collapse (S4b); χ_T→⅖ at <em>both</em> ends with an interior dip near p̄≈5 (new claims, confirmed).</span></div></div>
+      <div class="litem"><span class="chip adv">open</span><div class="t"><b>compression weight (Phase 5)</b>
+        <span>— still not derivable from the SPEC; placeholder used for the rank/PSD structural check only.</span></div></div>
       <div class="litem"><span class="chip adv">note</span><div class="t"><b>conventions</b>
         <span>— shear prefactor 16 = 4×4 (η-normalization); W=240/420 is model-dependent but ΔW/W=−3/7 is exact.</span></div></div>
     </div>

@@ -1,0 +1,286 @@
+<title>QFIM → spatial-metric verification</title>
+<style>
+  :root{
+    --paper:#F4F3EF; --panel:#FBFAF7; --panel2:#EFEEE8;
+    --ink:#171B21; --muted:#5C636E; --faint:#8B93A0;
+    --line:#E4E2DA; --line2:#D2CFC5;
+    --verified:#0F8B77; --advisory:#A96E24; --fail:#BF4A3F; --accent:#0F8B77;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#0D1015; --panel:#141A21; --panel2:#0F151B;
+      --ink:#E7EAEF; --muted:#939CAA; --faint:#69707C;
+      --line:#212A33; --line2:#2C3742;
+      --verified:#2FBFA6; --advisory:#D69A4E; --fail:#E0655A; --accent:#2FBFA6;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0D1015; --panel:#141A21; --panel2:#0F151B;
+    --ink:#E7EAEF; --muted:#939CAA; --faint:#69707C;
+    --line:#212A33; --line2:#2C3742;
+    --verified:#2FBFA6; --advisory:#D69A4E; --fail:#E0655A; --accent:#2FBFA6;
+  }
+  :root[data-theme="light"]{
+    --paper:#F4F3EF; --panel:#FBFAF7; --panel2:#EFEEE8;
+    --ink:#171B21; --muted:#5C636E; --faint:#8B93A0;
+    --line:#E4E2DA; --line2:#D2CFC5;
+    --verified:#0F8B77; --advisory:#A96E24; --fail:#BF4A3F; --accent:#0F8B77;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:clamp(28px,5vw,64px) clamp(20px,4vw,40px)}
+  .stack{display:flex;flex-direction:column}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted)}
+  h1{font-size:clamp(30px,6vw,52px);line-height:1.02;letter-spacing:-.02em;font-weight:750;
+    margin:.35em 0 .1em;text-wrap:balance}
+  h1 sub{font-size:.52em;font-weight:600;letter-spacing:0}
+  h2{font-size:clamp(19px,2.6vw,23px);letter-spacing:-.01em;font-weight:700;margin:0}
+  .sub{color:var(--muted);font-size:clamp(15px,2vw,17px);max-width:64ch;margin:.2em 0 0}
+  .rule{height:1px;background:var(--line);border:0;margin:0}
+  section{margin-top:clamp(38px,6vw,60px)}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:20px}
+  .sec-head .n{font-family:var(--mono);font-size:13px;color:var(--accent)}
+
+  /* verdict */
+  .verdict{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:13px;
+    font-weight:600;letter-spacing:.04em;padding:7px 14px;border-radius:999px;
+    background:color-mix(in srgb,var(--verified) 15%,transparent);color:var(--verified);
+    border:1px solid color-mix(in srgb,var(--verified) 40%,transparent)}
+  .verdict .dot{width:8px;height:8px;border-radius:50%;background:var(--verified);
+    box-shadow:0 0 0 4px color-mix(in srgb,var(--verified) 22%,transparent)}
+  .lede{font-size:clamp(17px,2.4vw,21px);line-height:1.5;max-width:60ch;margin:26px 0 0;
+    font-weight:450}
+  .lede b{font-weight:700}
+
+  /* metric strip */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:680px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px}
+  .tile .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--faint)}
+  .tile .v{font-family:var(--mono);font-size:clamp(24px,4vw,30px);font-weight:600;
+    font-variant-numeric:tabular-nums;margin-top:8px;letter-spacing:-.01em}
+  .tile .n{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .tile.ok .v{color:var(--verified)}
+
+  /* chart */
+  .chart{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:22px 20px 14px}
+  .chart svg{display:block;width:100%;height:auto}
+  .chart figcaption{font-size:13.5px;color:var(--muted);margin:12px 4px 2px;max-width:70ch}
+  .lg{stroke-width:2;fill:none;stroke-linejoin:round;stroke-linecap:round}
+  .gl{stroke:var(--line2);stroke-width:1}
+  .axtx{font-family:var(--mono);font-size:11px;fill:var(--faint)}
+  .axtx.lab{fill:var(--muted);font-size:12px}
+
+  /* tables */
+  .tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+  thead th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--faint);font-weight:600;background:var(--panel2)}
+  tbody tr:last-child td{border-bottom:0}
+  td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+  td.id{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+  .chip{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;
+    letter-spacing:.03em;white-space:nowrap}
+  .chip.ok{background:color-mix(in srgb,var(--verified) 16%,transparent);color:var(--verified)}
+  .chip.adv{background:color-mix(in srgb,var(--advisory) 18%,transparent);color:var(--advisory)}
+
+  /* findings */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:680px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 20px 18px;
+    border-left:3px solid var(--accent)}
+  .card h3{margin:0 0 7px;font-size:16px;font-weight:700;letter-spacing:-.01em}
+  .card p{margin:0;font-size:14px;color:var(--muted)}
+  .card code{font-family:var(--mono);font-size:.92em;color:var(--ink)}
+
+  /* ledger */
+  .ledger{display:flex;flex-direction:column;gap:11px}
+  .litem{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+    padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+  .litem .t{font-size:14px}
+  .litem .t b{font-family:var(--mono);font-weight:600;font-size:13px}
+  .litem .t span{color:var(--muted)}
+  .grouplab{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--faint);margin:14px 2px 2px}
+
+  footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);
+    font-size:13px}
+  footer code{font-family:var(--mono);color:var(--ink);background:var(--panel2);
+    padding:2px 7px;border-radius:5px;font-size:12.5px}
+  .foot-grid{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:10px}
+</style>
+
+<div class="wrap">
+
+  <header class="stack">
+    <div class="eyebrow">Loop quantum gravity · numerical verification sprint</div>
+    <h1>ℓ<sub>P</sub><sup style="font-size:.5em">2</sup> G<sub>ij</sub> = q<sub>ij</sub></h1>
+    <p class="sub">Does the quantum Fisher information metric of a Regge-squeezed spin-network
+      state reconstruct the classical spatial metric? A falsification-grade test of the
+      corrected master equation, ground-truthed against brute-force spin sums.</p>
+    <div style="margin-top:22px"><span class="verdict"><span class="dot"></span>PASS · falsification-grade</span></div>
+    <p class="lede">The corrected master equation <b>passed a falsification-grade numerical
+      test on an anisotropic background</b>. Channel intercepts extrapolate to
+      <b>r<sub>∞</sub> ~ 10<sup>−6</sup></b> — three orders below the 0.5% threshold — and the
+      Berry curvature on the state class is <b>zero</b>: the Lagrangian property holds, with
+      no twist-branch anomaly.</p>
+  </header>
+
+  <section>
+    <div class="tiles">
+      <div class="tile ok"><div class="k">Records</div><div class="v">113</div><div class="n">0 hard-gate failures</div></div>
+      <div class="tile ok"><div class="k">max |r<sub>∞</sub>|</div><div class="v">7.4e−6</div><div class="n">threshold 0.5% = 5e−3</div></div>
+      <div class="tile ok"><div class="k">B<sub>ij</sub> on class</div><div class="v">1.5e−30</div><div class="n">Lagrangian holds</div></div>
+      <div class="tile ok"><div class="k">Phases</div><div class="v">10 / 10</div><div class="n">all gates OK</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="n">01</span><h2>The decisive test — residual vs. heat-kernel time</h2></div>
+    <figure class="chart" style="margin:0">
+      <svg viewBox="0 0 640 350" role="img" aria-label="Log-log plot of anisotropy residual versus t for three channels, all decreasing toward zero as t decreases.">
+        <!-- y gridlines: 1e-2 (py40), 1e-3 (161.7), 1e-4 (283.5) -->
+        <line class="gl" x1="70" y1="40" x2="600" y2="40"></line>
+        <line class="gl" x1="70" y1="161.7" x2="600" y2="161.7"></line>
+        <line class="gl" x1="70" y1="283.5" x2="600" y2="283.5"></line>
+        <text class="axtx" x="62" y="44" text-anchor="end">10⁻²</text>
+        <text class="axtx" x="62" y="165" text-anchor="end">10⁻³</text>
+        <text class="axtx" x="62" y="287" text-anchor="end">10⁻⁴</text>
+        <!-- threshold 0.5% at py 76.7 -->
+        <line x1="70" y1="76.7" x2="600" y2="76.7" stroke="var(--fail)" stroke-width="1.4" stroke-dasharray="5 4" opacity="0.85"></line>
+        <text class="axtx" x="596" y="71" text-anchor="end" fill="var(--fail)">0.5% PASS threshold</text>
+        <!-- x ticks -->
+        <text class="axtx" x="103.8" y="336" text-anchor="middle">0.004</text>
+        <text class="axtx" x="335.3" y="336" text-anchor="middle">0.02</text>
+        <text class="axtx" x="566.9" y="336" text-anchor="middle">0.1</text>
+        <text class="axtx lab" x="335" y="348" text-anchor="middle">t  (semiclassical limit  ←)</text>
+        <!-- channel 2 (p̄=2, q=1/4) : accent -->
+        <polyline class="lg" stroke="var(--accent)" points="103.8,245.7 335.3,160.7 566.9,75.0"></polyline>
+        <circle cx="103.8" cy="245.7" r="3.6" fill="var(--accent)"></circle>
+        <circle cx="335.3" cy="160.7" r="3.6" fill="var(--accent)"></circle>
+        <circle cx="566.9" cy="75.0" r="4.4" fill="var(--accent)"></circle>
+        <text class="axtx" x="566.9" y="62" text-anchor="end" fill="var(--accent)">ch 2 · p̄=2</text>
+        <!-- channel 0 (p̄=1/2, q=4) : muted -->
+        <polyline class="lg" stroke="var(--advisory)" points="103.8,293.5 335.3,208.3 566.9,122.6"></polyline>
+        <circle cx="103.8" cy="293.5" r="3.6" fill="var(--advisory)"></circle>
+        <circle cx="335.3" cy="208.3" r="3.6" fill="var(--advisory)"></circle>
+        <circle cx="566.9" cy="122.6" r="4.4" fill="var(--advisory)"></circle>
+        <text class="axtx" x="566.9" y="138" text-anchor="end" fill="var(--advisory)">ch 0 · p̄=½</text>
+        <!-- convergence annotation -->
+        <text class="axtx" x="104" y="200" text-anchor="start" fill="var(--muted)">← r → 0</text>
+      </svg>
+      <figcaption>Anisotropy residual r<sub>k</sub>(t) = L″(p̄<sub>k</sub>;t)/L″(1;t) − 1 for the two
+        non-reference channels (channel 1 is the isotropic reference, r ≡ 0 exactly). Both descend
+        as straight log-log lines with <b>no plateau</b>; the least-squares fit
+        r<sub>k</sub>(t) = α<sub>k</sub> t/p̄<sub>k</sub><sup>2</sup> + r<sub>∞</sub> gives intercepts
+        r<sub>∞</sub> = (3.0e−6, 0, −7.4e−6). A nonzero plateau would have falsified the leading-order closure.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="n">02</span><h2>Capstone channels — ℓ<sub>P</sub><sup style="font-size:.7em">2</sup>G / c vs. q = diag(4, 1, ¼)</h2></div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th>Channel</th><th class="num">p̄</th><th class="num">q</th>
+          <th class="num">r(0.1)</th><th class="num">r(0.02)</th><th class="num">r(0.004)</th>
+          <th class="num">r<sub>∞</sub></th><th>Verdict</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>0</td><td class="num">0.50</td><td class="num">4</td><td class="num">−2.1e−3</td><td class="num">−4.2e−4</td><td class="num">−8.3e−5</td><td class="num">3.0e−6</td><td><span class="chip ok">PASS</span></td></tr>
+          <tr><td>1 · ref</td><td class="num">1.00</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td><span class="chip ok">PASS</span></td></tr>
+          <tr><td>2</td><td class="num">2.00</td><td class="num">¼</td><td class="num">5.2e−3</td><td class="num">1.0e−3</td><td class="num">2.0e−4</td><td class="num">−7.4e−6</td><td><span class="chip ok">PASS</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin-top:14px">At t=0.1 the reconstruction is already G/c = (3.99, 1.00, 0.251)
+      vs. (4, 1, ¼). Off-diagonals vanish (q is diagonal); the π/6 rotated-frame repeat preserves the
+      eigenvalues; χ=0 and χ=−¼ realizations reconstruct identically.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="n">03</span><h2>Phase ledger — brute-force spin sum vs. closed forms</h2></div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Phase</th><th class="num">Recs</th><th>Gate</th><th>What was verified</th></tr></thead>
+        <tbody>
+          <tr><td>0 · Ω engine</td><td class="num">9</td><td><span class="chip ok">OK</span></td><td>Z₀=114.9376, Z₁/Z₀=14.75, F<sub>½</sub>=cos²χ exactly, flat-limit 19.667</td></tr>
+          <tr><td>1 · edge blocks</td><td class="num">13</td><td><span class="chip ok">OK</span></td><td>G<sub>∥</sub>=L″, G<sub>⊥</sub>=L′coth, transverse eigs — Hessian vs closed to 5.6e−30</td></tr>
+          <tr><td>2 · Berry / Kähler</td><td class="num">16</td><td><span class="chip ok">OK</span></td><td>|Pf B| = ⅛√detG = 691.894, B = ½JᵀG to 2.8e−30, Wilson-loop cross-check</td></tr>
+          <tr><td>3 · connector</td><td class="num">10</td><td><span class="chip ok">OK</span></td><td>δp∧δp Lagrangian (5e−30), connector O(β²) slope 2.000, D(0.2) adjudicated</td></tr>
+          <tr><td>4 · anisotropic weights</td><td class="num">10</td><td><span class="chip ok">OK</span></td><td>w<sub>L</sub>, w<sub>T</sub>, R(Q=4)=2.0218, unimodular dictionary, geometric-mean asymptotic</td></tr>
+          <tr><td>5 · vertex QFIM</td><td class="num">16</td><td><span class="chip ok">OK</span></td><td>reduced-mass eigs {0, 4j<sub>a</sub>j<sub>b</sub>/(j<sub>a</sub>+j<sub>b</sub>)}, rank 6, PSD, iso locks</td></tr>
+          <tr><td>6 · pair / compression</td><td class="num">12</td><td><span class="chip ok">OK</span></td><td>pair QFIM, triple MI = ½ln(27/20), ΔW/W = −3/7, DeWitt χ∈(−½,1)</td></tr>
+          <tr><td>7 · shear closure</td><td class="num">13</td><td><span class="chip ok">OK</span></td><td>Robertson lock Var(η)·Var(p̂<sub>η</sub>)=¼ every plane, squeeze (1.5, 0.75, 1.25)</td></tr>
+          <tr><td>Proofs · S1–S7</td><td class="num">5</td><td><span class="chip ok">OK</span></td><td>Kähler structural (any L), no-go, DeWitt interval, real-amplitude Berry, total variance</td></tr>
+          <tr><td>Capstone</td><td class="num">9</td><td><span class="chip ok">OK</span></td><td>falsification test PASS, B<sub>ij</sub>=0, covariance, χ-degeneracy</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="n">04</span><h2>Headline findings</h2></div>
+    <div class="cards">
+      <div class="card"><h3>The master kernel holds</h3><p>A single SL(2,ℂ) overlap
+        <code>Ω(½ tr g₁†g₂)</code> with right-multiplication displacements reproduces both edge
+        sectors <em>and</em> the Berry curvature to ~10⁻³⁰ — validated against the brute-force spin sum.</p></div>
+      <div class="card"><h3>Kähler relation is structural</h3><p>S1 proves <code>B = ½JᵀG</code> holds
+        identically in L′, L″ — for <em>arbitrary</em> L, not just this heat kernel. The information
+        geometry is genuinely Kähler.</p></div>
+      <div class="card"><h3>No twist-branch anomaly</h3><p>The open risk to the Lagrangian theorem was
+        measured, not assumed: <code>B_ij = 1.5e−30</code> on the flux class. The reconstructed metric
+        is a genuine Riemannian metric.</p></div>
+      <div class="card"><h3>Anisotropic reconstruction converges</h3><p>On diag(4, 1, ¼) the residuals
+        scale as t/p̄² and extrapolate to <code>|r<sub>∞</sub>| &lt; 10⁻⁵</code> per channel — the
+        leading-order closure is not falsified.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="n">05</span><h2>Discrepancy ledger</h2></div>
+    <p class="sub" style="margin:-8px 0 18px">Code wins; hand decimals are anchors only. Every disagreement
+      is logged, never force-fit.</p>
+
+    <div class="grouplab">Adjudicated — the code decides</div>
+    <div class="ledger" style="margin-top:8px">
+      <div class="litem"><span class="chip ok">resolved</span><div class="t"><b>D(0.2) = 0.00088216</b>
+        <span>— exact value refutes the quoted 0.0008852; agrees with the 2-term series to 4e−8.</span></div></div>
+      <div class="litem"><span class="chip ok">resolved</span><div class="t"><b>connector 8.506 vs 8.509</b>
+        <span>— both are p̄/sinh p̄ = 0.850918; the difference is O(β²) finite-step truncation (measured slope 2.000).</span></div></div>
+      <div class="litem"><span class="chip adv">slip</span><div class="t"><b>Z₀ = 114.9376</b>
+        <span>— the anchor 114.9382 is a hand rounding slip (rel 4.8e−6).</span></div></div>
+      <div class="litem"><span class="chip adv">slip</span><div class="t"><b>|Pf B| = 691.8938</b>
+        <span>— the anchor 691.895 is a slip; equals ⅛√detG and the closed form exactly.</span></div></div>
+      <div class="litem"><span class="chip adv">downgrade</span><div class="t"><b>geometric-mean claim is asymptotic</b>
+        <span>— √(w<sub>L</sub>w<sub>T</sub>) t/(2√2 p̄^{3/2}) → 1 only as p̄→∞ (0.99987 at p̄=200), not an identity.</span></div></div>
+    </div>
+
+    <div class="grouplab" style="margin-top:22px">Under-specified in the SPEC — not independently reconstructed</div>
+    <div class="ledger" style="margin-top:8px">
+      <div class="litem"><span class="chip adv">open</span><div class="t"><b>R_shape, χ_T→⅖, displacement ratios</b>
+        <span>— no explicit generating formula in the brief; not reproduced from anchors alone.</span></div></div>
+      <div class="litem"><span class="chip adv">open</span><div class="t"><b>shear-plane triple</b>
+        <span>— closest reconstruction w<sub>L</sub>(a)+w<sub>T</sub>(b) (~0.5%); exact anisotropic probe not specified.</span></div></div>
+      <div class="litem"><span class="chip adv">note</span><div class="t"><b>conventions</b>
+        <span>— shear prefactor 16 = 4×4 (η-normalization); W=240/420 is model-dependent but ΔW/W=−3/7 is exact.</span></div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>Ground truth = brute-force spin sum · closed forms exact mod O(e<sup>−4π²/t</sup>) · symbolic proofs in SageMath · mp.dps = 40.</div>
+    <div class="foot-grid">
+      <span>reproduce → <code>python -m qfim.run_all</code></span>
+      <span><code>qfim/report/results.json</code></span>
+      <span><code>qfim/report/DISCREPANCIES.md</code></span>
+    </div>
+  </footer>
+
+</div>

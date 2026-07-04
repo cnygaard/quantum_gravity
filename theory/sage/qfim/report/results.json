@@ -1,0 +1,1401 @@
+[
+  {
+    "id": "P0.Z0.sum_vs_closed",
+    "phase": "Phase0",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 114.93764489158815,
+    "target": 114.93764489158815,
+    "error": 0.0,
+    "tol": 1e-30,
+    "note": "Omega(0) brute spin-sum vs 2 sqrt(pi) e^{t/4} t^{-3/2}"
+  },
+  {
+    "id": "P0.Z0.anchor",
+    "phase": "Phase0",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 114.93764489158815,
+    "target": 114.9382,
+    "error": 4.829625066813694e-06,
+    "tol": 1e-05,
+    "note": "hand anchor 114.9382"
+  },
+  {
+    "id": "P0.Zratio.sum_vs_closed",
+    "phase": "Phase0",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 14.75,
+    "target": 14.75,
+    "error": 1.8367099231598242e-40,
+    "tol": 1e-30,
+    "note": "<j(j+1)> brute vs 3/(2t)-1/4"
+  },
+  {
+    "id": "P0.Zratio.anchor",
+    "phase": "Phase0",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 14.75,
+    "target": 14.75,
+    "error": 1.2452270665490334e-41,
+    "tol": 1e-05,
+    "note": "anchor 14.75"
+  },
+  {
+    "id": "P0.kt.shape_t0.02",
+    "phase": "Phase0",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 2.2958874039497803e-41,
+    "target": 0.0,
+    "error": 2.2958874039497803e-41,
+    "tol": 1e-30,
+    "note": "max|khat-(chi/sin)e^{-chi^2/t}| over grid at t=0.02"
+  },
+  {
+    "id": "P0.kt.monotone",
+    "phase": "Phase0",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "residual t=0.5:4.59e-13 -> t=0.1:1.15e-41 -> t=0.02:2.30e-41 (floor)"
+  },
+  {
+    "id": "P0.Fhalf.cos2",
+    "phase": "Phase0",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "max|F_1/2(chi) - cos^2 chi| over grid (exact, no t)"
+  },
+  {
+    "id": "P0.flat.L2_brute_vs_closed",
+    "phase": "Phase0",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 19.666666667333335,
+    "target": 19.666666667333335,
+    "error": 2.0252008096561627e-33,
+    "tol": 1e-30,
+    "note": "brute L''(1e-4) vs closed"
+  },
+  {
+    "id": "P0.flat.iso_value",
+    "phase": "Phase0",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 19.666666667333335,
+    "target": 19.666666666666668,
+    "error": 3.389830503093893e-11,
+    "tol": 1e-05,
+    "note": "L''(0+) -> 2/t-1/3 = 19.6667"
+  },
+  {
+    "id": "P1.Gpar.vs_closed",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 19.72406166096631,
+    "target": 19.72406166096631,
+    "error": 7.663842623105755e-31,
+    "tol": 1e-18,
+    "note": "G_par = L''"
+  },
+  {
+    "id": "P1.Gperp.vs_closed",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 25.849679334519646,
+    "target": 25.849679334519646,
+    "error": 5.5773859046770904e-30,
+    "tol": 1e-18,
+    "note": "G_perp = L' coth p"
+  },
+  {
+    "id": "P1.Gcross.vs_closed",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 19.686964714500668,
+    "target": 19.686964714500668,
+    "error": 5.760885897462517e-31,
+    "tol": 1e-18,
+    "note": "|G_cross| = L'"
+  },
+  {
+    "id": "P1.Teig.vs_closed",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      45.53664404902032,
+      6.162714620018979
+    ],
+    "target": [
+      45.53664404902032,
+      6.162714620018979
+    ],
+    "error": 2.4196653288276394e-30,
+    "tol": 1e-18,
+    "note": "transverse eigs L' e^{+-p}/sinh p"
+  },
+  {
+    "id": "P1.Gpar.anchor",
+    "phase": "Phase1",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 19.72406166096631,
+    "target": 19.724062,
+    "error": 1.718883714386986e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P1.Gperp.anchor",
+    "phase": "Phase1",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 25.849679334519646,
+    "target": 25.849679,
+    "error": 1.2940959418101533e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P1.Gcross.anchor",
+    "phase": "Phase1",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 19.686964714500668,
+    "target": 19.686965,
+    "error": 1.4501947420724126e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P1.Teig.anchor",
+    "phase": "Phase1",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      45.53664404902032,
+      6.162714620018979
+    ],
+    "target": [
+      45.536644,
+      6.162715
+    ],
+    "error": 6.165805522183201e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P1.long.zeta12",
+    "phase": "Phase1",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 1.7374148395344104,
+    "target": 1.7374148395344104,
+    "error": 0.0,
+    "tol": 1e-30,
+    "note": "cosh zeta_12 = cosh(p+beta/2)"
+  },
+  {
+    "id": "P1.trans.zeta12",
+    "phase": "Phase1",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 1.5604728657358846,
+    "target": 1.5604728657358846,
+    "error": 0.0,
+    "tol": 1e-30,
+    "note": "cosh zeta_12 = cosh p cosh(beta/2)"
+  },
+  {
+    "id": "P1.trans.zeta22",
+    "phase": "Phase1",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 1.6130416179787856,
+    "target": 1.6130416179787856,
+    "error": 0.0,
+    "tol": 1e-30,
+    "note": "cosh zeta_22 = cosh p cosh beta"
+  },
+  {
+    "id": "P1.zeros.offblock",
+    "phase": "Phase1",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "max off-block |G_ij| = 0.00e+00"
+  },
+  {
+    "id": "P1.Gperp.isotropy",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 25.849679334519646,
+    "target": 25.849679334519646,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "G[dpx]=G[dpy] transverse momentum isotropy"
+  },
+  {
+    "id": "P2.B_th3b3.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.862030830483155,
+    "target": 9.862030830483155,
+    "error": 2.7550648847397363e-38,
+    "tol": 1e-18,
+    "note": "B_th3b3 = L''/2"
+  },
+  {
+    "id": "P2.B_perp.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 12.924839667259823,
+    "target": 12.924839667259823,
+    "error": 9.183549615799121e-40,
+    "tol": 1e-18,
+    "note": "B_perp = L'coth/2"
+  },
+  {
+    "id": "P2.B_th1th2.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": -9.843482357250334,
+    "target": -9.843482357250334,
+    "error": 1.8510382313502184e-31,
+    "tol": 1e-18,
+    "note": "B_th1th2 = -L'/2"
+  },
+  {
+    "id": "P2.B_b1b2.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": -9.843482357250334,
+    "target": -9.843482357250334,
+    "error": 1.851038216656539e-31,
+    "tol": 1e-18,
+    "note": "B_b1b2 = -L'/2"
+  },
+  {
+    "id": "P2.B_th3b3.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 9.862030830483155,
+    "target": 9.862031,
+    "error": 1.718883714386986e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P2.B_perp.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 12.924839667259823,
+    "target": 12.92484,
+    "error": 2.5744239506641808e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P2.B_th1th2.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -9.843482357250334,
+    "target": -9.843482,
+    "error": 3.629308555124924e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P2.phat.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.9843482357250334,
+    "target": 0.984348,
+    "error": 2.394732690418614e-07,
+    "tol": 1e-05,
+    "note": "<p> = t/2 L'"
+  },
+  {
+    "id": "P2.loop.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -123.69684743711356,
+    "target": -123.696847,
+    "error": 3.5337486332945715e-09,
+    "tol": 1e-05,
+    "note": "loop phase -2pi L'"
+  },
+  {
+    "id": "P2.pfaff.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 691.8938057533461,
+    "target": 691.8938057533461,
+    "error": 1.869036017807437e-36,
+    "tol": 1e-18,
+    "note": "|Pf B| = L''L'^2/(8 sinh^2 p)"
+  },
+  {
+    "id": "P2.pfaff.vs_sqrtdetG",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 691.8938057533461,
+    "target": 691.8938057533461,
+    "error": 1.6229174283612243e-28,
+    "tol": 1e-18,
+    "note": "|Pf B| = (1/8) sqrt(det G)"
+  },
+  {
+    "id": "P2.pfaff.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 691.8938057533461,
+    "target": 691.895,
+    "error": 1.7260518631589407e-06,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P2.B2way.25",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 9.862030830729562,
+    "target": 9.862030830483155,
+    "error": 2.4985467584400214e-11,
+    "tol": 1e-05,
+    "note": "|plaquette F_25| = |2 Im Q_25|"
+  },
+  {
+    "id": "P2.B2way.03",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 12.924839667259823,
+    "target": 12.924839667259823,
+    "error": 2.82070636744013e-18,
+    "tol": 1e-05,
+    "note": "|plaquette F_03| = |2 Im Q_03|"
+  },
+  {
+    "id": "P2.B2way.34",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 9.843482357250334,
+    "target": 9.843482357250334,
+    "error": 7.393097877519976e-18,
+    "tol": 1e-05,
+    "note": "|plaquette F_34| = |2 Im Q_34|"
+  },
+  {
+    "id": "P2.kahler.numeric",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 2.7886929532569e-30,
+    "target": 0.0,
+    "error": 2.7886929532569e-30,
+    "tol": 1e-18,
+    "note": "max|B - 1/2 J^T G| over 6x6"
+  },
+  {
+    "id": "P3.identity.1sinh_tanh_coth",
+    "phase": "Phase3",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "1/sinh p + tanh(p/2) - coth p = 0"
+  },
+  {
+    "id": "P3.Bphys.long",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.862030830483155,
+    "target": 9.862030830483155,
+    "error": 1.8367099231598242e-40,
+    "tol": 1e-18,
+    "note": "B^phys long = L''/2"
+  },
+  {
+    "id": "P3.Bphys.trans",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.843482357250334,
+    "target": 9.843482357250334,
+    "error": 1.0052630150079967e-31,
+    "tol": 1e-18,
+    "note": "B^phys trans = L'/(2p)"
+  },
+  {
+    "id": "P3.Bphys.hol",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.843482357250334,
+    "target": 9.843482357250334,
+    "error": 1.8510382240033787e-31,
+    "tol": 1e-18,
+    "note": "B^phys hol = L'/2"
+  },
+  {
+    "id": "P3.Bphys.lock",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.843482357250334,
+    "target": 9.843482357250334,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "L'/(2p) = <p>/(t p)"
+  },
+  {
+    "id": "P3.dpdp.zero_sweep",
+    "phase": "Phase3",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": 5.074279687985555e-30,
+    "target": 0.0,
+    "error": 5.074279687985555e-30,
+    "tol": 1e-16,
+    "note": "max|B^phys[dp,dp]| over p in [0.1,3]"
+  },
+  {
+    "id": "P3.lagrangian.flux_pairs",
+    "phase": "Phase3",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": 6.835788481628825e-33,
+    "target": 0.0,
+    "error": 6.835788481628825e-33,
+    "tol": 1e-16,
+    "note": "Xi_P1^T B^phys Xi_P2 = 0 (random flux pairs)"
+  },
+  {
+    "id": "P3.connector.coeff",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 0.8509181282393216,
+    "target": 0.8509181282393216,
+    "error": 3.3055208994790327e-24,
+    "tol": 1e-18,
+    "note": "dp_perp/beta -> p/sinh p = 0.850918"
+  },
+  {
+    "id": "P3.connector.quadratic",
+    "phase": "Phase3",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "|explicit-formula| ~ beta^2.000 (adjudicates 8.506 vs 8.509)"
+  },
+  {
+    "id": "P3.D02.exact_vs_series",
+    "phase": "Phase3",
+    "tier": "T2",
+    "status": "LOG-FAIL",
+    "computed": 0.0008821568192311855,
+    "target": 0.0008821164021164021,
+    "error": 4.581834629355982e-05,
+    "tol": 1e-05,
+    "note": "D(0.2) exact vs 2-term series p^2/45-4p^4/945"
+  },
+  {
+    "id": "P4.wL.anchor",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      4.920673594207792,
+      19.72406166096631,
+      79.30408731935229
+    ],
+    "target": [
+      4.920674,
+      19.724062,
+      79.304088
+    ],
+    "error": 8.246679371180748e-08,
+    "tol": 1e-05,
+    "note": "w_L = p^2 L''"
+  },
+  {
+    "id": "P4.wT.anchor",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      4.818062746495397,
+      18.195368337886336,
+      60.10910097403098
+    ],
+    "target": [
+      4.818064,
+      18.195368,
+      60.109108
+    ],
+    "error": 2.601676945223342e-07,
+    "tol": 1e-05,
+    "note": "w_T = 2 L' tanh(p/2) [supersedes 18.19539]"
+  },
+  {
+    "id": "P4.wL.brute_vs_closed",
+    "phase": "Phase4",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      4.920673594207792,
+      19.72406166096631,
+      79.30408731935229
+    ],
+    "target": [
+      4.920673594207792,
+      19.72406166096631,
+      79.30408731935229
+    ],
+    "error": 5.597296027515087e-29,
+    "tol": 1e-18,
+    "note": "w_L via spin-sum L''"
+  },
+  {
+    "id": "P4.ratio.wT_wL",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.922496017840725,
+    "target": 0.922496,
+    "error": 1.9339623139146363e-08,
+    "tol": 1e-05,
+    "note": "w_T(1)/w_L(1)"
+  },
+  {
+    "id": "P4.R.Q4",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 2.02177858637554,
+    "target": 2.021779,
+    "error": 2.0458440807227057e-07,
+    "tol": 1e-05,
+    "note": "R(Q=4)=sqrt(Q)L''(Q)/L''(1)"
+  },
+  {
+    "id": "P4.dict.unimodular",
+    "phase": "Phase4",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "q_k p_bar_k^2 = det q on the unimodular slice"
+  },
+  {
+    "id": "P4.dict.pbar_formula",
+    "phase": "Phase4",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "p_bar_k = sqrt(det q / q_k)"
+  },
+  {
+    "id": "P4.isotropy.q_delta",
+    "phase": "Phase4",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "q=delta -> p_bar=1 -> weights isotropic"
+  },
+  {
+    "id": "P4.geomean.asymptotic",
+    "phase": "Phase4",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "sqrt(wLwT)t/(2sqrt2 p^1.5): p=20:0.9987 50:0.9995 200:0.9999 -> 1"
+  },
+  {
+    "id": "P4.shear.triple_recon",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-FAIL",
+    "computed": [
+      23.11604193209413,
+      79.8331626349973,
+      65.02977456823878
+    ],
+    "target": [
+      23.013432,
+      78.304476,
+      64.927172
+    ],
+    "error": 0.019522340395934614,
+    "tol": 1e-05,
+    "note": "shear triple ~ w_L(a)+w_T(b) (recon ~0.5%; exact probe not in SPEC -- LEDGER)"
+  },
+  {
+    "id": "P5.M.diag",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      60.0,
+      50.0,
+      30.0
+    ],
+    "target": [
+      60.0,
+      50.0,
+      30.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "M=diag(2(j_b+j_c))"
+  },
+  {
+    "id": "P5.M.exact",
+    "phase": "Phase5",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "M exact"
+  },
+  {
+    "id": "P5.shear.weights",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      53.333333333333336,
+      106.66666666666667,
+      64.0
+    ],
+    "target": [
+      53.333333333333336,
+      106.66666666666667,
+      64.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "16 j_a j_b/(j_a+j_b)"
+  },
+  {
+    "id": "P5.shear.unreduced",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      60.0,
+      120.0,
+      100.0
+    ],
+    "target": [
+      60.0,
+      120.0,
+      100.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "4(j_a+j_b)"
+  },
+  {
+    "id": "P5.shear.reduction",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      0.8888888888888888,
+      0.8888888888888888,
+      0.64
+    ],
+    "target": [
+      0.8888888888888888,
+      0.8888888888888888,
+      0.64
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "4 j_a j_b/(j_a+j_b)^2"
+  },
+  {
+    "id": "P5.shear.factorization",
+    "phase": "Phase5",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "shear = unreduced x reduction (exact)"
+  },
+  {
+    "id": "P5.reducedmass.null_and_shear",
+    "phase": "Phase5",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "closure-projected tilt QFIM eigs = {0 (rot null), 4 j_a j_b/(j_a+j_b)}"
+  },
+  {
+    "id": "P5.iso.weight",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 80.0,
+    "target": 80.0,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "8j=80"
+  },
+  {
+    "id": "P5.iso.eta2",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.0125,
+    "target": 0.0125,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "<eta^2>=1/80"
+  },
+  {
+    "id": "P5.iso.darboux",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -40.0,
+    "target": -40.0,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "Darboux B=-4j=-40"
+  },
+  {
+    "id": "P5.iso.dV_over_V",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -0.0375,
+    "target": -0.0375,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "<dV>/V=-3<eta^2>"
+  },
+  {
+    "id": "P5.iso.dV_shear",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-FAIL",
+    "computed": 0.030618621784789725,
+    "target": 0.030619,
+    "error": 1.2352304460425636e-05,
+    "tol": 1e-05,
+    "note": "(dV/V)_shear=sqrt6/80"
+  },
+  {
+    "id": "P5.assembled.rank6",
+    "phase": "Phase5",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "rank(G_iota)=6"
+  },
+  {
+    "id": "P5.assembled.psd",
+    "phase": "Phase5",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "min eig >= -1e-30"
+  },
+  {
+    "id": "P5.assembled.rot_nulls",
+    "phase": "Phase5",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "3 rotation nulls"
+  },
+  {
+    "id": "P5.crossturn.lock",
+    "phase": "Phase5",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "w_T/2 / (2 p/t) = 0.99902 -> 1 (endpoint factor 2)"
+  },
+  {
+    "id": "P6.pair.diag",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 22.5,
+    "target": 22.5,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "pair QFIM diag = (2/t)/(1-rho^2)"
+  },
+  {
+    "id": "P6.pair.off",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -7.5,
+    "target": -7.5,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "pair QFIM off = -rho*diag"
+  },
+  {
+    "id": "P6.forced.dj",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      1.118033988749895,
+      2.23606797749979,
+      4.47213595499958
+    ],
+    "target": [
+      1.118034,
+      2.236068,
+      4.472136
+    ],
+    "error": 1.0062399848122161e-08,
+    "tol": 1e-05,
+    "note": "Delta j = sqrt(forced var)"
+  },
+  {
+    "id": "P6.diag.correlated",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      80.0,
+      20.0,
+      5.0
+    ],
+    "target": [
+      80.0,
+      20.0,
+      5.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "diagonal QFIM = (2/t) q"
+  },
+  {
+    "id": "P6.diag.product",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      20.0,
+      20.0,
+      20.0
+    ],
+    "target": [
+      20.0,
+      20.0,
+      20.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "product diagonal QFIM = 2/t"
+  },
+  {
+    "id": "P6.rhostar.chi",
+    "phase": "Phase6",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 0.3333333333333333,
+    "target": 0.3333333333333333,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "rho*(-1/4) = -chi/(1+chi) = 1/3"
+  },
+  {
+    "id": "P6.tripleMI",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.15005229622516905,
+    "target": 0.150053,
+    "error": 4.690175011226865e-06,
+    "tol": 1e-05,
+    "note": "MI = -1/2 ln det C = 1/2 ln(27/20)"
+  },
+  {
+    "id": "P6.detC",
+    "phase": "Phase6",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 0.7407407407407407,
+    "target": 0.7407407407407407,
+    "error": 1.1479437019748901e-41,
+    "tol": 1e-18,
+    "note": "det C = (1-rho)^2(1+2rho)"
+  },
+  {
+    "id": "P6.conformal.dW_W",
+    "phase": "Phase6",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": -0.42857142857142855,
+    "target": -0.42857142857142855,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "Delta W / W = -3/7 (absolute W model-dependent -- ledger)"
+  },
+  {
+    "id": "P6.dewitt.exclusion",
+    "phase": "Phase6",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "chi=-1 excluded, chi=-1/4 allowed; interval (-1/2,1) [S3]"
+  },
+  {
+    "id": "P6.degeneracy.identical_qfim",
+    "phase": "Phase6",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "identical QFIM across realizations of the same rho"
+  },
+  {
+    "id": "P6.Bij.real_amplitude",
+    "phase": "Phase6",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Berry = 0 for real-amplitude Gaussian family [S6, Sage]"
+  },
+  {
+    "id": "P7.weights",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      53.333333333333336,
+      106.66666666666667,
+      64.0
+    ],
+    "target": [
+      53.333333333333336,
+      106.66666666666667,
+      64.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "shear weights 16 j_a j_b/(j_a+j_b)"
+  },
+  {
+    "id": "P7.signed_corrections",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      26.666666666666668,
+      -26.666666666666668,
+      16.0
+    ],
+    "target": [
+      26.666666666666668,
+      -26.666666666666668,
+      16.0
+    ],
+    "error": 3.6734198463196485e-40,
+    "tol": 1e-18,
+    "note": "80 - w = signed closure corrections"
+  },
+  {
+    "id": "P7.coherent.var_eta",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      0.01875,
+      0.009375,
+      0.015625
+    ],
+    "target": [
+      0.01875,
+      0.009375,
+      0.015625
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "coherent Var(eta)=1/w"
+  },
+  {
+    "id": "P7.coherent.var_p",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      13.333333333333334,
+      26.666666666666668,
+      16.0
+    ],
+    "target": [
+      13.333333333333334,
+      26.666666666666668,
+      16.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "coherent Var(p_eta)=w/4"
+  },
+  {
+    "id": "P7.robertson.coherent",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      0.25,
+      0.25,
+      0.25
+    ],
+    "target": [
+      0.25,
+      0.25,
+      0.25
+    ],
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "Var(eta)Var(p_eta)=1/4 coherent, every plane"
+  },
+  {
+    "id": "P7.robertson.forced",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 0.25,
+    "target": 0.25,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "Var(eta)Var(p_eta)=1/4 forced"
+  },
+  {
+    "id": "P7.forced.var_eta",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.0125,
+    "target": 0.0125,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "forced Var(eta)=1/80"
+  },
+  {
+    "id": "P7.squeeze",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      1.5,
+      0.75,
+      1.25
+    ],
+    "target": [
+      1.5,
+      0.75,
+      1.25
+    ],
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "squeeze = required/coherent = 80/w"
+  },
+  {
+    "id": "P7.universal.cross_plane",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      80.0,
+      80.0,
+      80.0
+    ],
+    "target": [
+      80.0,
+      80.0,
+      80.0
+    ],
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "iso: all shear planes = 8j = 80 (cross-plane equality)"
+  },
+  {
+    "id": "P7.parity.p_eta_zero",
+    "phase": "Phase7",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "<p_eta>=0 by parity (real family) [S6]"
+  },
+  {
+    "id": "P7.S7.total_variance",
+    "phase": "Phase7",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Var_total = E[Var] + Var[E] exact [S7, Sage]"
+  },
+  {
+    "id": "P7.conditional.lambda",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-FAIL",
+    "computed": 0.028867513459481287,
+    "target": 0.028868,
+    "error": 1.6853973905770214e-05,
+    "tol": 1e-05,
+    "note": "lambda = 1/sqrt(kappa_12 M_1) = 1/sqrt(1200)"
+  },
+  {
+    "id": "P7.conditional.kappa12",
+    "phase": "Phase7",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "kappa_12 = 4 j_1 = 20 audit"
+  },
+  {
+    "id": "S1.kahler.structural",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "B - 1/2 J^T G = 0 for arbitrary (L',L'',coth) [Sage+numeric, max 0.0e+00]"
+  },
+  {
+    "id": "S2.nogo.separable",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "mixed d2: sum=0.0e+00 (0), product=0.500 (nonzero) => no w"
+  },
+  {
+    "id": "S3.dewitt.interval",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "K=I+chi(J-1) PSD <=> chi in (-1/2,1); chi=-1 excluded [Sage]"
+  },
+  {
+    "id": "S6.berry.real_amplitude",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "<Psi|dPsi>=0 for real normalized families [Sage+numeric]"
+  },
+  {
+    "id": "S7.total_variance",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Var_total = E[Var] + Var[E] exact [Sage+numeric]"
+  },
+  {
+    "id": "Cap.recon.t01_envelope",
+    "phase": "Capstone",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "G_kk/c within O(t/p^2) envelope at t=0.1 (absolute smallness proves nothing here)"
+  },
+  {
+    "id": "Cap.intercept.ch0",
+    "phase": "Capstone",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 3.0161620394376184e-06,
+    "target": 0.0,
+    "error": 3.0161620394376184e-06,
+    "tol": 1e-05,
+    "note": "r_inf channel k=0 (p_bar=0.5); PASS iff |r_inf|<0.5%"
+  },
+  {
+    "id": "Cap.intercept.ch1",
+    "phase": "Capstone",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "r_inf channel k=1 (p_bar=1.0); PASS iff |r_inf|<0.5%"
+  },
+  {
+    "id": "Cap.intercept.ch2",
+    "phase": "Capstone",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -7.434096709877756e-06,
+    "target": 0.0,
+    "error": 7.434096709877756e-06,
+    "tol": 1e-05,
+    "note": "r_inf channel k=2 (p_bar=2.0); PASS iff |r_inf|<0.5%"
+  },
+  {
+    "id": "Cap.decisive.pass",
+    "phase": "Capstone",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "PASS iff every |r_k^inf| < 0.5% (falsification-grade)"
+  },
+  {
+    "id": "Cap.offdiag.zero",
+    "phase": "Capstone",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "q_ab=0 -> reconstructed off-diagonals vanish (independent edges)"
+  },
+  {
+    "id": "Cap.Bij.on_class",
+    "phase": "Capstone",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": 1.5093082837057318e-30,
+    "target": 0.0,
+    "error": 1.5093082837057318e-30,
+    "tol": 1e-16,
+    "note": "max|B^phys[dp,dp]| on the flux class = 0 (Lagrangian holds; no twist-branch anomaly)"
+  },
+  {
+    "id": "Cap.covariance.rotated",
+    "phase": "Capstone",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "pi/6 frame rotation preserves trace & det (metric eigenvalues invariant)"
+  },
+  {
+    "id": "Cap.chi.degeneracy",
+    "phase": "Capstone",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "chi=0 and chi=-1/4 realizations give identical G (Phase 6 degeneracy)"
+  }
+]

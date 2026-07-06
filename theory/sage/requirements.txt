@@ -1,0 +1,11 @@
+# QFIM regression suite (theory/sage/qfim) runtime dependencies.
+# Run:  cd theory/sage && python3 -m qfim.run_all
+mpmath>=1.3
+numpy>=1.24
+matplotlib>=3.7
+
+# NOTE: the SageManifolds validators
+#   paper_math_validation.sage
+#   ../../verification/section8_ricci_tensor_verification.py
+# additionally require SageMath (>=9.5) with SageManifolds -- an external system
+# dependency that is not pip-installable.

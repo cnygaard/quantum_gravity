@@ -24,8 +24,12 @@ code wins and the discrepancy is logged here (never force-fit).
 
 ## Adjudicated (code decides)
 
-- **Z0(0.1) anchor slip**: SPEC anchor 114.9382; true (sum = closed) 114.93764.
-  Relative 4.8e-6 (passes T2). Hand rounding slip -> use 114.9376.
+- **Z0(0.1) anchor slip**: SPEC anchor 114.9382; true value **114.937644891588**
+  (arbitrary precision, dps=50). The closed form `2 sqrt(pi) e^{t/4} t^{-3/2}`, the exact
+  spin-sum `Omega(0)=sum n^2 e^{-t(n^2-1)/4}`, and `dictionary.Z0` all agree to **48 digits**
+  (correction is `O(e^{-4 pi^2/t}) ~ e^{-395}`). Evaluating the exact sum itself yields
+  114.9376 -- so 114.9382 is a hand-rounding slip (rel 4.8e-6, passes T2), NOT a competing
+  value. Use 114.9376.
 - **|Pf B| anchor slip**: SPEC 691.895; true 691.8938 (= (1/8)sqrt(det G) = closed).
   Relative 1.7e-6. Use 691.8938.
 - **D(0.2) adjudication**: exact = 0.000882157; 2-term series p^2/45 - 4p^4/945 = 0.000882116.
@@ -81,9 +85,10 @@ verified to their anchors plus three new symbolic tests (S4a-c) and two structur
 
 - **B_ij on the capstone class = 0** (max 1.5e-30): the Lagrangian property holds; there
   is NO twist-branch anomaly. (S1 proves the Kahler relation structural for arbitrary L.)
-- **Capstone PASSES** the falsification test: channel intercepts r_k^inf are O(1e-6),
-  three orders below the 0.5% threshold; the master equation ell_P^2 G_ij = q_ij
-  reconstructs diag(4,1,1/4) with residuals scaling to zero as t -> 0.
+- **Capstone PASSES** the internal self-consistency reconstruction: channel intercepts
+  r_k^inf are O(1e-6), three orders below the 0.5% threshold; the master equation
+  ell_P^2 G_ij = q_ij reconstructs diag(4,1,1/4) against the brute-force ground truth,
+  with residuals scaling to zero as t -> 0. (Internal check, not an empirical falsification.)
 """
 
 

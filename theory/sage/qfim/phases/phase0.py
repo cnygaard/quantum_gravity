@@ -2,7 +2,7 @@
 Phase 0 -- Omega engine.  GATES EVERYTHING.
 
 Checks:
-  Z0(0.1) = 114.9382                              (brute Omega(0) vs closed, vs anchor)
+  Z0(0.1) = 114.9376                              (brute Omega(0) = closed; SPEC anchor 114.9382 is a slip)
   Z1/Z0   = 3/(2t) - 1/4 = 14.75  at t=0.1        (brute moment vs closed, vs anchor)
   k_t(chi) = (chi/sin chi) e^{-chi^2/t} shape     (compact heat kernel asymptotic)
   F_{1/2}(chi) = cos^2 chi exactly, t-independent (Z)
@@ -57,8 +57,11 @@ def run():
     z0_closed = Z0(t)
     rec("P0.Z0.sum_vs_closed", PH, z0_brute, z0_closed, 'T1',
         note="Omega(0) brute spin-sum vs 2 sqrt(pi) e^{t/4} t^{-3/2}")
+    # SPEC hand value 114.9382 is a rounding slip; true Z0(0.1)=114.93764... (114.9376).
+    # This advisory T2 log intentionally flags the 4.8e-6 gap (see report/DISCREPANCIES.md);
+    # the authoritative check is the T1 sum_vs_closed above, which passes at error 0.
     rec("P0.Z0.anchor", PH, z0_brute, mpf('114.9382'), 'T2',
-        note="hand anchor 114.9382")
+        note="SPEC hand anchor 114.9382 -- rounding slip; true value 114.9376")
 
     # ---- Z1/Z0 ----
     z0m, z1m = Z_moments(t)

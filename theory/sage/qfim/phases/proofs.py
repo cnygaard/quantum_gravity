@@ -72,6 +72,33 @@ def run(verbose=True):
     boolrec("S3.dewitt.interval", PH, s3_ok, 'T0',
             note="K=I+chi(J-1) PSD <=> chi in (-1/2,1); chi=-1 excluded [Sage]")
 
+    # ---- S3b: DeWitt<->Fisher Mobius map  lam_eff=chi/(1+2chi);  conformal match -> chi=-1 ----
+    def Rmat(chi):
+        # equicorrelation / correlation matrix R = (1-chi)I + chi J: unit diagonal, chi off-diagonal
+        return matrix([[1, chi, chi], [chi, 1, chi], [chi, chi, 1]])
+    def lam_eff(chi):
+        return chi / (1 + 2 * chi)
+    def inv_resid(chi):
+        # R(chi) * (1-chi)^-1 [I - lam_eff J] = I  (Sherman-Morrison), checked by multiplication
+        a = 1 - chi
+        le = lam_eff(chi)
+        dia, off = (1 - le) / a, -le / a
+        closed = matrix([[dia, off, off], [off, dia, off], [off, off, dia]])
+        P = Rmat(chi) * closed
+        return max(fabs(P[i, j] - (1 if i == j else 0)) for i in range(3) for j in range(3))
+    tol = mpf(10) ** (-30)
+    s3b_ok = (
+        all(inv_resid(mpf(c)) < tol for c in ('-0.4', '-0.25', '0', '0.3', '0.9'))   # inversion identity
+        and fabs(lam_eff(mpf('-0.25')) + mpf('0.5')) < tol      # capstone chi=-1/4 -> lam_eff=-1/2
+        and fabs(lam_eff(mpf(0))) < tol                          # chi=0 -> lam_eff=0
+        and fabs(lam_eff(mpf(-1)) - 1) < tol                     # DeWitt conformal lam=1 <=> chi=-1
+        and fabs((1 - mpf(-1)) / (1 + 2 * mpf(-1)) + 2) < tol    # eigenvalue-ratio route rho_F(-1)=-2
+        and fabs(1 - 3 * lam_eff(mpf(1))) < tol                  # chi=1 -> DeWitt degeneracy 1-3lam=0
+        and fabs(1 + 2 * mpf('-0.5')) < tol)                     # chi=-1/2 -> pole (1+2chi=0), window edge
+    boolrec("S3b.dewitt.mobius", PH, s3b_ok, 'T0',
+            note="R(chi)^-1=(1-chi)^-1[I-lam J], lam_eff=chi/(1+2chi); lam=1<=>chi=-1 (DeWitt conformal), "
+                 "ratio=-2 same; window chi in(-1/2,1)<->lam in(-inf,1/3), chi=1<->lam=1/3 degeneracy [Sage+numeric]")
+
     # ---- S6: real-amplitude family has zero Berry connection ----
     # psi(th) = (cos th, sin th, 0), real & normalized -> <psi|dpsi> = sum psi psi' = 0
     def berry(th):

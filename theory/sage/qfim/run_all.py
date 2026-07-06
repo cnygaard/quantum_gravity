@@ -4,12 +4,13 @@ then emit results.json, DISCREPANCIES.md and the capstone residual plot.
 """
 import os
 from .phases import (phase0, phase1, phase2, phase3, phase4, phase5, phase6,
-                     phase7, capstone, proofs)
+                     phase7, capstone, proofs, phaseDM, phaseLS, phaseP8, phasePage,
+                     phaseScramble, phaseThiemann)
 from .harness import RECORDS, summarize, dump, HARD_TIERS
 from .report import write_discrepancies, write_capstone_plot, t2_failures
 
 # Phase 0 gates all; 1->2->3->4 in order; 5-7 parallelizable; capstone last.
-PHASES = [phase0, phase1, phase2, phase3, phase4, phase5, phase6, phase7, proofs, capstone]
+PHASES = [phase0, phase1, phase2, phase3, phase4, phase5, phase6, phase7, proofs, capstone, phaseDM, phaseLS, phaseP8, phasePage, phaseScramble, phaseThiemann]
 REPORT = os.path.join(os.path.dirname(__file__), 'report', 'results.json')
 
 

@@ -2075,6 +2075,50 @@
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "Thiemann S_A=1.47 ~ model 1.64: volume-gating is ~neutral; the graph-change connectivity governs (not verbatim BDR; NPZ infinite-graph ultralocality untested)"
+    "note": "Thiemann S_A=1.47 ~ model 1.64: volume-gating ~neutral; PROXY arena (moves reach the far vertex) -- contrast grow.ultralocal"
+  },
+  {
+    "id": "PhaseThiemann.bdr_verbatim",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 5.551115123125783e-17,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Eq.87 == BDR closed forms over 1520 amplitudes (colors<=8): max diff 5.6e-17; nets pass (89)-(94)"
+  },
+  {
+    "id": "PhaseThiemann.bdr_volume_fp",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 5.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Eq.62 volume == 2|eig(J-grasp)| at 5 color configs incl. non-monochromatic (binor factor 2 uniform)"
+  },
+  {
+    "id": "PhaseThiemann.grow_inert",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "all grasped triples at degenerate new vertices have eps=0 (exact int dets); generic vertex nonzero (GR Eq.53)"
+  },
+  {
+    "id": "PhaseThiemann.grow_ultralocal",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.9984014443252798e-15,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "max_t S_A:B = 2.0e-15 on theta-graph towers 61x7 (verbatim amplitudes): exact H_E is a NON-SCRAMBLER; local dressing churns (<layers> to 0.26)"
   }
 ]

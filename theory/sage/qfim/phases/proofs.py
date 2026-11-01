@@ -153,6 +153,8 @@ def run(verbose=True):
     boolrec("S4c.equal_footing", PH, s4c < mpf('1e-30'), 'T0',
             note="L''=w_L/p^2 and G^phys_perp=w_T/p^2: both channels enter displacement cost as weight/p^2")
 
+    _referee_proofs()
+
     st, ntot, nfail = phase_status(PH)
     if verbose:
         print(f"[{PH}] {ntot} records, gate={st}")
@@ -160,6 +162,80 @@ def run(verbose=True):
         print(f"  S4a Wick (resid {float(s4a):.1e}), S4b rho-additive, S4c equal-footing,")
         print(f"  S6 real-amplitude Berry=0, S7 total-variance decomposition -- all verified")
     return st
+
+
+def _referee_proofs():
+    """S8-S9 (SymPy): the referee-requested exact statements behind T1, Remark 1, the boosted
+    blocks and the restated edge-additivity obstruction."""
+    import sympy as sp
+    t, z, r, j, lam = sp.symbols('t zeta r j lambda', positive=True)
+
+    # S8a  T1 small-t: the n=0 Poisson term of Z0 = e^{t/4} sum_{n>=1} n^2 e^{-t n^2/4} is
+    #      e^{t/4} 2 sqrt(pi) t^{-3/2}; then Z1/Z0 = -dlnZ0/dt = 3/(2t) - 1/4, G = 2/t - 1/3.
+    n = sp.symbols('n', positive=True)
+    lead = sp.exp(t / 4) * sp.integrate(n ** 2 * sp.exp(-t * n ** 2 / 4), (n, 0, sp.oo))
+    ratio = sp.simplify(-sp.diff(sp.log(lead), t))
+    G_lead = sp.simplify(sp.Rational(4, 3) * ratio)
+    s8a_sym = (sp.simplify(lead - 2 * sp.sqrt(sp.pi) * t ** sp.Rational(-3, 2) * sp.exp(t / 4)) == 0
+               and sp.simplify(G_lead - (2 / t - sp.Rational(1, 3))) == 0)
+    # numeric: exact half-integer-j sums vs the expansion at t = 0.1 (remainder ~ e^{-4 pi^2/t})
+    tb = mpf('0.1')
+    Z0 = sum((2 * jj + 1) ** 2 * mp.e ** (-tb * jj * (jj + 1)) for jj in [mpf(k) / 2 for k in range(0, 400)])
+    Z1 = sum((2 * jj + 1) ** 2 * jj * (jj + 1) * mp.e ** (-tb * jj * (jj + 1))
+             for jj in [mpf(k) / 2 for k in range(0, 400)])
+    s8a_num = fabs(mpf(4) / 3 * Z1 / Z0 - (2 / tb - mpf(1) / 3))
+    boolrec("S8a.T1.small_t", PH, s8a_sym and s8a_num < mpf(10) ** (-mp.dps + 5), 'T0',
+            computed=float(s8a_num),
+            note=f"SymPy: Poisson n=0 term -> Z1/Z0 = 3/(2t)-1/4, G = 2/t-1/3; exact j in N/2 sums at t=0.1 "
+                 f"agree to {float(s8a_num):.0e} (working precision; true remainder ~e^-395)")
+
+    # S8b  Remark 1 made exact: S^3 of radius r has Laplacian eigenvalues l(l+2)/r^2; with
+    #      l = 2j these are j(j+1) iff r = 2; then R = 6/r^2 = 3/2, e^{t/4} = e^{tR/6}, and the
+    #      constant -1/4 = -R/6 in Z1/Z0, -1/3 = -(2/9) R in G.
+    ell = 2 * j
+    r_sol = sp.solve(sp.Eq(ell * (ell + 2) / r ** 2, j * (j + 1)), r)
+    R = 6 / r_sol[0] ** 2 if r_sol else None
+    s8b = (r_sol == [2] and R == sp.Rational(3, 2) and sp.Rational(1, 4) == R / 6
+           and sp.Rational(-1, 3) == -sp.Rational(2, 9) * R)
+    boolrec("S8b.remark1.S3_curvature", PH, bool(s8b), 'T0',
+            note="Casimir j(j+1) <=> S^3 radius 2, R=3/2: e^{t/4}=e^{tR/6} (Minakshisundaram-Pleijel a_1), "
+                 "-1/3 = -(2/9)R exactly (normalization-dependent, not heuristic) [SymPy]")
+
+    # S8c  boosted blocks = Hessian of the (winding-free) Kahler potential ln(zeta/sinh zeta) + zeta^2/t
+    K = sp.log(z / sp.sinh(z)) + z ** 2 / t
+    Lp = 2 * z / t + 1 / z - sp.coth(z)
+    Lpp = 2 / t - 1 / z ** 2 + 1 / sp.sinh(z) ** 2
+    s8c = (sp.simplify(sp.diff(K, z) - Lp) == 0 and sp.simplify(sp.diff(K, z, 2) - Lpp) == 0)
+    boolrec("S8c.boost.kahler_potential", PH, bool(s8c), 'T0',
+            note="L' = dK/dzeta, L'' = d2K/dzeta2 for K = ln(zeta/sinh zeta) + zeta^2/t "
+                 "(exact up to the dropped windings O(e^{-4pi^2/t})) [SymPy]")
+
+    # S8d  6x6 boosted block is PSD: G_x couples (dp_x, phi_y) and (dp_y, phi_x); each 2x2
+    #      [[L' coth, -+L'], [-+L', L' coth]] has eigenvalues L'(coth zeta -+ 1) > 0.
+    M = sp.Matrix([[Lp * sp.coth(z), -Lp], [-Lp, Lp * sp.coth(z)]])
+    eigs = [sp.simplify(e) for e in M.eigenvals()]
+    s8d_sym = all(sp.simplify(e - Lp * (sp.coth(z) - 1)) == 0 or sp.simplify(e - Lp * (sp.coth(z) + 1)) == 0
+                  for e in eigs)
+    grid = [mpf(k) / 10 for k in range(1, 81)]
+    s8d_num = min(min(L1_closed(zz, T_BENCH) * (cosh(zz) / sinh(zz) - 1), L2_closed(zz, T_BENCH))
+                  for zz in grid)
+    boolrec("S8d.boost.psd", PH, bool(s8d_sym) and s8d_num > 0, 'T0', computed=float(s8d_num),
+            note=f"2x2 cross blocks have eigenvalues L'(coth -+ 1); min over zeta in (0,8] at t=0.1 of "
+                 f"{{L'(coth-1), L''}} = {float(s8d_num):.3e} > 0 -> 6x6 block PSD [SymPy+grid]")
+
+    # S9  edge-additivity obstruction (restated).  A single-flux response w with
+    #     l_P^2 w(p_bar_k) = q_k:  on the conformal orbit q = Q*1 (p_bar = Q) it needs w(Q) = Q;
+    #     on q = diag(1,1,lam) (p_bar = (sqrt lam, sqrt lam, 1)) it needs w(sqrt lam) = 1 and
+    #     w(1) = lam for every lam -- impossible (w(1) is one number), and the conformal and
+    #     anisotropic requirements also clash pointwise: w(sqrt lam) = sqrt lam != 1.
+    w = sp.Function('w')
+    conformal = sp.Eq(w(sp.sqrt(lam)), sp.sqrt(lam))             # from the conformal orbit at Q = sqrt(lam)
+    aniso = sp.Eq(w(sp.sqrt(lam)), 1)                             # from q = diag(1,1,lam), axis 1
+    clash = sp.solve([conformal.lhs - conformal.rhs, aniso.lhs - aniso.rhs], [w(sp.sqrt(lam)), lam], dict=True)
+    s9 = clash == [{w(sp.sqrt(lam)): 1, lam: 1}]                  # only the isotropic point survives
+    boolrec("S9.edge_additive.obstruction", PH, bool(s9), 'T0',
+            note="single-flux w(p_bar_k) = q_k: conformal orbit forces w(p)=p, q=diag(1,1,lam) forces "
+                 "w(sqrt lam)=1 -> consistent only at lam=1 (isotropic orbit) [SymPy]")
 
 
 if __name__ == "__main__":

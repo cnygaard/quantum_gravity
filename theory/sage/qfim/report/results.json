@@ -641,6 +641,50 @@
     "note": "R(Q) same S[q] routine == sqrt(Q)L''(Q)/L''(1) [dictionary tripwire]"
   },
   {
+    "id": "P4.Rnat.Q4",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.2527223232969425,
+    "target": 0.2527223,
+    "error": 9.218396043406779e-08,
+    "tol": 1e-05,
+    "note": "fixed t: L''(4)/(4 L''(1)) = 0.25272 (a metric identity needs 1)"
+  },
+  {
+    "id": "P4.Radapt.Q4",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 1.0132147744884141,
+    "target": 1.0132148,
+    "error": 2.5178852303248663e-08,
+    "tol": 1e-05,
+    "note": "adapted t=t0/p: L''(4;t0/4)/(4 L''(1;t0)) = 1.0132 -> 1 + O(t0)"
+  },
+  {
+    "id": "P4.Radapt.limit",
+    "phase": "Phase4",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": 1.0000130326311525,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "adapted-t conformal ratio -> 1 as t0 -> 0 (t0=1e-4: 1.0000130)"
+  },
+  {
+    "id": "P4.aniso.witness",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 8.07663705668763,
+    "target": 8.0766371,
+    "error": 5.362673678750023e-09,
+    "tol": 1e-05,
+    "note": "adapted t, q=diag(1,1,4): max/min of G_kk/q_k = 8.0766 (-> 8 as t0->0; identity needs 1)"
+  },
+  {
     "id": "P4.shear.triple",
     "phase": "Phase4",
     "tier": "T2",
@@ -1484,6 +1528,61 @@
     "note": "L''=w_L/p^2 and G^phys_perp=w_T/p^2: both channels enter displacement cost as weight/p^2"
   },
   {
+    "id": "S8a.T1.small_t",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "SymPy: Poisson n=0 term -> Z1/Z0 = 3/(2t)-1/4, G = 2/t-1/3; exact j in N/2 sums at t=0.1 agree to 0e+00 (working precision; true remainder ~e^-395)"
+  },
+  {
+    "id": "S8b.remark1.S3_curvature",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Casimir j(j+1) <=> S^3 radius 2, R=3/2: e^{t/4}=e^{tR/6} (Minakshisundaram-Pleijel a_1), -1/3 = -(2/9)R exactly (normalization-dependent, not heuristic) [SymPy]"
+  },
+  {
+    "id": "S8c.boost.kahler_potential",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "L' = dK/dzeta, L'' = d2K/dzeta2 for K = ln(zeta/sinh zeta) + zeta^2/t (exact up to the dropped windings O(e^{-4pi^2/t})) [SymPy]"
+  },
+  {
+    "id": "S8d.boost.psd",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": 3.581432333411868e-05,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "2x2 cross blocks have eigenvalues L'(coth -+ 1); min over zeta in (0,8] at t=0.1 of {L'(coth-1), L''} = 3.581e-05 > 0 -> 6x6 block PSD [SymPy+grid]"
+  },
+  {
+    "id": "S9.edge_additive.obstruction",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "single-flux w(p_bar_k) = q_k: conformal orbit forces w(p)=p, q=diag(1,1,lam) forces w(sqrt lam)=1 -> consistent only at lam=1 (isotropic orbit) [SymPy]"
+  },
+  {
     "id": "Cap.recon.t01_envelope",
     "phase": "Capstone",
     "tier": "Z",
@@ -1877,7 +1976,7 @@
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "ln D = A/4 at gamma0=0.1274 (finite Hilbert space => area law)"
+    "note": "H2(i) monochromatic matching: ln D = A/4 at gamma0=0.1274 (j=1/2); NOT a gamma0-free identity -- see gp_* records for the ensemble route"
   },
   {
     "id": "PhasePage.peak_half",
@@ -1888,7 +1987,7 @@
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "peak S_rad=68.815 vs S_BH0/2=69.315; deficit=0.500 nat (Page corr.)"
+    "note": "unconstrained registers: peak S_rad=68.815 vs ln m=69.315; deficit=0.500 nat = Page's 1/2 (the SU(2) centre adds centre_deficit)"
   },
   {
     "id": "PhasePage.returns",
@@ -1910,7 +2009,7 @@
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "at area-frac 0.500 saddles degenerate (A_emit/4=0.500=A_horiz/4=0.500): QES transition"
+    "note": "at area-frac 0.500 the branches of min(C_emit, C_rem) cross (0.500=0.500); no extremization is performed"
   },
   {
     "id": "PhasePage.gamma_indep",
@@ -1921,7 +2020,95 @@
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "peak S_rad/S_BH0 spread over gamma0 in [0.2375,1] = 0.0e+00 (shape gamma0-free)"
+    "note": "capacity-fraction shape spread over gamma0 = 0.0e+00 (manifest for fixed spin profile; area-fraction version = gp_page_gamma)"
+  },
+  {
+    "id": "PhasePage.gp_area_law",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.27406685823283,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "GP identity S/N=A/(4N)+sigma exact (max res 1.7e-40); universal 1/4 coefficient all gamma; sigma=0 at gamma*=0.274067 = Ghosh-Mitra/ENP state-counting value (zero chemical potential, per Ghosh-Perez)"
+  },
+  {
+    "id": "PhasePage.gp_page_gamma",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.002096979072215066,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "GP-sampled spins, exchangeable order: peak area-frac ['0.502', '0.501', '0.502'] for gamma in (0.2,0.274,0.5): half-area to O(N^-1/2), every gamma (LLN)"
+  },
+  {
+    "id": "PhasePage.gp_order",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.06741647663325939,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Page-point area fraction (random/composition/small-first/large-first): gamma=0.200: 0.502/0.499/0.433/0.567; gamma=0.274: 0.501/0.503/0.458/0.542; gamma=0.500: 0.502/0.499/0.487/0.513"
+  },
+  {
+    "id": "PhasePage.gp_capacity_split",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.41870372098129693,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "at gamma*: <a>/4=2.5146 = <ln d> 1.0529 + H(label) 1.4617; one fixed configuration holds 41.9% of A/4 -> route (ii) needs the direct sum over configurations"
+  },
+  {
+    "id": "PhasePage.closure_log",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": -1.4954601239814074,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "ln Catalan(N/2) = N ln2 + c1 ln N + c0: fitted c1=-1.495 (Kaul-Majumdar -3/2 closure log); dim Inv((C^2)^14)=C_7=429, ln=6.06 vs 14ln2=9.70"
+  },
+  {
+    "id": "PhasePage.singlet_page_exact",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 4.106832719821664,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "exact Haar-singlet S(R_k), n=14, k=1..7: 0.6931 1.3767 2.0479 2.7004 3.3166 3.8432 4.1068; Monte Carlo (400 draws) k=7: 4.1057 +/- 0.0019"
+  },
+  {
+    "id": "PhasePage.centre_deficit",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.28907027008477826,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "midpoint deficit below ln m - 1/2 (n=14/60/240/960): 0.2452/0.2794/0.2871/0.2891; below ln m: 0.7452/0.7794/0.7871/0.7891 -- the closure log does not enter the height"
+  },
+  {
+    "id": "PhasePage.centre_area_split",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.25574521322427496,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "S_mid - ln D_tot/2 = -0.256 sqrt(N) + 0.96 ln N + -0.19 (N=32..512, n1=N/4, max res 2.7e-03); n1=N/2: -0.080 sqrt(N) + 1.03 ln N + -0.33 (max res 2.9e-03); predicted alpha 0.260 / 0.081 from area-split fluctuations; exact dims True"
   },
   {
     "id": "PhaseScramble.calib.gue",
@@ -1939,7 +2126,7 @@
     "phase": "PhaseScramble",
     "tier": "T2",
     "status": "PASS",
-    "computed": 2.632148025904987,
+    "computed": 2.632148025904985,
     "target": null,
     "error": null,
     "tol": 1e-05,
@@ -1950,33 +2137,44 @@
     "phase": "PhaseScramble",
     "tier": "T2",
     "status": "PASS",
-    "computed": 0.6024826413608705,
+    "computed": 0.602482641360858,
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "distinct n=6 D_int=49 r~=0.602 >> Poisson .386 (chaotic); anchor D_int=276 -> .617"
+    "note": "distinct n=6 D_int=49, default embedding: r~=0.602 >> Poisson .386 (level repulsion); embedding ensembles: volume.* records"
   },
   {
     "id": "PhaseScramble.eigvec_pt",
     "phase": "PhaseScramble",
     "tier": "T2",
     "status": "PASS",
-    "computed": 1.9559465623609045,
+    "computed": 2.289757440710492,
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "IPR*D_int=1.96 -> Porter-Thomas 2 (Haar-random eigenstates: eigenvector typicality)"
+    "note": "IPR*D_int=2.29 in the recoupling basis (Porter-Thomas 2, GOE 3): delocalized, not exactly Porter-Thomas"
   },
   {
     "id": "PhaseScramble.sector",
     "phase": "PhaseScramble",
     "tier": "T2",
     "status": "PASS",
-    "computed": 0.3397680175857482,
+    "computed": 0.3397680175857446,
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "monochromatic fixed-sign r~=0.340 -> Poisson (S_n unresolved): chaos not a pipeline artifact"
+    "note": "monochromatic fixed-sign r~=0.340, below Poisson .386 (unresolved S_n sectors): the sector pitfall is real and detected"
+  },
+  {
+    "id": "PhaseScramble.page_scramble_n14",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 4.112557809361448,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "n=14 dimer under e^(-iHt): late-time MEAN S_A=4.1126 +/- 0.0251 (temporal std, 21 samples; max over t 4.152) vs exact Haar-singlet 4.1068 (Haar std 0.0371, 2000 draws)"
   },
   {
     "id": "PhaseScramble.phys_chaotic",
@@ -2009,7 +2207,513 @@
     "target": null,
     "error": null,
     "tol": 1e-05,
-    "note": "dynamical Page curve: S_rad 0 -> peak 1.91 (step 26) -> 0.04; spin-changing emission + relational clock, horizon re-purifies (info returned)"
+    "note": "U(1) collision model (XX): S_rad 0 -> peak 1.91 (step 26) -> 0.04; flip-flop, radiation carries the M"
+  },
+  {
+    "id": "PhaseScramble.page_curve_su2",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.9157484320132996,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "U(1) occupation-encoded collision model, Heisenberg coupling J.sigma with |down> fresh modes: peak 1.9157 (step 27) -> 0.0457, turnover 97.6% (matches XX)"
+  },
+  {
+    "id": "PhaseScramble.page_curve_singlet",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.9962109242385624,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "singlet emission n=14 (D_int=429), tau=3, 4 draws: S(R_k), k=1..7 = 0.693 1.351 2.019 2.664 3.283 3.814 4.091; exact Haar-singlet 0.6931 1.3767 2.0479 2.7004 3.3166 3.8432 4.1068; max rel. dev. 0.019 at k=2; S(R_8)=3.834; control tau=0: ratio 0.169 (ln2 sawtooth)"
+  },
+  {
+    "id": "PhaseScramble.page_curve_singlet_tau",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.00755906361724589,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "8 draws, S(R_7) +/- SE | max rel. dev. | max rel. dev. k<=4 (exact Haar S(R_7)=4.1068): tau=3: 4.0764+/-0.0200 | 0.0093 | 0.0093; tau=10: 4.0758+/-0.0095 | 0.0076 | 0.0021; tau=3 x3 fresh quenches: 4.0980+/-0.0100 | 0.0045 | 0.0014 -- early cuts converge with tau; the residual mid-curve deficit of single-H scrambling is removed by fresh quenches (energy envelope)"
+  },
+  {
+    "id": "PhaseScramble.singlet_invariance",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 6.623827560072178e-16,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "max <J_tot^2> over all emission steps and seeds: the singlet model is exactly SU(2)-invariant"
+  },
+  {
+    "id": "PhaseScramble.volume.D49.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.6024826413608694,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.0, 2.5, 3.0, 4.0] default embedding (-1)^(p+q+r): r~=0.6025, block-bootstrap SE 0.0380 (iid SEM 0.0448); matched-D beta=2 ref 0.5982"
+  },
+  {
+    "id": "PhaseScramble.volume.D49.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5475086329196337,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 42 r~=0.5475+/-0.0109 (SEM), all r~=0.5218+/-0.0100; degenerate (extra zero modes) 22; PT-KS generic 0.0754 (recoupling basis); matched reference 0.5982+/-0.0044 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D49.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5580138859404569,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 6: bulk-window (ranks 20-90%) generic r~=0.5580+/-0.0123 (ref 0.5992); KS vs ref p=8.5e-04 (bulk 1.1e-02); Levene p=0.61, spread ratio 1.13; small-s beta 1.04+/-0.19 vs ref 1.91+/-0.16; Spearman(r~, min|det|) -0.24 (p=0.13)"
+  },
+  {
+    "id": "PhaseScramble.volume.D75.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5422123209287932,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 2.0, 2.5, 3.0, 3.5, 4.0] default embedding (-1)^(p+q+r): r~=0.5422, block-bootstrap SE 0.0411 (iid SEM 0.0354); matched-D beta=2 ref 0.5990"
+  },
+  {
+    "id": "PhaseScramble.volume.D75.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5222411416697416,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 37 r~=0.5222+/-0.0112 (SEM), all r~=0.4874+/-0.0115; degenerate (extra zero modes) 27; PT-KS generic 0.0850 (recoupling basis); matched reference 0.5990+/-0.0033 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D75.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5202742324754128,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 6: bulk-window (ranks 20-90%) generic r~=0.5203+/-0.0134 (ref 0.5989); KS vs ref p=3.4e-11 (bulk 2.7e-09); Levene p=0.0016, spread ratio 1.44; small-s beta 0.74+/-0.13 vs ref 1.76+/-0.11; Spearman(r~, min|det|) -0.16 (p=0.34)"
+  },
+  {
+    "id": "PhaseScramble.volume.D95.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5447857095280396,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.5, 2.0, 2.5, 3.0, 3.5, 4.5] default embedding (-1)^(p+q+r): r~=0.5448, block-bootstrap SE 0.0444 (iid SEM 0.0368); matched-D beta=2 ref 0.5986"
+  },
+  {
+    "id": "PhaseScramble.volume.D95.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5509627619140299,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 44 r~=0.5510+/-0.0082 (SEM), all r~=0.5139+/-0.0101; degenerate (extra zero modes) 20; PT-KS generic 0.0792 (recoupling basis); matched reference 0.5986+/-0.0029 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D95.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.556341206140086,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 6: bulk-window (ranks 20-90%) generic r~=0.5563+/-0.0093 (ref 0.5996); KS vs ref p=3.2e-07 (bulk 1.0e-05); Levene p=0.0037, spread ratio 1.32; small-s beta 1.12+/-0.13 vs ref 1.72+/-0.10; Spearman(r~, min|det|) -0.13 (p=0.4)"
+  },
+  {
+    "id": "PhaseScramble.volume.D276.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.617243614031521,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.5] default embedding (-1)^(p+q+r): r~=0.6172, block-bootstrap SE 0.0216 (iid SEM 0.0192); matched-D beta=2 ref 0.5970"
+  },
+  {
+    "id": "PhaseScramble.volume.D276.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5764619183511316,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 56 r~=0.5765+/-0.0041 (SEM), all r~=0.5572+/-0.0080; degenerate (extra zero modes) 8; PT-KS generic 0.0622 (recoupling basis); matched reference 0.5970+/-0.0018 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D276.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5791219456451595,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5791+/-0.0047 (ref 0.5986); KS vs ref p=3.5e-05 (bulk 2.4e-03); Levene p=0.048, spread ratio 1.22; small-s beta 1.48+/-0.09 vs ref 1.74+/-0.06; Spearman(r~, min|det|) +0.06 (p=0.68)"
+  },
+  {
+    "id": "PhaseScramble.volume.D231.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5529790792067154,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [0.5, 1.5, 2.0, 3.0, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5530, block-bootstrap SE 0.0278 (iid SEM 0.0237); matched-D beta=2 ref 0.5972"
+  },
+  {
+    "id": "PhaseScramble.volume.D231.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5602358593155173,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 56 r~=0.5602+/-0.0057 (SEM), all r~=0.5470+/-0.0074; degenerate (extra zero modes) 8; PT-KS generic 0.0773 (recoupling basis); matched reference 0.5972+/-0.0020 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D231.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5625508921723055,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5626+/-0.0063 (ref 0.5966); KS vs ref p=1.1e-09 (bulk 6.5e-07); Levene p=0.059, spread ratio 1.49; small-s beta 1.09+/-0.08 vs ref 1.72+/-0.06; Spearman(r~, min|det|) +0.31 (p=0.02)"
+  },
+  {
+    "id": "PhaseScramble.volume.D306.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5916212367127823,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.0, 2.5, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5916, block-bootstrap SE 0.0244 (iid SEM 0.0205); matched-D beta=2 ref 0.5964"
+  },
+  {
+    "id": "PhaseScramble.volume.D306.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5747722275551489,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 55 r~=0.5748+/-0.0035 (SEM), all r~=0.5542+/-0.0076; degenerate (extra zero modes) 9; PT-KS generic 0.0699 (recoupling basis); matched reference 0.5964+/-0.0018 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D306.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5779744636296482,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5780+/-0.0038 (ref 0.5966); KS vs ref p=6.9e-07 (bulk 3.4e-04); Levene p=0.25, spread ratio 1.03; small-s beta 1.28+/-0.08 vs ref 1.67+/-0.05; Spearman(r~, min|det|) +0.21 (p=0.12)"
+  },
+  {
+    "id": "PhaseScramble.volume.D336.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5732490040677122,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.0, 3.0, 3.5, 4.0, 5.0] default embedding (-1)^(p+q+r): r~=0.5732, block-bootstrap SE 0.0222 (iid SEM 0.0184); matched-D beta=2 ref 0.5972"
+  },
+  {
+    "id": "PhaseScramble.volume.D336.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5765952642121024,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 55 r~=0.5766+/-0.0042 (SEM), all r~=0.5589+/-0.0073; degenerate (extra zero modes) 9; PT-KS generic 0.0691 (recoupling basis); matched reference 0.5972+/-0.0016 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D336.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5781633026611342,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5782+/-0.0050 (ref 0.5980); KS vs ref p=7.6e-05 (bulk 7.0e-04); Levene p=0.0038, spread ratio 1.41; small-s beta 1.41+/-0.08 vs ref 1.75+/-0.05; Spearman(r~, min|det|) +0.36 (p=0.0071)"
+  },
+  {
+    "id": "PhaseScramble.volume.D391.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5706825197415903,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.5, 3.0, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5707, block-bootstrap SE 0.0208 (iid SEM 0.0177); matched-D beta=2 ref 0.5975"
+  },
+  {
+    "id": "PhaseScramble.volume.D391.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5781602857413051,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 56 r~=0.5782+/-0.0046 (SEM), all r~=0.5627+/-0.0073; degenerate (extra zero modes) 8; PT-KS generic 0.0632 (recoupling basis); matched reference 0.5975+/-0.0015 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D391.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5840749768995754,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5841+/-0.0048 (ref 0.5976); KS vs ref p=1.0e-05 (bulk 3.2e-02); Levene p=0.13, spread ratio 1.61; small-s beta 1.46+/-0.07 vs ref 1.73+/-0.05; Spearman(r~, min|det|) +0.17 (p=0.21)"
+  },
+  {
+    "id": "PhaseScramble.volume.D553.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5997350979742643,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0] default embedding (-1)^(p+q+r): r~=0.5997, block-bootstrap SE 0.0137 (iid SEM 0.0134); matched-D beta=2 ref 0.5997"
+  },
+  {
+    "id": "PhaseScramble.volume.D553.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5858202907679483,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 62 r~=0.5858+/-0.0038 (SEM), all r~=0.5795+/-0.0058; degenerate (extra zero modes) 2; PT-KS generic 0.0507 (recoupling basis); matched reference 0.5997+/-0.0013 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D553.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5910639131968847,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 8: bulk-window (ranks 20-90%) generic r~=0.5911+/-0.0042 (ref 0.6008); KS vs ref p=5.4e-03 (bulk 9.4e-02); Levene p=0.0044, spread ratio 1.65; small-s beta 1.54+/-0.06 vs ref 1.75+/-0.04; Spearman(r~, min|det|) -0.11 (p=0.39)"
+  },
+  {
+    "id": "PhaseScramble.volume.D673.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.591585010597154,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [0.5, 1.0, 1.5, 2.0, 3.0, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5916, block-bootstrap SE 0.0148 (iid SEM 0.0129); matched-D beta=2 ref 0.5995"
+  },
+  {
+    "id": "PhaseScramble.volume.D673.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.583936254344014,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 62 r~=0.5839+/-0.0036 (SEM), all r~=0.5780+/-0.0055; degenerate (extra zero modes) 2; PT-KS generic 0.0566 (recoupling basis); matched reference 0.5995+/-0.0012 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D673.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5871486433426919,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 8: bulk-window (ranks 20-90%) generic r~=0.5871+/-0.0041 (ref 0.5992); KS vs ref p=1.7e-05 (bulk 4.9e-04); Levene p=0.13, spread ratio 1.73; small-s beta 1.55+/-0.06 vs ref 1.78+/-0.04; Spearman(r~, min|det|) -0.05 (p=0.68)"
+  },
+  {
+    "id": "PhaseScramble.volume.D937.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5903544757677834,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [0.5, 1.0, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5904, block-bootstrap SE 0.0127 (iid SEM 0.0106); matched-D beta=2 ref 0.6010"
+  },
+  {
+    "id": "PhaseScramble.volume.D937.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5820811951202998,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 63 r~=0.5821+/-0.0044 (SEM), all r~=0.5788+/-0.0054; degenerate (extra zero modes) 1; PT-KS generic 0.0515 (recoupling basis); matched reference 0.6010+/-0.0010 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D937.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5886556311793865,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 8: bulk-window (ranks 20-90%) generic r~=0.5887+/-0.0044 (ref 0.6003); KS vs ref p=6.9e-06 (bulk 3.2e-02); Levene p=0.057, spread ratio 2.53; small-s beta 1.43+/-0.05 vs ref 1.75+/-0.03; Spearman(r~, min|det|) +0.07 (p=0.57)"
+  },
+  {
+    "id": "PhaseScramble.volume.valence_trend",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5840996500913568,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "inverse-variance mean generic r~ by valence: 6: 0.5427+/-0.0056 (3 nodes); 7: 0.5745+/-0.0019 (5 nodes); 8: 0.5841+/-0.0023 (3 nodes) (GOE 0.5307, matched beta=2 reference ~0.598)"
+  },
+  {
+    "id": "PhaseScramble.volume.beta_calibration",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.8957334534319705,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "small-s estimator beta_mle on the same pipeline: GOE (beta=1) gives 0.85+/-0.05 at D=95, 0.90+/-0.02 at D=553; matched beta=2 reference 1.67-1.91; volume operator by valence 6: 0.74-1.12; 7: 1.09-1.48; 8: 1.43-1.55"
+  },
+  {
+    "id": "PhaseScramble.rbar_sem",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.602482641360858,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "volume r~ = 0.602 +/- 0.045 (D_int=49; antisym beta=2 ref 0.594) -- error bars per referee"
+  },
+  {
+    "id": "PhaseScramble.pt_ks",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.0378803758631574,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "KS(y=D|c|^2, e^-y) = 0.038 over 1176 components in the Clebsch-Gordan recoupling basis (an arbitrary singlet basis would make this test nearly trivial)"
+  },
+  {
+    "id": "PhaseScramble.j0_block",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.9984014443252818e-15,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "max |J^2 P| = 2.0e-15 and max |P^T P - 1| = 4.4e-16 on the Clebsch-Gordan recoupling basis: diagonalization is inside total-J=0"
+  },
+  {
+    "id": "PhaseScramble.phys_rbar_sem",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.534482940530723,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "puncture H r~ = 0.5345 +/- 0.0099 pooled over 5 seeds (GOE 0.5307)"
+  },
+  {
+    "id": "PhaseScramble.phys_rbar_n14_bootstrap",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5584900256911375,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "puncture H n=14 (seed 7): r~=0.5585, block-bootstrap SE 0.0135 (iid 0.0118, lag-1 +0.152); +2.1 sigma from GOE 0.5307"
+  },
+  {
+    "id": "PhaseScramble.phys_rbar_n12_seeds",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.534482940530723,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "puncture H n=12: r~=0.5345 +/- 0.0069 (across-seed SEM, 5 independent K_ab draws)"
+  },
+  {
+    "id": "PhaseScramble.local_page",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.6703482945326432,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "unit-bandwidth: all-to-all S_sat=1.00xPage (t90=1.8); ring-local 0.67xPage (t90=3.0) -- locality slows AND weakens scrambling; the Page-value saturation uses generic all-to-all couplings (stated in text)"
   },
   {
     "id": "PhaseThiemann.volume_gr",

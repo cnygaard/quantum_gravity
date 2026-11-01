@@ -81,6 +81,33 @@ def run(t=T_BENCH, verbose=True):
     rec("P4.R.functional_lock", PH, RQ4_func, RQ4_closed, 'NUM',
         note="R(Q) same S[q] routine == sqrt(Q)L''(Q)/L''(1) [dictionary tripwire]")
 
+    # ---- edge-additivity obstruction, restated (referee: the sqrt(Q) of R(Q) is the
+    #      p_bar^2/sqrt(det q) normalization of S[q], not an anomalous exponent) ----
+    # (i) fixed t: the area-direction QFIM L''(p_bar) -> 2/t carries the state's width, not the
+    #     background, so it cannot track even a conformal rescaling: L''(Q)/(Q L''(1)) ~ 1/Q.
+    Rnat = L2_closed(mpf(4), t) / (4 * L2_closed(mpf(1), t))
+    rec("P4.Rnat.Q4", PH, Rnat, mpf('0.2527223'), 'T2',
+        note="fixed t: L''(4)/(4 L''(1)) = 0.25272 (a metric identity needs 1)")
+    # (ii) area-adapted t_e = t0/p_bar_e (Thiemann t = l_P^2/a^2 with a^2 the edge's area
+    #      scale): L'' ~ 2 p_bar/t0 tracks the area, so the conformal test passes up to O(t0).
+    def L2_adapt(p, t0):
+        return L2_closed(p, t0 / p)
+    Radapt = L2_adapt(mpf(4), t) / (4 * L2_adapt(mpf(1), t))
+    rec("P4.Radapt.Q4", PH, Radapt, mpf('1.0132148'), 'T2',
+        note="adapted t=t0/p: L''(4;t0/4)/(4 L''(1;t0)) = 1.0132 -> 1 + O(t0)")
+    Radapt_small = L2_adapt(mpf(4), mpf('1e-4')) / (4 * L2_adapt(mpf(1), mpf('1e-4')))
+    boolrec("P4.Radapt.limit", PH, fabs(Radapt_small - 1) < mpf('1e-4') < fabs(Radapt - 1), 'Znum',
+            computed=float(Radapt_small),
+            note=f"adapted-t conformal ratio -> 1 as t0 -> 0 (t0=1e-4: {float(Radapt_small):.7f})")
+    # (iii) ...but then G_kk ~ area p_bar_k, while q_k = p_bar_j p_bar_l / p_bar_k: off the
+    #       isotropic orbit the single-flux response fails at O(1).  Witness q = diag(1,1,4).
+    qa = [mpf(1), mpf(1), mpf(4)]
+    pa = [sqrt(qa[1] * qa[2]), sqrt(qa[0] * qa[2]), sqrt(qa[0] * qa[1])]        # (2, 2, 1)
+    ratios = [L2_adapt(pa[k], t) / qa[k] for k in range(3)]
+    aniso = max(ratios) / min(ratios)
+    rec("P4.aniso.witness", PH, aniso, mpf('8.0766371'), 'T2',
+        note=f"adapted t, q=diag(1,1,4): max/min of G_kk/q_k = {float(aniso):.4f} (-> 8 as t0->0; identity needs 1)")
+
     # ---- 4b: shear-plane triple  w_T(a) + w_T(b) ----
     shear = [wT(pb[a], t) + wT(pb[b], t) for (a, b) in [(0, 1), (1, 2), (2, 0)]]
     rec("P4.shear.triple", PH, shear,

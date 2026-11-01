@@ -1,0 +1,2828 @@
+[
+  {
+    "id": "P0.Z0.sum_vs_closed",
+    "phase": "Phase0",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 114.93764489158815,
+    "target": 114.93764489158815,
+    "error": 0.0,
+    "tol": 1e-30,
+    "note": "Omega(0) brute spin-sum vs 2 sqrt(pi) e^{t/4} t^{-3/2}"
+  },
+  {
+    "id": "P0.Z0.anchor",
+    "phase": "Phase0",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 114.93764489158815,
+    "target": 114.9382,
+    "error": 4.829625066813694e-06,
+    "tol": 1e-05,
+    "note": "SPEC hand anchor 114.9382 -- rounding slip; true value 114.9376"
+  },
+  {
+    "id": "P0.Zratio.sum_vs_closed",
+    "phase": "Phase0",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 14.75,
+    "target": 14.75,
+    "error": 1.8367099231598242e-40,
+    "tol": 1e-30,
+    "note": "<j(j+1)> brute vs 3/(2t)-1/4"
+  },
+  {
+    "id": "P0.Zratio.anchor",
+    "phase": "Phase0",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 14.75,
+    "target": 14.75,
+    "error": 1.2452270665490334e-41,
+    "tol": 1e-05,
+    "note": "anchor 14.75"
+  },
+  {
+    "id": "P0.kt.shape_t0.02",
+    "phase": "Phase0",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 2.2958874039497803e-41,
+    "target": 0.0,
+    "error": 2.2958874039497803e-41,
+    "tol": 1e-30,
+    "note": "max|khat-(chi/sin)e^{-chi^2/t}| over grid at t=0.02"
+  },
+  {
+    "id": "P0.kt.monotone",
+    "phase": "Phase0",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "residual t=0.5:4.59e-13 -> t=0.1:1.15e-41 -> t=0.02:2.30e-41 (floor)"
+  },
+  {
+    "id": "P0.Fhalf.cos2",
+    "phase": "Phase0",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "max|F_1/2(chi) - cos^2 chi| over grid (exact, no t)"
+  },
+  {
+    "id": "P0.flat.L2_brute_vs_closed",
+    "phase": "Phase0",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 19.666666667333335,
+    "target": 19.666666667333335,
+    "error": 2.0252008096561627e-33,
+    "tol": 1e-30,
+    "note": "brute L''(1e-4) vs closed"
+  },
+  {
+    "id": "P0.flat.iso_value",
+    "phase": "Phase0",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 19.666666667333335,
+    "target": 19.666666666666668,
+    "error": 3.389830503093893e-11,
+    "tol": 1e-05,
+    "note": "L''(0+) -> 2/t-1/3 = 19.6667"
+  },
+  {
+    "id": "P1.Gpar.vs_closed",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 19.72406166096631,
+    "target": 19.72406166096631,
+    "error": 7.663842623105755e-31,
+    "tol": 1e-18,
+    "note": "G_par = L''"
+  },
+  {
+    "id": "P1.Gperp.vs_closed",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 25.849679334519646,
+    "target": 25.849679334519646,
+    "error": 5.5773859046770904e-30,
+    "tol": 1e-18,
+    "note": "G_perp = L' coth p"
+  },
+  {
+    "id": "P1.Gcross.vs_closed",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 19.686964714500668,
+    "target": 19.686964714500668,
+    "error": 5.760885897462517e-31,
+    "tol": 1e-18,
+    "note": "|G_cross| = L'"
+  },
+  {
+    "id": "P1.Teig.vs_closed",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      45.53664404902032,
+      6.162714620018979
+    ],
+    "target": [
+      45.53664404902032,
+      6.162714620018979
+    ],
+    "error": 2.4196653288276394e-30,
+    "tol": 1e-18,
+    "note": "transverse eigs L' e^{+-p}/sinh p"
+  },
+  {
+    "id": "P1.Gpar.anchor",
+    "phase": "Phase1",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 19.72406166096631,
+    "target": 19.724062,
+    "error": 1.718883714386986e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P1.Gperp.anchor",
+    "phase": "Phase1",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 25.849679334519646,
+    "target": 25.849679,
+    "error": 1.2940959418101533e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P1.Gcross.anchor",
+    "phase": "Phase1",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 19.686964714500668,
+    "target": 19.686965,
+    "error": 1.4501947420724126e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P1.Teig.anchor",
+    "phase": "Phase1",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      45.53664404902032,
+      6.162714620018979
+    ],
+    "target": [
+      45.536644,
+      6.162715
+    ],
+    "error": 6.165805522183201e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P1.long.zeta12",
+    "phase": "Phase1",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 1.7374148395344104,
+    "target": 1.7374148395344104,
+    "error": 0.0,
+    "tol": 1e-30,
+    "note": "cosh zeta_12 = cosh(p+beta/2)"
+  },
+  {
+    "id": "P1.trans.zeta12",
+    "phase": "Phase1",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 1.5604728657358846,
+    "target": 1.5604728657358846,
+    "error": 0.0,
+    "tol": 1e-30,
+    "note": "cosh zeta_12 = cosh p cosh(beta/2)"
+  },
+  {
+    "id": "P1.trans.zeta22",
+    "phase": "Phase1",
+    "tier": "T1",
+    "status": "PASS",
+    "computed": 1.6130416179787856,
+    "target": 1.6130416179787856,
+    "error": 0.0,
+    "tol": 1e-30,
+    "note": "cosh zeta_22 = cosh p cosh beta"
+  },
+  {
+    "id": "P1.zeros.offblock",
+    "phase": "Phase1",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "max off-block |G_ij| = 0.00e+00"
+  },
+  {
+    "id": "P1.Gperp.isotropy",
+    "phase": "Phase1",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 25.849679334519646,
+    "target": 25.849679334519646,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "G[dpx]=G[dpy] transverse momentum isotropy"
+  },
+  {
+    "id": "P2.B_th3b3.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.862030830483155,
+    "target": 9.862030830483155,
+    "error": 2.7550648847397363e-38,
+    "tol": 1e-18,
+    "note": "B_th3b3 = L''/2"
+  },
+  {
+    "id": "P2.B_perp.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 12.924839667259823,
+    "target": 12.924839667259823,
+    "error": 9.183549615799121e-40,
+    "tol": 1e-18,
+    "note": "B_perp = L'coth/2"
+  },
+  {
+    "id": "P2.B_th1th2.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": -9.843482357250334,
+    "target": -9.843482357250334,
+    "error": 1.8510382313502184e-31,
+    "tol": 1e-18,
+    "note": "B_th1th2 = -L'/2"
+  },
+  {
+    "id": "P2.B_b1b2.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": -9.843482357250334,
+    "target": -9.843482357250334,
+    "error": 1.851038216656539e-31,
+    "tol": 1e-18,
+    "note": "B_b1b2 = -L'/2"
+  },
+  {
+    "id": "P2.B_th3b3.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 9.862030830483155,
+    "target": 9.862031,
+    "error": 1.718883714386986e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P2.B_perp.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 12.924839667259823,
+    "target": 12.92484,
+    "error": 2.5744239506641808e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P2.B_th1th2.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -9.843482357250334,
+    "target": -9.843482,
+    "error": 3.629308555124924e-08,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P2.phat.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.9843482357250334,
+    "target": 0.984348,
+    "error": 2.394732690418614e-07,
+    "tol": 1e-05,
+    "note": "<p> = t/2 L'"
+  },
+  {
+    "id": "P2.loop.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -123.69684743711356,
+    "target": -123.696847,
+    "error": 3.5337486332945715e-09,
+    "tol": 1e-05,
+    "note": "loop phase -2pi L'"
+  },
+  {
+    "id": "P2.pfaff.vs_closed",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 691.8938057533461,
+    "target": 691.8938057533461,
+    "error": 1.869036017807437e-36,
+    "tol": 1e-18,
+    "note": "|Pf B| = L''L'^2/(8 sinh^2 p)"
+  },
+  {
+    "id": "P2.pfaff.vs_sqrtdetG",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 691.8938057533461,
+    "target": 691.8938057533461,
+    "error": 1.6229174283612243e-28,
+    "tol": 1e-18,
+    "note": "|Pf B| = (1/8) sqrt(det G)"
+  },
+  {
+    "id": "P2.pfaff.anchor",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 691.8938057533461,
+    "target": 691.895,
+    "error": 1.7260518631589407e-06,
+    "tol": 1e-05,
+    "note": ""
+  },
+  {
+    "id": "P2.B2way.25",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 9.862030830729562,
+    "target": 9.862030830483155,
+    "error": 2.4985467584400214e-11,
+    "tol": 1e-05,
+    "note": "|plaquette F_25| = |2 Im Q_25|"
+  },
+  {
+    "id": "P2.B2way.03",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 12.924839667259823,
+    "target": 12.924839667259823,
+    "error": 2.82070636744013e-18,
+    "tol": 1e-05,
+    "note": "|plaquette F_03| = |2 Im Q_03|"
+  },
+  {
+    "id": "P2.B2way.34",
+    "phase": "Phase2",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 9.843482357250334,
+    "target": 9.843482357250334,
+    "error": 7.393097877519976e-18,
+    "tol": 1e-05,
+    "note": "|plaquette F_34| = |2 Im Q_34|"
+  },
+  {
+    "id": "P2.kahler.numeric",
+    "phase": "Phase2",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 2.7886929532569e-30,
+    "target": 0.0,
+    "error": 2.7886929532569e-30,
+    "tol": 1e-18,
+    "note": "max|B - 1/2 J^T G| over 6x6"
+  },
+  {
+    "id": "P3.identity.1sinh_tanh_coth",
+    "phase": "Phase3",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "1/sinh p + tanh(p/2) - coth p = 0"
+  },
+  {
+    "id": "P3.Bphys.long",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.862030830483155,
+    "target": 9.862030830483155,
+    "error": 1.8367099231598242e-40,
+    "tol": 1e-18,
+    "note": "B^phys long = L''/2"
+  },
+  {
+    "id": "P3.Bphys.trans",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.843482357250334,
+    "target": 9.843482357250334,
+    "error": 1.0052630150079967e-31,
+    "tol": 1e-18,
+    "note": "B^phys trans = L'/(2p)"
+  },
+  {
+    "id": "P3.Bphys.hol",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.843482357250334,
+    "target": 9.843482357250334,
+    "error": 1.8510382240033787e-31,
+    "tol": 1e-18,
+    "note": "B^phys hol = L'/2"
+  },
+  {
+    "id": "P3.Bphys.lock",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 9.843482357250334,
+    "target": 9.843482357250334,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "L'/(2p) = <p>/(t p)"
+  },
+  {
+    "id": "P3.dpdp.zero_sweep",
+    "phase": "Phase3",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": 5.074279687985555e-30,
+    "target": 0.0,
+    "error": 5.074279687985555e-30,
+    "tol": 1e-16,
+    "note": "max|B^phys[dp,dp]| over p in [0.1,3]"
+  },
+  {
+    "id": "P3.lagrangian.flux_pairs",
+    "phase": "Phase3",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": 6.835788481628825e-33,
+    "target": 0.0,
+    "error": 6.835788481628825e-33,
+    "tol": 1e-16,
+    "note": "Xi_P1^T B^phys Xi_P2 = 0 (random flux pairs)"
+  },
+  {
+    "id": "P3.connector.coeff",
+    "phase": "Phase3",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 0.8509181282393216,
+    "target": 0.8509181282393216,
+    "error": 3.3055208994790327e-24,
+    "tol": 1e-18,
+    "note": "dp_perp/beta -> p/sinh p = 0.850918"
+  },
+  {
+    "id": "P3.connector.quadratic",
+    "phase": "Phase3",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "|explicit-formula| ~ beta^2.000 (adjudicates 8.506 vs 8.509)"
+  },
+  {
+    "id": "P3.D02.exact_vs_series",
+    "phase": "Phase3",
+    "tier": "T2",
+    "status": "LOG-FAIL",
+    "computed": 0.0008821568192311855,
+    "target": 0.0008821164021164021,
+    "error": 4.581834629355982e-05,
+    "tol": 1e-05,
+    "note": "D(0.2) exact vs 2-term series p^2/45-4p^4/945"
+  },
+  {
+    "id": "P4.wL.anchor",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      4.920673594207792,
+      19.72406166096631,
+      79.30408731935229
+    ],
+    "target": [
+      4.920674,
+      19.7240872,
+      79.3040872
+    ],
+    "error": 1.2948144788942928e-06,
+    "tol": 1e-05,
+    "note": "w_L = p^2 L''"
+  },
+  {
+    "id": "P4.wT.anchor",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      4.818062746495397,
+      18.195368337886336,
+      60.10910097403098
+    ],
+    "target": [
+      4.818064,
+      18.195368,
+      60.109108
+    ],
+    "error": 2.601676945223342e-07,
+    "tol": 1e-05,
+    "note": "w_T = 2 L' tanh(p/2)"
+  },
+  {
+    "id": "P4.wL.brute_vs_closed",
+    "phase": "Phase4",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      4.920673594207792,
+      19.72406166096631,
+      79.30408731935229
+    ],
+    "target": [
+      4.920673594207792,
+      19.72406166096631,
+      79.30408731935229
+    ],
+    "error": 5.597296027515087e-29,
+    "tol": 1e-18,
+    "note": "w_L via spin-sum L''"
+  },
+  {
+    "id": "P4.ratio.wT_wL",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.922496017840725,
+    "target": 0.922496,
+    "error": 1.9339623139146363e-08,
+    "tol": 1e-05,
+    "note": "w_T(1)/w_L(1)"
+  },
+  {
+    "id": "P4.R_shape",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 1.7567176639593103,
+    "target": 1.756718,
+    "error": 1.91288920467496e-07,
+    "tol": 1e-05,
+    "note": "S[q]/S[1] = 1.756718"
+  },
+  {
+    "id": "P4.R.Q4",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 2.02177858637554,
+    "target": 2.021779,
+    "error": 2.0458440807227057e-07,
+    "tol": 1e-05,
+    "note": "S[Q1]/S[1], Q=4"
+  },
+  {
+    "id": "P4.R.functional_lock",
+    "phase": "Phase4",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 2.02177858637554,
+    "target": 2.02177858637554,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "R(Q) same S[q] routine == sqrt(Q)L''(Q)/L''(1) [dictionary tripwire]"
+  },
+  {
+    "id": "P4.Rnat.Q4",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.2527223232969425,
+    "target": 0.2527223,
+    "error": 9.218396043406779e-08,
+    "tol": 1e-05,
+    "note": "fixed t: L''(4)/(4 L''(1)) = 0.25272 (a metric identity needs 1)"
+  },
+  {
+    "id": "P4.Radapt.Q4",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 1.0132147744884141,
+    "target": 1.0132148,
+    "error": 2.5178852303248663e-08,
+    "tol": 1e-05,
+    "note": "adapted t=t0/p: L''(4;t0/4)/(4 L''(1;t0)) = 1.0132 -> 1 + O(t0)"
+  },
+  {
+    "id": "P4.Radapt.limit",
+    "phase": "Phase4",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": 1.0000130326311525,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "adapted-t conformal ratio -> 1 as t0 -> 0 (t0=1e-4: 1.0000130)"
+  },
+  {
+    "id": "P4.aniso.witness",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 8.07663705668763,
+    "target": 8.0766371,
+    "error": 5.362673678750023e-09,
+    "tol": 1e-05,
+    "note": "adapted t, q=diag(1,1,4): max/min of G_kk/q_k = 8.0766 (-> 8 as t0->0; identity needs 1)"
+  },
+  {
+    "id": "P4.shear.triple",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      23.013431084381736,
+      78.30446931191732,
+      64.92716372052638
+    ],
+    "target": [
+      23.013432,
+      78.304476,
+      64.927172
+    ],
+    "error": 1.275193938977349e-07,
+    "tol": 1e-05,
+    "note": "W_ab = w_T(p_a) + w_T(p_b)"
+  },
+  {
+    "id": "P4.shear.maxmin",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 3.402555187221054,
+    "target": 3.402554,
+    "error": 3.489205620690623e-07,
+    "tol": 1e-05,
+    "note": "cross-plane violation max/min"
+  },
+  {
+    "id": "P4.rho",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      728.80794585035,
+      672.4465585340511,
+      469.4590419449899
+    ],
+    "target": [
+      728.807976,
+      672.446591,
+      469.459062
+    ],
+    "error": 4.828033826913221e-08,
+    "tol": 1e-05,
+    "note": "rho_i = 2[2 W_tot - w(p_i)] (absolute; convention-bound)"
+  },
+  {
+    "id": "P4.rho.mean",
+    "phase": "Phase4",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 623.5711821097971,
+    "target": 623.5711821097971,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "rho_bar = (10/3) W_tot"
+  },
+  {
+    "id": "P4.rho.ratio13",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 1.5524420252528655,
+    "target": 1.552442,
+    "error": 1.6266543627049947e-08,
+    "tol": 1e-05,
+    "note": "rho1/rho3 (convention-proof)"
+  },
+  {
+    "id": "P4.rho.spread",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.41590905953651747,
+    "target": 0.415909,
+    "error": 1.431479421893259e-07,
+    "tol": 1e-05,
+    "note": "spread (convention-proof)"
+  },
+  {
+    "id": "P4.rho.offdiag_zero",
+    "phase": "Phase4",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "gamma_ij = 0: <v^m v^n> = q^{mn}/3 diagonal on diagonal q"
+  },
+  {
+    "id": "P4.chiT.anchor",
+    "phase": "Phase4",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.38639351742455136,
+    "target": 0.3863935,
+    "error": 4.509535326663236e-08,
+    "tol": 1e-05,
+    "note": "chi_T(1) = p w'/(5w)"
+  },
+  {
+    "id": "P4.chiT.limits_2over5",
+    "phase": "Phase4",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "dln w/dln p -> 2 (chi_T->2/5) at p->0 (2.0000) AND p->inf (1.9980)"
+  },
+  {
+    "id": "P4.chiT.interior_dip",
+    "phase": "Phase4",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "interior dip min=0.3484 < chi_T(1)=0.3864, rises again by p=20 (new claim confirmed)"
+  },
+  {
+    "id": "P4.traceless.dWdh_zero",
+    "phase": "Phase4",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "dW_tot/dh = -p w'(p) * sum(dh_k) = 0 (traceless variation is stationary)"
+  },
+  {
+    "id": "P4.dict.unimodular",
+    "phase": "Phase4",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "q_k p_bar_k^2 = det q"
+  },
+  {
+    "id": "P4.dict.pbar_formula",
+    "phase": "Phase4",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "p_bar_k = sqrt(det q / q_k)"
+  },
+  {
+    "id": "P4.isotropy.q_delta",
+    "phase": "Phase4",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "q=delta -> p_bar isotropic -> weights equal (zero spread)"
+  },
+  {
+    "id": "P4.geomean.asymptotic",
+    "phase": "Phase4",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "sqrt(wLwT)t/(2sqrt2 p^1.5) -> 1 (p=200: 0.99987)"
+  },
+  {
+    "id": "P5.M.diag",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      60.0,
+      50.0,
+      30.0
+    ],
+    "target": [
+      60.0,
+      50.0,
+      30.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "M=diag(2(j_b+j_c))"
+  },
+  {
+    "id": "P5.M.exact",
+    "phase": "Phase5",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "M exact"
+  },
+  {
+    "id": "P5.shear.weights",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      53.333333333333336,
+      106.66666666666667,
+      64.0
+    ],
+    "target": [
+      53.333333333333336,
+      106.66666666666667,
+      64.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "16 j_a j_b/(j_a+j_b)"
+  },
+  {
+    "id": "P5.shear.unreduced",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      60.0,
+      120.0,
+      100.0
+    ],
+    "target": [
+      60.0,
+      120.0,
+      100.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "4(j_a+j_b)"
+  },
+  {
+    "id": "P5.shear.reduction",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      0.8888888888888888,
+      0.8888888888888888,
+      0.64
+    ],
+    "target": [
+      0.8888888888888888,
+      0.8888888888888888,
+      0.64
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "4 j_a j_b/(j_a+j_b)^2"
+  },
+  {
+    "id": "P5.shear.factorization",
+    "phase": "Phase5",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "shear = unreduced x reduction (exact)"
+  },
+  {
+    "id": "P5.reducedmass.null_and_shear",
+    "phase": "Phase5",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "closure-projected tilt QFIM eigs = {0 (rot null), 4 j_a j_b/(j_a+j_b)}"
+  },
+  {
+    "id": "P5.iso.weight",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 80.0,
+    "target": 80.0,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "8j=80"
+  },
+  {
+    "id": "P5.iso.eta2",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.0125,
+    "target": 0.0125,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "<eta^2>=1/80"
+  },
+  {
+    "id": "P5.iso.darboux",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -40.0,
+    "target": -40.0,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "Darboux B=-4j=-40"
+  },
+  {
+    "id": "P5.iso.dV_over_V",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -0.0375,
+    "target": -0.0375,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "<dV>/V=-3<eta^2>"
+  },
+  {
+    "id": "P5.iso.dV_shear",
+    "phase": "Phase5",
+    "tier": "T2",
+    "status": "LOG-FAIL",
+    "computed": 0.030618621784789725,
+    "target": 0.030619,
+    "error": 1.2352304460425636e-05,
+    "tol": 1e-05,
+    "note": "(dV/V)_shear=sqrt6/80"
+  },
+  {
+    "id": "P5.assembled.rank6",
+    "phase": "Phase5",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "rank(G_iota)=6"
+  },
+  {
+    "id": "P5.assembled.psd",
+    "phase": "Phase5",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "min eig >= -1e-30"
+  },
+  {
+    "id": "P5.assembled.rot_nulls",
+    "phase": "Phase5",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "3 rotation nulls"
+  },
+  {
+    "id": "P5.crossturn.lock",
+    "phase": "Phase5",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "w_T/2 / (2 p/t) = 0.99902 -> 1 (endpoint factor 2)"
+  },
+  {
+    "id": "P6.pair.diag",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 22.5,
+    "target": 22.5,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "pair QFIM diag = (2/t)/(1-rho^2)"
+  },
+  {
+    "id": "P6.pair.off",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -7.5,
+    "target": -7.5,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "pair QFIM off = -rho*diag"
+  },
+  {
+    "id": "P6.forced.dj",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      1.118033988749895,
+      2.23606797749979,
+      4.47213595499958
+    ],
+    "target": [
+      1.118034,
+      2.236068,
+      4.472136
+    ],
+    "error": 1.0062399848122161e-08,
+    "tol": 1e-05,
+    "note": "Delta j = sqrt(forced var)"
+  },
+  {
+    "id": "P6.diag.correlated",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      80.0,
+      20.0,
+      5.0
+    ],
+    "target": [
+      80.0,
+      20.0,
+      5.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "diagonal QFIM = (2/t) q"
+  },
+  {
+    "id": "P6.diag.product",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      20.0,
+      20.0,
+      20.0
+    ],
+    "target": [
+      20.0,
+      20.0,
+      20.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "product diagonal QFIM = 2/t"
+  },
+  {
+    "id": "P6.rhostar.chi",
+    "phase": "Phase6",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 0.3333333333333333,
+    "target": 0.3333333333333333,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "rho*(-1/4) = -chi/(1+chi) = 1/3"
+  },
+  {
+    "id": "P6.tripleMI",
+    "phase": "Phase6",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.15005229622516905,
+    "target": 0.150053,
+    "error": 4.690175011226865e-06,
+    "tol": 1e-05,
+    "note": "MI = -1/2 ln det C = 1/2 ln(27/20)"
+  },
+  {
+    "id": "P6.detC",
+    "phase": "Phase6",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 0.7407407407407407,
+    "target": 0.7407407407407407,
+    "error": 1.1479437019748901e-41,
+    "tol": 1e-18,
+    "note": "det C = (1-rho)^2(1+2rho)"
+  },
+  {
+    "id": "P6.conformal.dW_W",
+    "phase": "Phase6",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": -0.42857142857142855,
+    "target": -0.42857142857142855,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "Delta W / W = -3/7 (absolute W model-dependent -- ledger)"
+  },
+  {
+    "id": "P6.dewitt.exclusion",
+    "phase": "Phase6",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "chi=-1 excluded, chi=-1/4 allowed; interval (-1/2,1) [S3]"
+  },
+  {
+    "id": "P6.degeneracy.identical_qfim",
+    "phase": "Phase6",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "identical QFIM across realizations of the same rho"
+  },
+  {
+    "id": "P6.Bij.real_amplitude",
+    "phase": "Phase6",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Berry = 0 for real-amplitude Gaussian family [S6, Sage]"
+  },
+  {
+    "id": "P7.weights",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      53.333333333333336,
+      106.66666666666667,
+      64.0
+    ],
+    "target": [
+      53.333333333333336,
+      106.66666666666667,
+      64.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "shear weights 16 j_a j_b/(j_a+j_b)"
+  },
+  {
+    "id": "P7.signed_corrections",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      26.666666666666668,
+      -26.666666666666668,
+      16.0
+    ],
+    "target": [
+      26.666666666666668,
+      -26.666666666666668,
+      16.0
+    ],
+    "error": 3.6734198463196485e-40,
+    "tol": 1e-18,
+    "note": "80 - w = signed closure corrections"
+  },
+  {
+    "id": "P7.coherent.var_eta",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      0.01875,
+      0.009375,
+      0.015625
+    ],
+    "target": [
+      0.01875,
+      0.009375,
+      0.015625
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "coherent Var(eta)=1/w"
+  },
+  {
+    "id": "P7.coherent.var_p",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": [
+      13.333333333333334,
+      26.666666666666668,
+      16.0
+    ],
+    "target": [
+      13.333333333333334,
+      26.666666666666668,
+      16.0
+    ],
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "coherent Var(p_eta)=w/4"
+  },
+  {
+    "id": "P7.robertson.coherent",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      0.25,
+      0.25,
+      0.25
+    ],
+    "target": [
+      0.25,
+      0.25,
+      0.25
+    ],
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "Var(eta)Var(p_eta)=1/4 coherent, every plane"
+  },
+  {
+    "id": "P7.robertson.forced",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": 0.25,
+    "target": 0.25,
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "Var(eta)Var(p_eta)=1/4 forced"
+  },
+  {
+    "id": "P7.forced.var_eta",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.0125,
+    "target": 0.0125,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "forced Var(eta)=1/80"
+  },
+  {
+    "id": "P7.squeeze",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      1.5,
+      0.75,
+      1.25
+    ],
+    "target": [
+      1.5,
+      0.75,
+      1.25
+    ],
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "squeeze = required/coherent = 80/w"
+  },
+  {
+    "id": "P7.universal.cross_plane",
+    "phase": "Phase7",
+    "tier": "NUM",
+    "status": "PASS",
+    "computed": [
+      80.0,
+      80.0,
+      80.0
+    ],
+    "target": [
+      80.0,
+      80.0,
+      80.0
+    ],
+    "error": 0.0,
+    "tol": 1e-18,
+    "note": "iso: all shear planes = 8j = 80 (cross-plane equality)"
+  },
+  {
+    "id": "P7.parity.p_eta_zero",
+    "phase": "Phase7",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "<p_eta>=0 by parity (real family) [S6]"
+  },
+  {
+    "id": "P7.S7.total_variance",
+    "phase": "Phase7",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Var_total = E[Var] + Var[E] exact [S7, Sage]"
+  },
+  {
+    "id": "P7.conditional.lambda",
+    "phase": "Phase7",
+    "tier": "T2",
+    "status": "LOG-FAIL",
+    "computed": 0.028867513459481287,
+    "target": 0.028868,
+    "error": 1.6853973905770214e-05,
+    "tol": 1e-05,
+    "note": "lambda = 1/sqrt(kappa_12 M_1) = 1/sqrt(1200)"
+  },
+  {
+    "id": "P7.conditional.kappa12",
+    "phase": "Phase7",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "kappa_12 = 4 j_1 = 20 audit"
+  },
+  {
+    "id": "S1.kahler.structural",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "B - 1/2 J^T G = 0 for arbitrary (L',L'',coth) [Sage+numeric, max 0.0e+00]"
+  },
+  {
+    "id": "S2.nogo.separable",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "mixed d2: sum=0.0e+00 (0), product=0.500 (nonzero) => no w"
+  },
+  {
+    "id": "S3.dewitt.interval",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "K=I+chi(J-1) PSD <=> chi in (-1/2,1); chi=-1 excluded [Sage]"
+  },
+  {
+    "id": "S3b.dewitt.mobius",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "R(chi)^-1=(1-chi)^-1[I-lam J], lam_eff=chi/(1+2chi); lam=1<=>chi=-1 (DeWitt conformal), ratio=-2 same; window chi in(-1/2,1)<->lam in(-inf,1/3), chi=1<->lam=1/3 degeneracy [Sage+numeric]"
+  },
+  {
+    "id": "S6.berry.real_amplitude",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "<Psi|dPsi>=0 for real normalized families [Sage+numeric]"
+  },
+  {
+    "id": "S7.total_variance",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Var_total = E[Var] + Var[E] exact [Sage+numeric]"
+  },
+  {
+    "id": "S4a.wick_identity",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Gaussian d_i d_k f d_j d_l f integral = 3-term q-contraction (resid 0.0e+00) [Sage+quad]"
+  },
+  {
+    "id": "S4b.rho_additive",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "sum rho = 10 W_tot; rho_i-rho_j = 2[w(p_j)-w(p_i)] -- additive under q_a p_a^2=1, no C sqrt(prod) [S2]"
+  },
+  {
+    "id": "S4c.equal_footing",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "L''=w_L/p^2 and G^phys_perp=w_T/p^2: both channels enter displacement cost as weight/p^2"
+  },
+  {
+    "id": "S8a.T1.small_t",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "SymPy: Poisson n=0 term -> Z1/Z0 = 3/(2t)-1/4, G = 2/t-1/3; exact j in N/2 sums at t=0.1 agree to 0e+00 (working precision; true remainder ~e^-395)"
+  },
+  {
+    "id": "S8b.remark1.S3_curvature",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "Casimir j(j+1) <=> S^3 radius 2, R=3/2: e^{t/4}=e^{tR/6} (Minakshisundaram-Pleijel a_1), -1/3 = -(2/9)R exactly (normalization-dependent, not heuristic) [SymPy]"
+  },
+  {
+    "id": "S8c.boost.kahler_potential",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "L' = dK/dzeta, L'' = d2K/dzeta2 for K = ln(zeta/sinh zeta) + zeta^2/t (exact up to the dropped windings O(e^{-4pi^2/t})) [SymPy]"
+  },
+  {
+    "id": "S8d.boost.psd",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": 3.581432333411868e-05,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "2x2 cross blocks have eigenvalues L'(coth -+ 1); min over zeta in (0,8] at t=0.1 of {L'(coth-1), L''} = 3.581e-05 > 0 -> 6x6 block PSD [SymPy+grid]"
+  },
+  {
+    "id": "S9.edge_additive.obstruction",
+    "phase": "Proofs",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "single-flux w(p_bar_k) = q_k: conformal orbit forces w(p)=p, q=diag(1,1,lam) forces w(sqrt lam)=1 -> consistent only at lam=1 (isotropic orbit) [SymPy]"
+  },
+  {
+    "id": "Cap.recon.t01_envelope",
+    "phase": "Capstone",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "G_kk/c within O(t/p^2) envelope at t=0.1 (absolute smallness proves nothing here)"
+  },
+  {
+    "id": "Cap.intercept.ch0",
+    "phase": "Capstone",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 3.0161620394376184e-06,
+    "target": 0.0,
+    "error": 3.0161620394376184e-06,
+    "tol": 1e-05,
+    "note": "r_inf channel k=0 (p_bar=0.5); PASS iff |r_inf|<0.5%"
+  },
+  {
+    "id": "Cap.intercept.ch1",
+    "phase": "Capstone",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-05,
+    "note": "r_inf channel k=1 (p_bar=1.0); PASS iff |r_inf|<0.5%"
+  },
+  {
+    "id": "Cap.intercept.ch2",
+    "phase": "Capstone",
+    "tier": "T2",
+    "status": "LOG-PASS",
+    "computed": -7.434096709877756e-06,
+    "target": 0.0,
+    "error": 7.434096709877756e-06,
+    "tol": 1e-05,
+    "note": "r_inf channel k=2 (p_bar=2.0); PASS iff |r_inf|<0.5%"
+  },
+  {
+    "id": "Cap.decisive.pass",
+    "phase": "Capstone",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-33,
+    "note": "PASS iff every |r_k^inf| < 0.5% (falsification-grade)"
+  },
+  {
+    "id": "Cap.offdiag.zero",
+    "phase": "Capstone",
+    "tier": "Z",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": 0.0,
+    "error": 0.0,
+    "tol": 1e-33,
+    "note": "q_ab=0 -> reconstructed off-diagonals vanish (independent edges)"
+  },
+  {
+    "id": "Cap.Bij.on_class",
+    "phase": "Capstone",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": 1.5093082837057318e-30,
+    "target": 0.0,
+    "error": 1.5093082837057318e-30,
+    "tol": 1e-16,
+    "note": "max|B^phys[dp,dp]| on the flux class = 0 (Lagrangian holds; no twist-branch anomaly)"
+  },
+  {
+    "id": "Cap.covariance.rotated",
+    "phase": "Capstone",
+    "tier": "Znum",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 1e-16,
+    "note": "pi/6 frame rotation preserves trace & det (metric eigenvalues invariant)"
+  },
+  {
+    "id": "Cap.chi.degeneracy",
+    "phase": "Capstone",
+    "tier": "T0",
+    "status": "PASS",
+    "computed": null,
+    "target": null,
+    "error": null,
+    "tol": 0.0,
+    "note": "chi=0 and chi=-1/4 realizations give identical G (Phase 6 degeneracy)"
+  },
+  {
+    "id": "PhaseDM.vac.var_t0",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 2.352589325555335,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var(A)_vac at t=0.1; t*Var=0.2353 (-> 1/4)"
+  },
+  {
+    "id": "PhaseDM.soft.ratio_t0",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.2585009333512034,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var_soft/Var_vac at t=0.1 (peak shifted +1 gap)"
+  },
+  {
+    "id": "PhaseDM.hard.ratio_t0",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.36700969008913437,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var_hard/Var_vac at t=0.1 (fixed j-band W=3)"
+  },
+  {
+    "id": "PhaseDM.vac.var_t1",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 11.410404682057669,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var(A)_vac at t=0.02; t*Var=0.2282 (-> 1/4)"
+  },
+  {
+    "id": "PhaseDM.soft.ratio_t1",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.1354946397615362,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var_soft/Var_vac at t=0.02 (peak shifted +1 gap)"
+  },
+  {
+    "id": "PhaseDM.hard.ratio_t1",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.08542009520519729,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var_hard/Var_vac at t=0.02 (fixed j-band W=3)"
+  },
+  {
+    "id": "PhaseDM.vac.var_t2",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 56.75937057627569,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var(A)_vac at t=0.004; t*Var=0.2270 (-> 1/4)"
+  },
+  {
+    "id": "PhaseDM.soft.ratio_t2",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.06310331714824,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var_soft/Var_vac at t=0.004 (peak shifted +1 gap)"
+  },
+  {
+    "id": "PhaseDM.hard.ratio_t2",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.017530843735115424,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var_hard/Var_vac at t=0.004 (fixed j-band W=3)"
+  },
+  {
+    "id": "PhaseDM.soft.plateau",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.0748742764295178,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "soft fit a+bt: a=1.0749, b=1.8748; plateau => variance-preserving"
+  },
+  {
+    "id": "PhaseDM.hard.collapse",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.007790613675903963,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "hard fit a+bt: a=0.0078, b=3.6015; a~0 => ratio ~ b t (floor)"
+  },
+  {
+    "id": "PhaseDM.branch",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "SOFT: realistic (variance-preserving) pinning -> ratio plateaus -> gamma_0-free M_DM/M_b ~ kappa/(4 ln2) ~ 0.4; the fixed-j-projection (HARD) branch that would restore 1/gamma_0 is CLOSED by suscept + continuum records below."
+  },
+  {
+    "id": "PhaseDM.suscept.expfamily",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "d<A>/dlambda / Var(A) = 1.000000000 at t=0.1; diagonal (area) coupling => source-Fisher = Var(A), so pinning lowers the strain -- hard 1/Var is wrong-Fisher"
+  },
+  {
+    "id": "PhaseDM.hard.continuum",
+    "phase": "PhaseDM",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": -1.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "soft~g0^0 (finite), screen~g0^+1 (->0), hard~g0^-1 (->INF as a_1->0): hard alone diverges in the continuum limit => unphysical. Hard branch CLOSED (not future work)."
+  },
+  {
+    "id": "PhaseLS.anchor.singlet",
+    "phase": "PhaseLS",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 78.95683520871445,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "singlet norm*(2j+1) const across j: [78.95683521, 78.95683521, 78.95683521]"
+  },
+  {
+    "id": "PhaseLS.G.5_5",
+    "phase": "PhaseLS",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 10.854240499291734,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "G_theta numeric (j_a=5, j_b=5)"
+  },
+  {
+    "id": "PhaseLS.G.10_10",
+    "phase": "PhaseLS",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 20.795137502638283,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "G_theta numeric (j_a=10, j_b=10)"
+  },
+  {
+    "id": "PhaseLS.G.20_20",
+    "phase": "PhaseLS",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 40.77125086787703,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "G_theta numeric (j_a=20, j_b=20)"
+  },
+  {
+    "id": "PhaseLS.G.10_20",
+    "phase": "PhaseLS",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 27.477745323523095,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "G_theta numeric (j_a=10, j_b=20)"
+  },
+  {
+    "id": "PhaseLS.scaling.linear",
+    "phase": "PhaseLS",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.9158537627754992,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "symmetric ratios (expect 2,2): [1.9159, 1.9606]"
+  },
+  {
+    "id": "PhaseLS.converge.asym",
+    "phase": "PhaseLS",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.325661460941456,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "G(j,2j)/G(j,j) -> 4/3=1.3333: [(5, 1.3068), (10, 1.3214), (20, 1.3257)]"
+  },
+  {
+    "id": "PhaseLS.discriminator",
+    "phase": "PhaseLS",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.3213543464205029,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "G(10,20)/G(10,10)=1.3214; harmonic=1.3333 geometric=1.4142 sum=1.5000 -> harmonic"
+  },
+  {
+    "id": "PhaseP8.probe.varJ",
+    "phase": "PhaseP8",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.49966666666666665,
+    "target": 0.5,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var(J)=G_theta/4 -> 1/(2t) [G=4Var]; t*Var(J)=1/2 - t/12 -> 1/2: [0.491667, 0.498333, 0.499667] at t=[0.1, 0.02, 0.004]"
+  },
+  {
+    "id": "PhaseP8.probe.saturate",
+    "phase": "PhaseP8",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.0,
+    "target": 1.0,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Var(x_hat).G_xx=1 for all (t,a): canonical probe saturates Cramer-Rao; edge scale a cancels"
+  },
+  {
+    "id": "PhaseP8.coeff.menu",
+    "phase": "PhaseP8",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 3.4431855483344136,
+    "target": 3.4431855483344136,
+    "error": null,
+    "tol": 1e-05,
+    "note": "c/lP^2 = n.pi.gamma0 (LOGGED, not selected): n=2->1.7216 n=3->2.5824 n=4->3.4432; headline 4pi.gamma0=3.4432 = 1/2 Delta1/lP^2 = sigma0^2(portal=6.8864)/2 (the 3.44 gauge factor). closure/Gauss->n=2, portal Berry->n=4."
+  },
+  {
+    "id": "PhaseP8.refine.invar",
+    "phase": "PhaseP8",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 6.889,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "t.a^2=Delta_1 invariant under a->a/lam, t->lam^2 t (RG fixed line): t.a^2=6.8890"
+  },
+  {
+    "id": "PhasePage.finite_dim",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "H2(i) monochromatic matching: ln D = A/4 at gamma0=0.1274 (j=1/2); NOT a gamma0-free identity -- see gp_* records for the ensemble route"
+  },
+  {
+    "id": "PhasePage.peak_half",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.9927865247955552,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "unconstrained registers: peak S_rad=68.815 vs ln m=69.315; deficit=0.500 nat = Page's 1/2 (the SU(2) centre adds centre_deficit)"
+  },
+  {
+    "id": "PhasePage.returns",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "S_rad(N)=0 -> pure state recovered -> information preserved (unitary)"
+  },
+  {
+    "id": "PhasePage.qes_cross",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "at area-frac 0.500 the branches of min(C_emit, C_rem) cross (0.500=0.500); no extremization is performed"
+  },
+  {
+    "id": "PhasePage.gamma_indep",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "capacity-fraction shape spread over gamma0 = 0.0e+00 (manifest for fixed spin profile; area-fraction version = gp_page_gamma)"
+  },
+  {
+    "id": "PhasePage.gp_area_law",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.27406685823283,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "GP identity S/N=A/(4N)+sigma exact (max res 1.7e-40); universal 1/4 coefficient all gamma; sigma=0 at gamma*=0.274067 = Ghosh-Mitra/ENP state-counting value (zero chemical potential, per Ghosh-Perez)"
+  },
+  {
+    "id": "PhasePage.gp_page_gamma",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.002096979072215066,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "GP-sampled spins, exchangeable order: peak area-frac ['0.502', '0.501', '0.502'] for gamma in (0.2,0.274,0.5): half-area to O(N^-1/2), every gamma (LLN)"
+  },
+  {
+    "id": "PhasePage.gp_order",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.06741647663325939,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Page-point area fraction (random/composition/small-first/large-first): gamma=0.200: 0.502/0.499/0.433/0.567; gamma=0.274: 0.501/0.503/0.458/0.542; gamma=0.500: 0.502/0.499/0.487/0.513"
+  },
+  {
+    "id": "PhasePage.gp_capacity_split",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.41870372098129693,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "at gamma*: <a>/4=2.5146 = <ln d> 1.0529 + H(label) 1.4617; one fixed configuration holds 41.9% of A/4 -> route (ii) needs the direct sum over configurations"
+  },
+  {
+    "id": "PhasePage.closure_log",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": -1.4954601239814074,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "ln Catalan(N/2) = N ln2 + c1 ln N + c0: fitted c1=-1.495 (Kaul-Majumdar -3/2 closure log); dim Inv((C^2)^14)=C_7=429, ln=6.06 vs 14ln2=9.70"
+  },
+  {
+    "id": "PhasePage.singlet_page_exact",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 4.106832719821664,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "exact Haar-singlet S(R_k), n=14, k=1..7: 0.6931 1.3767 2.0479 2.7004 3.3166 3.8432 4.1068; Monte Carlo (400 draws) k=7: 4.1057 +/- 0.0019"
+  },
+  {
+    "id": "PhasePage.centre_deficit",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.28907027008477826,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "midpoint deficit below ln m - 1/2 (n=14/60/240/960): 0.2452/0.2794/0.2871/0.2891; below ln m: 0.7452/0.7794/0.7871/0.7891 -- the closure log does not enter the height"
+  },
+  {
+    "id": "PhasePage.centre_area_split",
+    "phase": "PhasePage",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.25574521322427496,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "S_mid - ln D_tot/2 = -0.256 sqrt(N) + 0.96 ln N + -0.19 (N=32..512, n1=N/4, max res 2.7e-03); n1=N/2: -0.080 sqrt(N) + 1.03 ln N + -0.33 (max res 2.9e-03); predicted alpha 0.260 / 0.081 from area-split fluctuations; exact dims True"
+  },
+  {
+    "id": "PhaseScramble.calib.gue",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5928733714184096,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "synthetic-GUE r~=0.593 (expect .600); antisym-class ref 0.600"
+  },
+  {
+    "id": "PhaseScramble.tetra",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 2.632148025904985,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "4-valent quantum-tetrahedron volume = 2.632 (operator-build cross-check)"
+  },
+  {
+    "id": "PhaseScramble.chaotic",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.602482641360858,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "distinct n=6 D_int=49, default embedding: r~=0.602 >> Poisson .386 (level repulsion); embedding ensembles: volume.* records"
+  },
+  {
+    "id": "PhaseScramble.eigvec_pt",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 2.289757440710492,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "IPR*D_int=2.29 in the recoupling basis (Porter-Thomas 2, GOE 3): delocalized, not exactly Porter-Thomas"
+  },
+  {
+    "id": "PhaseScramble.sector",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.3397680175857446,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "monochromatic fixed-sign r~=0.340, below Poisson .386 (unresolved S_n sectors): the sector pitfall is real and detected"
+  },
+  {
+    "id": "PhaseScramble.page_scramble_n14",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 4.112557809361448,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "n=14 dimer under e^(-iHt): late-time MEAN S_A=4.1126 +/- 0.0251 (temporal std, 21 samples; max over t 4.152) vs exact Haar-singlet 4.1068 (Haar std 0.0371, 2000 draws)"
+  },
+  {
+    "id": "PhaseScramble.phys_chaotic",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5771931845478991,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "physical H random-Heisenberg singlet-sector r~=0.577 (GOE .531); D_int=132"
+  },
+  {
+    "id": "PhaseScramble.page_scramble",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.9986644860583055,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "dimer S_A -> 1.00 x Page value under e^(-iHt): evaporation scrambles to typicality (n=12; n=14 ratio 1.00)"
+  },
+  {
+    "id": "PhaseScramble.page_curve",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.913718794244574,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "U(1) collision model (XX): S_rad 0 -> peak 1.91 (step 26) -> 0.04; flip-flop, radiation carries the M"
+  },
+  {
+    "id": "PhaseScramble.page_curve_su2",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.9157484320132996,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "U(1) occupation-encoded collision model, Heisenberg coupling J.sigma with |down> fresh modes: peak 1.9157 (step 27) -> 0.0457, turnover 97.6% (matches XX)"
+  },
+  {
+    "id": "PhaseScramble.page_curve_singlet",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.9962109242385624,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "singlet emission n=14 (D_int=429), tau=3, 4 draws: S(R_k), k=1..7 = 0.693 1.351 2.019 2.664 3.283 3.814 4.091; exact Haar-singlet 0.6931 1.3767 2.0479 2.7004 3.3166 3.8432 4.1068; max rel. dev. 0.019 at k=2; S(R_8)=3.834; control tau=0: ratio 0.169 (ln2 sawtooth)"
+  },
+  {
+    "id": "PhaseScramble.page_curve_singlet_tau",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.00755906361724589,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "8 draws, S(R_7) +/- SE | max rel. dev. | max rel. dev. k<=4 (exact Haar S(R_7)=4.1068): tau=3: 4.0764+/-0.0200 | 0.0093 | 0.0093; tau=10: 4.0758+/-0.0095 | 0.0076 | 0.0021; tau=3 x3 fresh quenches: 4.0980+/-0.0100 | 0.0045 | 0.0014 -- early cuts converge with tau; the residual mid-curve deficit of single-H scrambling is removed by fresh quenches (energy envelope)"
+  },
+  {
+    "id": "PhaseScramble.singlet_invariance",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 6.623827560072178e-16,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "max <J_tot^2> over all emission steps and seeds: the singlet model is exactly SU(2)-invariant"
+  },
+  {
+    "id": "PhaseScramble.volume.D49.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.6024826413608694,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.0, 2.5, 3.0, 4.0] default embedding (-1)^(p+q+r): r~=0.6025, block-bootstrap SE 0.0380 (iid SEM 0.0448); matched-D beta=2 ref 0.5982"
+  },
+  {
+    "id": "PhaseScramble.volume.D49.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5475086329196337,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 42 r~=0.5475+/-0.0109 (SEM), all r~=0.5218+/-0.0100; degenerate (extra zero modes) 22; PT-KS generic 0.0754 (recoupling basis); matched reference 0.5982+/-0.0044 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D49.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5580138859404569,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 6: bulk-window (ranks 20-90%) generic r~=0.5580+/-0.0123 (ref 0.5992); KS vs ref p=8.5e-04 (bulk 1.1e-02); Levene p=0.61, spread ratio 1.13; small-s beta 1.04+/-0.19 vs ref 1.91+/-0.16; Spearman(r~, min|det|) -0.24 (p=0.13)"
+  },
+  {
+    "id": "PhaseScramble.volume.D75.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5422123209287932,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 2.0, 2.5, 3.0, 3.5, 4.0] default embedding (-1)^(p+q+r): r~=0.5422, block-bootstrap SE 0.0411 (iid SEM 0.0354); matched-D beta=2 ref 0.5990"
+  },
+  {
+    "id": "PhaseScramble.volume.D75.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5222411416697416,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 37 r~=0.5222+/-0.0112 (SEM), all r~=0.4874+/-0.0115; degenerate (extra zero modes) 27; PT-KS generic 0.0850 (recoupling basis); matched reference 0.5990+/-0.0033 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D75.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5202742324754128,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 6: bulk-window (ranks 20-90%) generic r~=0.5203+/-0.0134 (ref 0.5989); KS vs ref p=3.4e-11 (bulk 2.7e-09); Levene p=0.0016, spread ratio 1.44; small-s beta 0.74+/-0.13 vs ref 1.76+/-0.11; Spearman(r~, min|det|) -0.16 (p=0.34)"
+  },
+  {
+    "id": "PhaseScramble.volume.D95.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5447857095280396,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.5, 2.0, 2.5, 3.0, 3.5, 4.5] default embedding (-1)^(p+q+r): r~=0.5448, block-bootstrap SE 0.0444 (iid SEM 0.0368); matched-D beta=2 ref 0.5986"
+  },
+  {
+    "id": "PhaseScramble.volume.D95.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5509627619140299,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 44 r~=0.5510+/-0.0082 (SEM), all r~=0.5139+/-0.0101; degenerate (extra zero modes) 20; PT-KS generic 0.0792 (recoupling basis); matched reference 0.5986+/-0.0029 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D95.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.556341206140086,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 6: bulk-window (ranks 20-90%) generic r~=0.5563+/-0.0093 (ref 0.5996); KS vs ref p=3.2e-07 (bulk 1.0e-05); Levene p=0.0037, spread ratio 1.32; small-s beta 1.12+/-0.13 vs ref 1.72+/-0.10; Spearman(r~, min|det|) -0.13 (p=0.4)"
+  },
+  {
+    "id": "PhaseScramble.volume.D276.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.617243614031521,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.5] default embedding (-1)^(p+q+r): r~=0.6172, block-bootstrap SE 0.0216 (iid SEM 0.0192); matched-D beta=2 ref 0.5970"
+  },
+  {
+    "id": "PhaseScramble.volume.D276.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5764619183511316,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 56 r~=0.5765+/-0.0041 (SEM), all r~=0.5572+/-0.0080; degenerate (extra zero modes) 8; PT-KS generic 0.0622 (recoupling basis); matched reference 0.5970+/-0.0018 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D276.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5791219456451595,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5791+/-0.0047 (ref 0.5986); KS vs ref p=3.5e-05 (bulk 2.4e-03); Levene p=0.048, spread ratio 1.22; small-s beta 1.48+/-0.09 vs ref 1.74+/-0.06; Spearman(r~, min|det|) +0.06 (p=0.68)"
+  },
+  {
+    "id": "PhaseScramble.volume.D231.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5529790792067154,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [0.5, 1.5, 2.0, 3.0, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5530, block-bootstrap SE 0.0278 (iid SEM 0.0237); matched-D beta=2 ref 0.5972"
+  },
+  {
+    "id": "PhaseScramble.volume.D231.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5602358593155173,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 56 r~=0.5602+/-0.0057 (SEM), all r~=0.5470+/-0.0074; degenerate (extra zero modes) 8; PT-KS generic 0.0773 (recoupling basis); matched reference 0.5972+/-0.0020 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D231.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5625508921723055,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5626+/-0.0063 (ref 0.5966); KS vs ref p=1.1e-09 (bulk 6.5e-07); Levene p=0.059, spread ratio 1.49; small-s beta 1.09+/-0.08 vs ref 1.72+/-0.06; Spearman(r~, min|det|) +0.31 (p=0.02)"
+  },
+  {
+    "id": "PhaseScramble.volume.D306.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5916212367127823,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.0, 2.5, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5916, block-bootstrap SE 0.0244 (iid SEM 0.0205); matched-D beta=2 ref 0.5964"
+  },
+  {
+    "id": "PhaseScramble.volume.D306.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5747722275551489,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 55 r~=0.5748+/-0.0035 (SEM), all r~=0.5542+/-0.0076; degenerate (extra zero modes) 9; PT-KS generic 0.0699 (recoupling basis); matched reference 0.5964+/-0.0018 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D306.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5779744636296482,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5780+/-0.0038 (ref 0.5966); KS vs ref p=6.9e-07 (bulk 3.4e-04); Levene p=0.25, spread ratio 1.03; small-s beta 1.28+/-0.08 vs ref 1.67+/-0.05; Spearman(r~, min|det|) +0.21 (p=0.12)"
+  },
+  {
+    "id": "PhaseScramble.volume.D336.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5732490040677122,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.0, 3.0, 3.5, 4.0, 5.0] default embedding (-1)^(p+q+r): r~=0.5732, block-bootstrap SE 0.0222 (iid SEM 0.0184); matched-D beta=2 ref 0.5972"
+  },
+  {
+    "id": "PhaseScramble.volume.D336.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5765952642121024,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 55 r~=0.5766+/-0.0042 (SEM), all r~=0.5589+/-0.0073; degenerate (extra zero modes) 9; PT-KS generic 0.0691 (recoupling basis); matched reference 0.5972+/-0.0016 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D336.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5781633026611342,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5782+/-0.0050 (ref 0.5980); KS vs ref p=7.6e-05 (bulk 7.0e-04); Levene p=0.0038, spread ratio 1.41; small-s beta 1.41+/-0.08 vs ref 1.75+/-0.05; Spearman(r~, min|det|) +0.36 (p=0.0071)"
+  },
+  {
+    "id": "PhaseScramble.volume.D391.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5706825197415903,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [1.0, 1.5, 2.5, 3.0, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5707, block-bootstrap SE 0.0208 (iid SEM 0.0177); matched-D beta=2 ref 0.5975"
+  },
+  {
+    "id": "PhaseScramble.volume.D391.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5781602857413051,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 56 r~=0.5782+/-0.0046 (SEM), all r~=0.5627+/-0.0073; degenerate (extra zero modes) 8; PT-KS generic 0.0632 (recoupling basis); matched reference 0.5975+/-0.0015 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D391.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5840749768995754,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 7: bulk-window (ranks 20-90%) generic r~=0.5841+/-0.0048 (ref 0.5976); KS vs ref p=1.0e-05 (bulk 3.2e-02); Levene p=0.13, spread ratio 1.61; small-s beta 1.46+/-0.07 vs ref 1.73+/-0.05; Spearman(r~, min|det|) +0.17 (p=0.21)"
+  },
+  {
+    "id": "PhaseScramble.volume.D553.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5997350979742643,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0] default embedding (-1)^(p+q+r): r~=0.5997, block-bootstrap SE 0.0137 (iid SEM 0.0134); matched-D beta=2 ref 0.5997"
+  },
+  {
+    "id": "PhaseScramble.volume.D553.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5858202907679483,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 62 r~=0.5858+/-0.0038 (SEM), all r~=0.5795+/-0.0058; degenerate (extra zero modes) 2; PT-KS generic 0.0507 (recoupling basis); matched reference 0.5997+/-0.0013 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D553.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5910639131968847,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 8: bulk-window (ranks 20-90%) generic r~=0.5911+/-0.0042 (ref 0.6008); KS vs ref p=5.4e-03 (bulk 9.4e-02); Levene p=0.0044, spread ratio 1.65; small-s beta 1.54+/-0.06 vs ref 1.75+/-0.04; Spearman(r~, min|det|) -0.11 (p=0.39)"
+  },
+  {
+    "id": "PhaseScramble.volume.D673.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.591585010597154,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [0.5, 1.0, 1.5, 2.0, 3.0, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5916, block-bootstrap SE 0.0148 (iid SEM 0.0129); matched-D beta=2 ref 0.5995"
+  },
+  {
+    "id": "PhaseScramble.volume.D673.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.583936254344014,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 62 r~=0.5839+/-0.0036 (SEM), all r~=0.5780+/-0.0055; degenerate (extra zero modes) 2; PT-KS generic 0.0566 (recoupling basis); matched reference 0.5995+/-0.0012 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D673.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5871486433426919,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 8: bulk-window (ranks 20-90%) generic r~=0.5871+/-0.0041 (ref 0.5992); KS vs ref p=1.7e-05 (bulk 4.9e-04); Levene p=0.13, spread ratio 1.73; small-s beta 1.55+/-0.06 vs ref 1.78+/-0.04; Spearman(r~, min|det|) -0.05 (p=0.68)"
+  },
+  {
+    "id": "PhaseScramble.volume.D937.default",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5903544757677834,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "spins [0.5, 1.0, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5] default embedding (-1)^(p+q+r): r~=0.5904, block-bootstrap SE 0.0127 (iid SEM 0.0106); matched-D beta=2 ref 0.6010"
+  },
+  {
+    "id": "PhaseScramble.volume.D937.embeddings",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5820811951202998,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "64 realizable embeddings: generic 63 r~=0.5821+/-0.0044 (SEM), all r~=0.5788+/-0.0054; degenerate (extra zero modes) 1; PT-KS generic 0.0515 (recoupling basis); matched reference 0.6010+/-0.0010 (SEM of 200 draws, r~ on V)"
+  },
+  {
+    "id": "PhaseScramble.volume.D937.stats",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5886556311793865,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "valence 8: bulk-window (ranks 20-90%) generic r~=0.5887+/-0.0044 (ref 0.6003); KS vs ref p=6.9e-06 (bulk 3.2e-02); Levene p=0.057, spread ratio 2.53; small-s beta 1.43+/-0.05 vs ref 1.75+/-0.03; Spearman(r~, min|det|) +0.07 (p=0.57)"
+  },
+  {
+    "id": "PhaseScramble.volume.valence_trend",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5840996500913568,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "inverse-variance mean generic r~ by valence: 6: 0.5427+/-0.0056 (3 nodes); 7: 0.5745+/-0.0019 (5 nodes); 8: 0.5841+/-0.0023 (3 nodes) (GOE 0.5307, matched beta=2 reference ~0.598)"
+  },
+  {
+    "id": "PhaseScramble.volume.beta_calibration",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.8957334534319705,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "small-s estimator beta_mle on the same pipeline: GOE (beta=1) gives 0.85+/-0.05 at D=95, 0.90+/-0.02 at D=553; matched beta=2 reference 1.67-1.91; volume operator by valence 6: 0.74-1.12; 7: 1.09-1.48; 8: 1.43-1.55"
+  },
+  {
+    "id": "PhaseScramble.rbar_sem",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.602482641360858,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "volume r~ = 0.602 +/- 0.045 (D_int=49; antisym beta=2 ref 0.594) -- error bars per referee"
+  },
+  {
+    "id": "PhaseScramble.pt_ks",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.0378803758631574,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "KS(y=D|c|^2, e^-y) = 0.038 over 1176 components in the Clebsch-Gordan recoupling basis (an arbitrary singlet basis would make this test nearly trivial)"
+  },
+  {
+    "id": "PhaseScramble.j0_block",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.9984014443252818e-15,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "max |J^2 P| = 2.0e-15 and max |P^T P - 1| = 4.4e-16 on the Clebsch-Gordan recoupling basis: diagonalization is inside total-J=0"
+  },
+  {
+    "id": "PhaseScramble.phys_rbar_sem",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.534482940530723,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "puncture H r~ = 0.5345 +/- 0.0099 pooled over 5 seeds (GOE 0.5307)"
+  },
+  {
+    "id": "PhaseScramble.phys_rbar_n14_bootstrap",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.5584900256911375,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "puncture H n=14 (seed 7): r~=0.5585, block-bootstrap SE 0.0135 (iid 0.0118, lag-1 +0.152); +2.1 sigma from GOE 0.5307"
+  },
+  {
+    "id": "PhaseScramble.phys_rbar_n12_seeds",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.534482940530723,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "puncture H n=12: r~=0.5345 +/- 0.0069 (across-seed SEM, 5 independent K_ab draws)"
+  },
+  {
+    "id": "PhaseScramble.local_page",
+    "phase": "PhaseScramble",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.6703482945326432,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "unit-bandwidth: all-to-all S_sat=1.00xPage (t90=1.8); ring-local 0.67xPage (t90=3.0) -- locality slows AND weakens scrambling; the Page-value saturation uses generic all-to-all couplings (stated in text)"
+  },
+  {
+    "id": "PhaseThiemann.volume_gr",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 0.43301270189221924,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "4-valent j=1/2 grasp eigenvalue 0.433013 = sqrt(3)/4 (Gaul-Rovelli Eq.62 x1/2); AL volume exact; D_int=2"
+  },
+  {
+    "id": "PhaseThiemann.orient_sign",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 5.854827030937197e-32,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "all-+ 4-triple sum = 0 identically; orientation sign eps(IJK) essential (GR Eq.53 / the pitfall)"
+  },
+  {
+    "id": "PhaseThiemann.selection",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "m=1 grasp: 1/2 x j = (j-1/2)+(j+1/2), +/-1/2 selection rule + orthonormal (certified CG)"
+  },
+  {
+    "id": "PhaseThiemann.dipole_arena",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 32.3870489160179,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "GUE baseline explores 32/41 configs (arena+measure scramble); dim ok"
+  },
+  {
+    "id": "PhaseThiemann.dipole_propagation",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 2.485989832707378,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "graph-changing arms propagate (Thiemann 2.5 cfg, model 2.4) vs fixed-graph 1.0 (localized)"
+  },
+  {
+    "id": "PhaseThiemann.dipole_thiemann_vs_model",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": -0.1772620486597165,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Thiemann S_A=1.47 ~ model 1.64: volume-gating ~neutral; PROXY arena (moves reach the far vertex) -- contrast grow.ultralocal"
+  },
+  {
+    "id": "PhaseThiemann.bdr_verbatim",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 5.551115123125783e-17,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Eq.87 == BDR closed forms over 1520 amplitudes (colors<=8): max diff 5.6e-17; nets pass (89)-(94)"
+  },
+  {
+    "id": "PhaseThiemann.bdr_volume_fp",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 5.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "Eq.62 volume == 2|eig(J-grasp)| at 5 color configs incl. non-monochromatic (binor factor 2 uniform)"
+  },
+  {
+    "id": "PhaseThiemann.grow_inert",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.0,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "all grasped triples at degenerate new vertices have eps=0 (exact int dets); generic vertex nonzero (GR Eq.53)"
+  },
+  {
+    "id": "PhaseThiemann.grow_ultralocal",
+    "phase": "PhaseThiemann",
+    "tier": "T2",
+    "status": "PASS",
+    "computed": 1.9984014443252798e-15,
+    "target": null,
+    "error": null,
+    "tol": 1e-05,
+    "note": "max_t S_A:B = 2.0e-15 on theta-graph towers 61x7 (verbatim amplitudes): exact H_E is a NON-SCRAMBLER; local dressing churns (<layers> to 0.26)"
+  }
+]
